@@ -779,7 +779,8 @@ const HeroSection = () => {
   const [travelType, setTravelType] = useState("Adult");
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
-
+  const [origin, setOrigin] = useState("");
+  const [destination, setDestination] = useState("");
   const [flightReturnDate, setflightReturnDate] = useState(null);
   const [searchCount, setSearchCount] = useState(0);
   const [flightsData, setFlightsData] = useState([]);
@@ -788,8 +789,17 @@ const HeroSection = () => {
   const [flightTypeFilter, setFlightTypeFilter] = useState("Domestic");
   const [isDirectFlight, setIsDirectFlight] = useState(false);
   const [flightDepatureDate, setflightDepatureDate] = useState(new Date());
+  const [routingId, setRoutingId] = useState("");
+  const [searchData, setSearchdata] = useState({
+    from: "",
+    to: "",
+    flightDepatureDate: null,
+    flightReturnDate: null,
+    travelClass: "",
+  });
+  const [travellers, setTravellers] = useState([30]);
 
-  const handleDate = (newDate) => {
+  /* const handleDate = (newDate) => {
     if (!newDate) return null;
     const selectedDate = new Date(newDate);
     const year = selectedDate.getFullYear();
@@ -870,7 +880,293 @@ const HeroSection = () => {
     });
 
     setSearchCount((prev) => prev + 1);
+  }; */
+
+  const handleTravelFusionDate = (newDate) => {
+    if (!newDate) {
+      return;
+    } // Handle null or invalid date
+    else {
+      // Ensure newDate is a Date object
+      const selectedDate = new Date(newDate);
+
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+      const day = String(selectedDate.getDate()).padStart(2, "0");
+
+      const formattedDate = `${day}/${month}/${year}`;
+      return formattedDate;
+    }
   };
+
+  const handleTravelfusionSearch = (e) => {
+    e.preventDefault();
+
+    const formattedFlightDepatureDate =
+      handleTravelFusionDate(flightDepatureDate) + "-00:01";
+
+    console.log({
+      from,
+      to,
+      flightDepatureDate,
+      flightReturnDate,
+      travelClass,
+    });
+    if (flightReturnDate !== null &&  tripType=="Round Trip") {
+      const formattedFlightReturnDate =
+        handleTravelFusionDate(flightReturnDate) + "-23:59";
+      setSearchdata({
+        from: from,
+        to: to,
+        flightDepatureDate: formattedFlightDepatureDate,
+        flightReturnDate: formattedFlightReturnDate,
+        travelClass: travelClass,
+      });
+    } else {
+      setSearchdata({
+        from: from,
+        to: to,
+        flightDepatureDate: formattedFlightDepatureDate,
+        travelClass: travelClass,
+      });
+      setflightReturnDate(null)
+    }
+    console.log(adults);
+    setOrigin(from);
+    setDestination(to);
+    setSearchCount((prev) => prev + 1);
+  };
+
+  const travelFusionBackendUrl = import.meta.env.VITE_BACKEND_URL;
+  useEffect(() => {
+    // make an array of N adults
+    const adult = Array(adults).fill(30);
+    // make an array of N children
+    const child = Array(children).fill(7);
+    // combine them
+    setTravellers([...adult, ...child]);
+  }, [adults, children]);
+
+  // Fetch flights based on the search parameters
+  useEffect(() => {
+    const fetchFlights = async () => {
+      console.log("Travelfusion routing API Call");
+      try {
+        const requestBody = {
+          mode: "plane",
+          origin: {
+            descriptor: from,
+          },
+          destination: {
+            descriptor: to,
+          },
+          dateOfSearch: handleTravelFusionDate(flightDepatureDate) + "-00:01",
+          travellers: travellers,
+          incrementalResults: true,
+          // this will **conditionally add** returnDateOfSearch if flightReturnDate exists
+          ...(flightReturnDate && {
+            returnDateOfSearch:
+              handleTravelFusionDate(flightReturnDate) + "-23:59",
+          }),
+        };
+
+        console.log(requestBody)
+
+        const response = await fetch(
+          `${travelFusionBackendUrl}/start-routing`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(requestBody),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch flight data");
+        }
+
+        const data = await response.json();
+        console.log(data);
+        setRoutingId(data.routingId);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchFlights();
+  }, [searchCount]);
+
+  useEffect(() => {
+    const fetchFlights = async () => {
+      console.log("Travelfusion Search API Call");
+      try {
+        const response = await fetch(
+          `${travelFusionBackendUrl}/check-routing`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              routingId: routingId,
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch flight data");
+        }
+
+        const data = await response.json();
+
+        const routerList = data.flightList[0].Router;
+
+        const simplifiedFlights = routerList.flatMap((supplier) => {
+          const groups = supplier.GroupList || [];
+          return groups.flatMap((groupContainer) => {
+            const groupItems = groupContainer.Group || [];
+
+            return groupItems.flatMap((group) => {
+              const outwardList = group.OutwardList?.[0]?.Outward || [];
+              const allFlights = [...outwardList];
+
+              return allFlights
+                .map((flight) => {
+                  const segment = flight.SegmentList?.[0]?.Segment?.[0];
+                  if (!segment) return null; // guard
+
+                  const origin = segment?.Origin?.[0];
+                  const destination = segment?.Destination?.[0];
+                  const logo = segment?.Operator?.[0]?.Name?.[0].toLowerCase();
+                  return {
+                    id: flight.Id?.[0] || "N/A",
+                    airline:
+                      segment?.Operator?.[0]?.Name?.[0] || "Unknown Airline",
+                    logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
+                    flightNumber: segment?.FlightId?.[0]?.Code?.[0] || "N/A",
+                    class: segment?.TravelClass?.[0]?.TfClass?.[0] || "Wrong",
+                    departureTime:
+                      segment?.DepartDate?.[0]?.split("-")[1] || "N/A",
+                    departureCity: origin?.Code?.[0] || "N/A",
+                    arrivalTime:
+                      segment?.ArriveDate?.[0]?.split("-")[1] || "N/A",
+                    arrivalCity: destination?.Code?.[0] || "N/A",
+                    duration:
+                      Math.round((Number(segment?.Duration?.[0]) || 0) / 60) +
+                      "hr",
+                    price: parseFloat(flight.Price?.[0]?.Amount?.[0] || "0"),
+                    originalPrice:
+                      parseFloat(flight.Price?.[0]?.Amount?.[0] || "0") + 50,
+                    currency: flight.Price?.[0]?.Currency?.[0] || "GBP",
+                  };
+                })
+                .filter(Boolean);
+            });
+          });
+        });
+
+        console.log("simplifiedFlights", simplifiedFlights);
+        setFlightsData(simplifiedFlights);
+        const simplifiedFlightsGroup = routerList.flatMap((supplier) => {
+          const groups = supplier.GroupList || [];
+          return groups.flatMap((groupContainer) => {
+            const groupItems = groupContainer.Group || [];
+            return groupItems.map((group) => {
+              const outwardList = group.OutwardList?.[0]?.Outward || [];
+              const returnList = group.ReturnList?.[0]?.Return || [];
+              const groupId = group.Id?.[0] || "N/A";
+
+              // map outward
+              const outwardDetails = outwardList
+                .map((flight) => {
+                  const segment = flight.SegmentList?.[0]?.Segment?.[0];
+                  if (!segment) return null;
+
+                  const origin = segment?.Origin?.[0];
+                  const destination = segment?.Destination?.[0];
+                  const logo = segment?.Operator?.[0]?.Name?.[0].toLowerCase();
+
+                  return {
+                    id: flight.Id?.[0] || "N/A",
+                    airline:
+                      segment?.Operator?.[0]?.Name?.[0] || "Unknown Airline",
+                    logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
+                    flightNumber: segment?.FlightId?.[0]?.Code?.[0] || "N/A",
+                    class:
+                      segment?.TravelClass?.[0]?.SupplierClass?.[0] ||
+                      "Economy",
+                    departureTime:
+                      segment?.DepartDate?.[0]?.split("-")[1] || "N/A",
+                    departureCity: origin?.Code?.[0] || "N/A",
+                    arrivalTime:
+                      segment?.ArriveDate?.[0]?.split("-")[1] || "N/A",
+                    arrivalCity: destination?.Code?.[0] || "N/A",
+                    duration:
+                      Math.round((Number(segment?.Duration?.[0]) || 0) / 60) +
+                      "hr",
+                    price: parseFloat(flight.Price?.[0]?.Amount?.[0] || "0"),
+                    originalPrice:
+                      parseFloat(flight.Price?.[0]?.Amount?.[0] || "0") + 50,
+                    currency: flight.Price?.[0]?.Currency?.[0] || "GBP",
+                  };
+                })
+                .filter(Boolean);
+
+              // map return
+              const returnDetails = returnList
+                .map((flight) => {
+                  const segment = flight.SegmentList?.[0]?.Segment?.[0];
+                  if (!segment) return null;
+
+                  const origin = segment?.Origin?.[0];
+                  const destination = segment?.Destination?.[0];
+                  const logo = segment?.Operator?.[0]?.Name?.[0].toLowerCase();
+
+                  return {
+                    id: flight.Id?.[0] || "N/A",
+                    airline:
+                      segment?.Operator?.[0]?.Name?.[0] || "Unknown Airline",
+                    logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
+                    flightNumber: segment?.FlightId?.[0]?.Code?.[0] || "N/A",
+                    class:
+                      segment?.TravelClass?.[0]?.SupplierClass?.[0] ||
+                      "Economy",
+                    departureTime:
+                      segment?.DepartDate?.[0]?.split("-")[1] || "N/A",
+                    departureCity: origin?.Code?.[0] || "N/A",
+                    arrivalTime:
+                      segment?.ArriveDate?.[0]?.split("-")[1] || "N/A",
+                    arrivalCity: destination?.Code?.[0] || "N/A",
+                    duration:
+                      Math.round((Number(segment?.Duration?.[0]) || 0) / 60) +
+                      "hr",
+                    price: parseFloat(flight.Price?.[0]?.Amount?.[0] || "0"),
+                    originalPrice:
+                      parseFloat(flight.Price?.[0]?.Amount?.[0] || "0") + 50,
+                    currency: flight.Price?.[0]?.Currency?.[0] || "GBP",
+                  };
+                })
+                .filter(Boolean);
+
+              return {
+                groupId,
+                outward: outwardDetails,
+                return: returnDetails,
+              };
+            });
+          });
+        });
+
+        console.log("simplifiedFlightsGrouped", simplifiedFlightsGroup);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchFlights();
+  }, [routingId]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -932,7 +1228,7 @@ const HeroSection = () => {
                 {t("hero.bookNow")}
               </p>
               <form
-                onSubmit={handleSearch}
+                onSubmit={handleTravelfusionSearch}
                 className="w-full max-w-6xl bg-white rounded-xl shadow-lg px-4 py-1 z-10 h-[168px] mt-5"
               >
                 {/* Filters Row */}
