@@ -1,117 +1,143 @@
-import { Route, Routes } from "react-router";
-import { useEffect } from "react";
-import Aos from "aos";
-import "./hook/I18n";
+import { Route, Routes } from 'react-router'
+import { useEffect } from 'react'
+import Aos from 'aos'
+import './hook/I18n'
 
-import RootLayout from "./RootLayout";
-import WebsiteLayout from "./Layouts/WebsiteLayout";
+import RootLayout from './RootLayout'
+import WebsiteLayout from './Layouts/WebsiteLayout'
 
-import Home from "./pages/Home/Home";
-import FlightList from "./pages/FlightsList/FlightList";
-import FlightBooking from "./pages/FlightBooking/FlightBooking";
+import Home from './pages/Home/Home'
+import FlightList from './pages/FlightsList/FlightList'
+import FlightBooking from './pages/FlightBooking/FlightBooking'
 
 // Authentication Pages
-import LoginPage from "./Authentication/LoginPage";
-import SignupPage from "./Authentication/SignupPage";
-import LoginWithMobile from "./Authentication/LoginWithMobile";
-import OTP_VerificationPage from "./Authentication/OTP_VerificationPage";
-import ForgotPassword from "./Authentication/ForgotPassword";
-import AgentKYCVerification from "./Authentication/AgentKYCVerification";
-import KYCwaiting from "./Authentication/KYCwaiting";
+import LoginPage from './Authentication/LoginPage'
+import SignupPage from './Authentication/SignupPage'
+import LoginWithMobile from './Authentication/LoginWithMobile'
+import OTP_VerificationPage from './Authentication/OTP_VerificationPage'
+import ForgotPassword from './Authentication/ForgotPassword'
+import AgentKYCVerification from './Authentication/AgentKYCVerification'
+import KYCwaiting from './Authentication/KYCwaiting'
 // Booking sections
-import ReviewYourBooking from "./pages/FlightBooking/ReviewYourBooking";
-import TravelersDetails from "./pages/FlightBooking/TravelersDetails";
-import SeatSelectionPage from "./pages/FlightBooking/SeatSelectionPage";
-import PaymentPage from "./pages/FlightBooking/PaymentPage";
-import ProfilePage from "./pages/Profile/ProfilePage";
-import ScrollToTop from "./components/ScrollToTop";
-import ContactUsPage from "./pages/ContactUsPage/ContactUsPage";
-import ScrollToHash from "./components/ScrollToHash";
+import ReviewYourBooking from './pages/FlightBooking/ReviewYourBooking'
+import TravelersDetails from './pages/FlightBooking/TravelersDetails'
+import SeatSelectionPage from './pages/FlightBooking/SeatSelectionPage'
+import PaymentPage from './pages/FlightBooking/PaymentPage'
+import ProfilePage from './pages/Profile/ProfilePage'
+import ScrollToTop from './components/ScrollToTop'
+import ContactUsPage from './pages/ContactUsPage/ContactUsPage'
+import ScrollToHash from './components/ScrollToHash'
 
-import Dashboard from "./pages/Dashboard/Dashboard";
-import AgentDashboardLayout from "./Layouts/AgentDashboardLayout";
-import AgentFlightBooking from "./pages/AgentDashboard/FlightBooking/AgentFlightBooking";
-import AgentPaymentPage from "./pages/AgentDashboard/FlightBooking/AgentPaymentPage";
-import AgentReviewYourBooking from "./pages/AgentDashboard/FlightBooking/AgentReviewYourBooking";
-import AgentTravelersDetails from "./pages/AgentDashboard/FlightBooking/AgentTravelersDetails";
-import AgentSeatSelection from "./pages/AgentDashboard/FlightBooking/AgentSeatSelectionPage";
-import AgentFlightList from "./pages/AgentDashboard/FlightsList/AgentFlightList";
-import Agentsettings from "./pages/AgentDashboard/Agentsettings";
-import AgentDashboard from "./pages/AgentDashboard/AgentDashboard";
-import DestinationForm from "./pages/AgentDashboard/PackagePage/DestinationForm";
-import AddPackageForm from "./pages/AgentDashboard/PackagePage/AddPackageForm";
-import PackageSection from "./pages/AgentDashboard/PackagePage/PackageSection";
-import AgentCRMpage from "./pages/AgentDashboard/AgentCRMpage";
+import Dashboard from './pages/Dashboard/Dashboard'
+import AgentDashboardLayout from './Layouts/AgentDashboardLayout'
+import AgentFlightBooking from './pages/AgentDashboard/FlightBooking/AgentFlightBooking'
+import AgentPaymentPage from './pages/AgentDashboard/FlightBooking/AgentPaymentPage'
+import AgentReviewYourBooking from './pages/AgentDashboard/FlightBooking/AgentReviewYourBooking'
+import AgentTravelersDetails from './pages/AgentDashboard/FlightBooking/AgentTravelersDetails'
+import AgentSeatSelection from './pages/AgentDashboard/FlightBooking/AgentSeatSelectionPage'
+import AgentFlightList from './pages/AgentDashboard/FlightsList/AgentFlightList'
+import Agentsettings from './pages/AgentDashboard/Agentsettings'
+import AgentDashboard from './pages/AgentDashboard/AgentDashboard'
+import DestinationForm from './pages/AgentDashboard/PackagePage/DestinationForm'
+import AddPackageForm from './pages/AgentDashboard/PackagePage/AddPackageForm'
+import PackageSection from './pages/AgentDashboard/PackagePage/PackageSection'
+import AgentCRMpage from './pages/AgentDashboard/AgentCRMpage'
+
+import SupportTicket from './pages/AgentDashboard/supportTicket/SupportTicket'
 const App = () => {
-  useEffect(() => {
-    Aos.init({
-      once: true,
-    });
-  }, []);
-  return (
-    <>
-      <ScrollToHash />
-      <ScrollToTop />
-      <Routes>
-        <Route path="/" element={<RootLayout />}>
-          {/* Website Route */}
-          <Route path="" element={<WebsiteLayout />}>
-            <Route index element={<Home />} />
-            <Route path="/List" element={<FlightList />} />
-            <Route path="/Booking" element={<FlightBooking />}>
-              <Route path="ReviewYourBooking" element={<ReviewYourBooking />} />
-              <Route path="TravelersDetails" element={<TravelersDetails />} />
-              <Route path="SeatSelection" element={<SeatSelectionPage />} />
-              <Route path="Payment" element={<PaymentPage />} />
-            </Route>
-            <Route path="profile" element={<ProfilePage />} />
-            <Route path="/Contact" element={<ContactUsPage />} />
-          </Route>
-          {/* Authentication Route */}
-          <Route path="SignUp" element={<SignupPage />} />
-          <Route path="Login" element={<LoginPage />} />
-          <Route path="Login-with-mobile" element={<LoginWithMobile />} />
-          <Route path="OTP-Verification" element={<OTP_VerificationPage />} />
-          <Route path="ForgotPassword" element={<ForgotPassword />} />
-          <Route
-            path="Agent-KYC-Verification"
-            element={<AgentKYCVerification />}
-          />
-          <Route path="KYC-waiting" element={<KYCwaiting />} />
-        </Route>
+	useEffect(() => {
+		Aos.init({
+			// once: true,
+		})
+	}, [])
+	return (
+		<>
+			<ScrollToHash />
+			<ScrollToTop />
+			<Routes>
+				<Route path='/' element={<RootLayout />}>
+					{/* Website Route */}
+					<Route path='' element={<WebsiteLayout />}>
+						<Route index element={<Home />} />
+						<Route path='/List' element={<FlightList />} />
+						<Route path='/Booking' element={<FlightBooking />}>
+							<Route
+								path='ReviewYourBooking'
+								element={<ReviewYourBooking />}
+							/>
+							<Route
+								path='TravelersDetails'
+								element={<TravelersDetails />}
+							/>
+							<Route
+								path='SeatSelection'
+								element={<SeatSelectionPage />}
+							/>
+							<Route path='Payment' element={<PaymentPage />} />
+						</Route>
+						<Route path='profile' element={<ProfilePage />} />
+						<Route path='/Contact' element={<ContactUsPage />} />
+					</Route>
+					{/* Authentication Route */}
+					<Route path='SignUp' element={<SignupPage />} />
+					<Route path='Login' element={<LoginPage />} />
+					<Route
+						path='Login-with-mobile'
+						element={<LoginWithMobile />}
+					/>
+					<Route
+						path='OTP-Verification'
+						element={<OTP_VerificationPage />}
+					/>
+					<Route path='ForgotPassword' element={<ForgotPassword />} />
+					<Route
+						path='Agent-KYC-Verification'
+						element={<AgentKYCVerification />}
+					/>
+					<Route path='KYC-waiting' element={<KYCwaiting />} />
+				</Route>
 
-        {/*  Admin dashboard */}
-        <Route path="/admin-dashboard" element={<Dashboard />} />
-        <Route path="/agent-dashboard" element={<AgentDashboardLayout />}>
-          <Route path="agentsettings" element={<Agentsettings />} />
-          <Route path="analytics" element={<AgentDashboard />} />
-          <Route path="crm" element={<AgentCRMpage />} />
+				{/*  Admin dashboard */}
+				<Route path='/admin-dashboard' element={<Dashboard />} />
+				<Route
+					path='/agent-dashboard'
+					element={<AgentDashboardLayout />}>
+					<Route path='agentsettings' element={<Agentsettings />} />
+					<Route path='analytics' element={<AgentDashboard />} />
+					<Route path='crm' element={<AgentCRMpage />} />
 
-          <Route path="List" element={<FlightList />} />
-          <Route index element={<AgentFlightList />} />
-          <Route path="Booking" element={<AgentFlightBooking />}>
-            <Route
-              path="ReviewYourBooking"
-              element={<AgentReviewYourBooking />}
-            />
-            <Route
-              path="TravelersDetails"
-              element={<AgentTravelersDetails />}
-            />
-            <Route path="SeatSelection" element={<AgentSeatSelection />} />
-            <Route path="Payment" element={<AgentPaymentPage />} />
-          </Route>
-          {/* Agent Packages */}
-          <Route path="agentPackages" element={<PackageSection />} />
-          <Route
-            path="agentPackages/AddDestination"
-            element={<DestinationForm />}
-          />
-          <Route path="agentPackages/AddPackage" element={<AddPackageForm />} />
-        </Route>
-      </Routes>
-    </>
-  );
-};
+					<Route path='List' element={<FlightList />} />
+					<Route index element={<AgentFlightList />} />
+					<Route path='Booking' element={<AgentFlightBooking />}>
+						<Route
+							path='ReviewYourBooking'
+							element={<AgentReviewYourBooking />}
+						/>
+						<Route
+							path='TravelersDetails'
+							element={<AgentTravelersDetails />}
+						/>
+						<Route
+							path='SeatSelection'
+							element={<AgentSeatSelection />}
+						/>
+						<Route path='Payment' element={<AgentPaymentPage />} />
+					</Route>
+					{/* Agent Packages */}
+					<Route path='agentPackages' element={<PackageSection />} />
+					<Route
+						path='agentPackages/AddDestination'
+						element={<DestinationForm />}
+					/>
+					<Route
+						path='agentPackages/AddPackage'
+						element={<AddPackageForm />}
+					/>
+					<Route path='supportTicket' element={<SupportTicket />} />
+				</Route>
+			</Routes>
+		</>
+	)
+}
 
-export default App;
+export default App
