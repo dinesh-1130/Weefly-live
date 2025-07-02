@@ -150,6 +150,7 @@ function FlightList() {
 	const location = useLocation()
 
 	const {
+		routingId,
 		tripType,
 		oneWay,
 		roundTrip,
@@ -170,7 +171,14 @@ function FlightList() {
 	const [SearchProps, setSearchProps] = useState({})
 	const [TripType, setTripType] = useState(tripType)
 
-	console.log('oneWay', oneWay, 'roundTrip', roundTrip)
+	console.log(
+		'oneWay',
+		oneWay,
+		'roundTrip',
+		roundTrip,
+		'routingId',
+		routingId
+	)
 
 	useEffect(() => {
 		setTripType(tripType)

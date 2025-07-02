@@ -1244,6 +1244,7 @@ const HeroSection = () => {
 						oneWay: simplifiedFlights,
 						roundTrip: simplifiedFlightsGroup,
 						tripType: tripType,
+						routingId: routingId,
 					},
 				})
 			} catch (error) {
