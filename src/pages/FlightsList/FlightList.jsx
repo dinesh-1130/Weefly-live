@@ -154,7 +154,7 @@ function FlightList() {
 		tripType,
 		oneWay,
 		roundTrip,
-		FightSearchData: search,
+		FightSearchData,
 		flightsData: initialFlights,
 	} = location?.state || {}
 
@@ -171,14 +171,7 @@ function FlightList() {
 	const [SearchProps, setSearchProps] = useState({})
 	const [TripType, setTripType] = useState(tripType)
 
-	console.log(
-		'oneWay',
-		oneWay,
-		'roundTrip',
-		roundTrip,
-		'routingId',
-		routingId
-	)
+	console.log('Search', FightSearchData)
 
 	useEffect(() => {
 		setTripType(tripType)
@@ -191,10 +184,11 @@ function FlightList() {
 			setFlightsData(initialFlights)
 		}
 
-		if (search) {
-			setSearchProps(search)
-			setOrigin(search.from || '')
-			setDestination(search.to || '')
+		if (FightSearchData) {
+			// setSearchdata(FightSearchData)
+			// setSearchProps(FightSearchData)
+			setOrigin(FightSearchData.from || '')
+			setDestination(FightSearchData.to || '')
 		}
 	}, [location.state])
 
@@ -218,6 +212,7 @@ function FlightList() {
 						setFlightsData={setFlightsData}
 						flights={flightsData}
 						t={t}
+						routingId={routingId}
 					/>
 				</div>
 
@@ -232,6 +227,7 @@ function FlightList() {
 							flights={flightsData}
 							origin={origin}
 							destination={destination}
+							tripType={tripType}
 						/>
 					)}
 
@@ -241,6 +237,8 @@ function FlightList() {
 							flights={flightsData}
 							origin={origin}
 							destination={destination}
+							routingId={routingId}
+							tripType={tripType}
 						/>
 					)}
 				</div>
@@ -466,7 +464,7 @@ const SearchBox = ({
 											'search.dateForm'
 										)}`}
 										className='block w-full placeholder:text-gray-400 text-black z-20 focus:outline-none'
-										dateFormat='MMM d, yyyy'
+										dateFormat='dd MM yyyy'
 										popperClassName='z-[50px]'
 										popperProps={{
 											positionFixed: true,
@@ -511,7 +509,7 @@ const SearchBox = ({
 											'search.dateReturn'
 										)}`}
 										className='block w-full placeholder:text-gray-400 text-black focus:outline-none'
-										dateFormat='MMM d, yyyy'
+										dateFormat='dd MMM yyyy'
 										minDate={flightDepatureDate}
 									/>
 									<svg
@@ -1771,7 +1769,14 @@ const FlightDatePicker = ({ flights }) => {
 // import { ChevronDown } from "lucide-react";
 // import Pagination from "./Pagination"; // Adjust path based on your project
 
-const FlightResults = ({ flights, origin, destination, t, tripType }) => {
+const FlightResults = ({
+	flights,
+	origin,
+	destination,
+	t,
+	tripType,
+	routingId,
+}) => {
 	// const { t } = useLocation();
 	const [isOpen, setIsOpen] = useState(false)
 	const [selectedOption, setSelectedOption] = useState('')
@@ -2033,15 +2038,21 @@ const FlightResults = ({ flights, origin, destination, t, tripType }) => {
 
 									{isSelected ? (
 										<button
-											onClick={e => {
-												e.stopPropagation()
+											onClick={() =>
 												navigate(
 													'/booking/ReviewYourBooking',
 													{
-														state: { flight },
+														state: {
+															outwordTicketId:
+																flight,
+															// returnTicketId: selectReturn,
+															routingId:
+																routingId,
+															tripType,
+														},
 													}
 												)
-											}}
+											}
 											className='bg-[#EE5128] text-white px-4 py-1.5 rounded font-jakarta font-semibold hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200'>
 											{t('booking-card.book-now')}
 										</button>
@@ -2146,16 +2157,23 @@ const Pagination = ({ currentPage, totalPages, setCurrentPage }) => {
 	)
 }
 
-const RoundTrip = ({ flights, t }) => {
+const RoundTrip = ({
+	flights,
+	t,
+	routingId,
+	destination,
+	origin,
+	tripType,
+}) => {
+	const navigate = useNavigate()
+
 	const [isOnWard, setOnWard] = useState(false)
 	const [selectOutWard, setselectOutWard] = useState({})
 	const [selectReturn, setselectReturn] = useState({})
 	const [selectedFlightId, setSelectedFlightId] = useState(null)
 
-	console.log(flights)
-
-	const OutWard = flights.filter(f => f.outward).map(f => f.outward)
-	console.log('outward', OutWard)
+	const OutWordFlights = flights.filter(flight => flight.type === 'outward')
+	const ReturnFlights = flights.filter(flight => flight.type === 'return')
 
 	console.log('selectOutWard', selectOutWard)
 	console.log('selectReturn', selectReturn)
@@ -2163,11 +2181,33 @@ const RoundTrip = ({ flights, t }) => {
 	const handleSelectFlight = id => {
 		setSelectedFlightId(prevId => (prevId === id ? null : id))
 	}
+
+	const handleSelectOnward = ({ id }) => {
+		setselectOutWard(id)
+	}
+
+	const handleConfirmSelect = ({ id }) => {
+		navigate('/booking/ReviewYourBooking', {
+			state: {
+				outwordTicketId: selectOutWard,
+				returnTicketId: id || selectReturn,
+				routingId: routingId,
+				tripType: tripType,
+			},
+		})
+	}
+
 	return (
 		<div className=''>
 			{!isOnWard ? (
-				<div className=''>
-					{OutWard.map(flight => {
+				<div className='flex flex-col items-center space-y-6 font-sans relative'>
+					<div className='w-full flex items-center justify-between'>
+						{/* Heading */}
+						<h1 className='text-[25.44px] font-[600] leading-[100%] font-jakarta'>
+							Depature Flights from {origin} to {destination}
+						</h1>
+					</div>
+					{OutWordFlights.map(flight => {
 						const isSelected = selectedFlightId === flight.id
 						console.log('outward flight', flight)
 
@@ -2293,14 +2333,21 @@ const RoundTrip = ({ flights, t }) => {
 
 									{isSelected ? (
 										<button
-											onClick={e => {
-												e.stopPropagation()
-												navigate(
-													'/booking/ReviewYourBooking',
-													{
-														state: { flight },
-													}
-												)
+											// onClick={e => {
+											// 	e.stopPropagation()
+											// 	navigate(
+											// 		'/booking/ReviewYourBooking',
+											// 		{
+											// 			state: { flight },
+											// 		}
+											// 	)
+											// }}
+
+											onClick={() => {
+												handleSelectOnward({
+													id: flight,
+												})
+												setOnWard(true)
 											}}
 											className='bg-[#EE5128] text-white px-4 py-1.5 rounded font-jakarta font-semibold hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200'>
 											{t('booking-card.book-now')}
@@ -2319,7 +2366,161 @@ const RoundTrip = ({ flights, t }) => {
 					})}
 				</div>
 			) : (
-				<div className=''>Return</div>
+				<div className='flex flex-col items-center space-y-6 font-sans relative'>
+					<div className='w-full flex items-center justify-between'>
+						{/* Heading */}
+						<h1 className='text-[25.44px] font-[600] leading-[100%] font-jakarta'>
+							Return Flights from {destination} to
+							{origin}
+						</h1>
+					</div>
+					{ReturnFlights.map(flight => {
+						const isSelected = selectedFlightId === flight.id
+						console.log('outward flight', flight)
+
+						return (
+							<div
+								key={flight.id}
+								className={`w-full min-h-[150.13px] rounded-md cursor-pointer transition duration-300 flex flex-col justify-between ${
+									isSelected
+										? 'border border-[#EE5128] bg-white shadow-sm'
+										: 'border border-gray-200 bg-white'
+								}`}
+								onClick={e => {
+									e.stopPropagation()
+									handleSelectFlight(flight.id)
+								}}>
+								<div className='flex items-center flex-col md:flex-row justify-between px-4 min-h-[60px] pt-6 pb-6 xl:pb-0 gap-[30px]'>
+									<div className='flex flex-col justify-start items-center xl:items-start min-w-[170px] relative pb-10 lg:pb-0'>
+										<img
+											src={flight.logo}
+											alt={flight.airline}
+											className='h-[40px] object-contain xl:mb-[45px] ml-2'
+										/>
+										<div className='absolute top-[48px] left-[18px] flex items-center space-x-2'>
+											<span className='text-[13px] text-gray-500 leading-none'>
+												{flight.flightNumber}
+											</span>
+											<span className='text-[12px] bg-[#008905] text-white px-[10px] py-[2px] rounded font-semibold leading-[19px]'>
+												{flight.class}
+											</span>
+										</div>
+									</div>
+
+									<div className='flex items-center justify-center gap-[40px] ml-4'>
+										<div className='text-center'>
+											<p className='text-[22px] font-bold text-black leading-tight'>
+												{flight.departureTime}
+											</p>
+											<p className='text-[13px] text-gray-500 leading-tight mt-[2px]'>
+												{flight.departureCity}
+											</p>
+										</div>
+
+										<div className='flex flex-col items-center'>
+											<div className='flex items-center'>
+												<span className='w-[6px] h-[6px] bg-gray-300 rounded-full' />
+												<div className='border-t border-dashed w-8 border-gray-300 mx-2' />
+												<span className='text-black text-sm'>
+													✈
+												</span>
+												<div className='border-t border-dashed w-8 border-gray-300 mx-2' />
+												<span className='w-[6px] h-[6px] bg-gray-300 rounded-full' />
+											</div>
+											<span className='text-[12px] text-gray-400 mt-[4px]'>
+												{flight.duration}
+											</span>
+										</div>
+
+										<div className='text-center'>
+											<p className='text-[22px] font-bold text-black leading-tight'>
+												{flight.arrivalTime}
+											</p>
+											<p className='text-[13px] text-gray-500 leading-tight mt-[2px]'>
+												{flight.arrivalCity}
+											</p>
+										</div>
+									</div>
+
+									<div className='text-right flex flex-col gap-2 items-center lg:items-end space-y-[2px] w-[152px] h-[31px]'>
+										<p className='text-[#EE5128] text-[26px] font-black leading-none font-sans'>
+											<span className='text-[20px] pr-2'>
+												{flight.currency}
+											</span>
+											{flight.price}
+											<span className='text-[12px] text-black font-normal'>
+												/pax
+											</span>
+										</p>
+										<p className='text-[13px] text-gray-400 line-through font-normal leading-none font-sans'>
+											{flight.currency}
+											{flight.originalPrice}
+										</p>
+									</div>
+								</div>
+
+								<div
+									className={`border-t px-4 py-[30px] xl:py-[20px] flex items-center justify-between text-sm font-medium ${
+										isSelected
+											? 'border-[#EE5128]'
+											: 'border-gray-200'
+									}`}>
+									<div
+										className={`flex space-x-14 ${
+											isSelected
+												? 'text-[#EE5128]'
+												: 'text-bold'
+										} font-sans`}>
+										<div className='flex items-center space-x-1 ml-2'>
+											<span>
+												{t(
+													'booking-card.Flight-details'
+												)}
+											</span>
+											<ChevronDown size={14} />
+										</div>
+										<div className='hidden lg:flex items-center space-x-1'>
+											<span>
+												{t(
+													'booking-card.price-details'
+												)}
+											</span>
+											<ChevronDown size={14} />
+										</div>
+										<span className='hidden lg:flex'>
+											{t('booking-card.policy')}
+										</span>
+										<span className='hidden lg:flex'>
+											{t('booking-card.refund')}
+										</span>
+										<span className='hidden lg:flex'>
+											{t('booking-card.reschedule')}
+										</span>
+									</div>
+
+									{isSelected ? (
+										<button
+											onClick={() => {
+												handleConfirmSelect({
+													id: flight,
+												})
+											}}
+											className='bg-[#EE5128] text-white px-4 py-1.5 rounded font-jakarta font-semibold hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200'>
+											{t('booking-card.book-now')}
+										</button>
+									) : (
+										<button
+											onClick={e => e.stopPropagation()}
+											className='bg-gray-300 text-white px-4 py-1.5 rounded font-jakarta font-semibold cursor-not-allowed'
+											disabled>
+											{t('booking-card.book-now')}
+										</button>
+									)}
+								</div>
+							</div>
+						)
+					})}
+				</div>
 			)}
 		</div>
 	)

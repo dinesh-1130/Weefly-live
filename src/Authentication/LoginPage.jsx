@@ -21,6 +21,9 @@ import { Link, useNavigate } from 'react-router'
 import { HandleGoogleLogin } from '../features/firebase'
 import Navbar from '../components/Navbar'
 import { useTranslation } from 'react-i18next'
+import axios from 'axios'
+
+const backendUrl = import.meta.env.VITE_BACKEND_URL
 
 function LoginPage() {
 	const { t } = useTranslation()
@@ -64,14 +67,25 @@ function LoginPage() {
 		}
 	}
 
-	const HandleLoginSubmit = e => {
+	const HandleLoginSubmit = async e => {
 		e.preventDefault()
 		// selectedType === 'Agent' ? navigate('/KYC-waiting') : ''
 		if (selectedType === 'Agent') {
 			console.log('agent', formData)
+			const res = await axios.post(`${backendUrl}/agentlogin`, {
+				Emailaddress: formData.email,
+				Password: formData.password,
+			})
+			console.log(res.data)
+
 			navigate('/KYC-waiting')
 		} else if (selectedType === 'User') {
 			console.log('User', formData)
+			const res = await axios.post(`${backendUrl}/userlogin`, {
+				Emailaddress: formData.email,
+				Password: formData.password,
+			})
+			console.log(res.data)
 			navigate('/Profile')
 		} else if (selectedType === 'Vendor') {
 			console.log('Vendor', formData)
