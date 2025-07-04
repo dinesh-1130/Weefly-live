@@ -157,7 +157,7 @@ function FlightList() {
 		FightSearchData,
 		flightsData: initialFlights,
 	} = location?.state || {}
-
+	console.log(routingId)
 	const [flightsData, setFlightsData] = useState([])
 	const [origin, setOrigin] = useState('')
 	const [destination, setDestination] = useState('')
@@ -227,6 +227,7 @@ function FlightList() {
 							flights={flightsData}
 							origin={origin}
 							destination={destination}
+							routingId={routingId}
 							tripType={tripType}
 						/>
 					)}
