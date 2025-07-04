@@ -1372,7 +1372,7 @@ const HeroSection = () => {
 	return (
 		<>
 			<div
-				className={`min-h-screen relative bg-white/10 bg-[url('/banner-img.png')]
+				className={`py-52 relative bg-white/10 bg-[url('/banner-img.png')]
         bg-cover bg-center bg-no-repeat flex flex-col justify-center items-center px-4 lg:px-10 xl:px-40 overflow-hidden`}>
 				<div className='h-full w-full flex flex-col justify-center items-center'>
 					<div className='mt-8 h-full w-full flex flex-col justify-center items-center gap-2'>
@@ -1417,10 +1417,10 @@ const HeroSection = () => {
 							</p>
 							<form
 								onSubmit={handleTravelfusionSearch}
-								className='w-full max-w-6xl bg-white rounded-xl shadow-lg px-4 py-1 z-10 h-[168px] mt-5'>
+								className='w-full max-w-6xl bg-white rounded-xl shadow-lg px-4 py-1 z-10 min-h-[168px] mt-5'>
 								{/* Filters Row */}
-								<div className='flex items-center justify-between flex-wrap gap-4 mb-5'>
-									<div className='flex  flex-wrap gap-6'>
+								<div className='flex items-start justify-between flex-wrap gap-4 mb-5'>
+									<div className='flex flex-col sm:flex-row gap-6'>
 										{['One Way', 'Round Trip'].map(type => (
 											<label
 												key={type}
