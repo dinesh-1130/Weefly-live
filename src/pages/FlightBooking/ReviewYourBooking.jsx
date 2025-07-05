@@ -67,7 +67,7 @@ export default function ReviewYourBooking() {
 		// 	console.log('Hello')
 		// }
 
-		if (TicketData.tripType === 'One way') {
+		if (TicketData.tripType === 'One Way') {
 			flightTickets.push(TicketData.outwordTicketId)
 		} else if (TicketData.tripType === 'Round Trip') {
 			flightTickets.push(
