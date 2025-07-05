@@ -173,6 +173,12 @@ function FlightList() {
 	const [SearchProps, setSearchProps] = useState({})
 	const [TripType, setTripType] = useState('')
 
+	const [travalers, setTravalers] = useState(
+		FightSearchData?.travellers || []
+	)
+
+	console.log('travalers', FightSearchData?.travellers)
+
 	// useEffect
 	console.log('Search', FightSearchData)
 	console.log('Fd', flightsData)
@@ -236,6 +242,7 @@ function FlightList() {
 							destination={destination}
 							routingId={routingId}
 							TripType={TripType}
+							travalers={travalers}
 						/>
 					)}
 
@@ -247,6 +254,7 @@ function FlightList() {
 							destination={destination}
 							routingId={routingId}
 							TripType={TripType}
+							travalers={travalers}
 						/>
 					)}
 				</div>
@@ -2033,6 +2041,7 @@ const FlightResults = ({
 	t,
 	TripType,
 	routingId,
+	travalers,
 }) => {
 	// const { t } = useLocation();
 	const [isOpen, setIsOpen] = useState(false)
@@ -2305,7 +2314,9 @@ const FlightResults = ({
 															// returnTicketId: selectReturn,
 															routingId:
 																routingId,
-															TripType,
+															tripType: TripType,
+															travalers:
+																travalers,
 														},
 													}
 												)
@@ -2421,6 +2432,7 @@ const RoundTrip = ({
 	destination,
 	origin,
 	TripType,
+	travalers,
 }) => {
 	const navigate = useNavigate()
 
@@ -2450,6 +2462,7 @@ const RoundTrip = ({
 				returnTicketId: id || selectReturn,
 				routingId: routingId,
 				tripType: TripType,
+				travalers: travalers,
 			},
 		})
 	}

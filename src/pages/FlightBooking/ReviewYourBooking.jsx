@@ -29,8 +29,8 @@ export default function ReviewYourBooking() {
 	console.log(TicketData.outwordTicketId)
 	console.log(TicketData.returnTicketId)
 	console.log('tripType', TicketData.tripType)
+	console.log('travalers', TicketData.travalers)
 
-	console.log('tripType', TicketData)
 	// useEffect(() => {
 	//   if (location.state && location.state.tripType) {
 	//     // setFlight(location.state.flight);
@@ -57,13 +57,24 @@ export default function ReviewYourBooking() {
 	console.log(TicketData.outwordTicketId)
 	const backendUrl = import.meta.env.VITE_BACKEND_URL
 	const handleProcessDetails = async () => {
+		const flightTickets = []
 		const routeid = TicketData.routingId
 		let outwardid = TicketData.outwordTicketId.id
 		let returnid
 
-		if (TicketData.tripType === 'Round Trip') {
+		// if (TicketData.tripType === 'Round Trip') {
+		// 	returnid = TicketData.returnTicketId.id
+		// 	console.log('Hello')
+		// }
+
+		if (TicketData.tripType === 'One way') {
+			flightTickets.push(TicketData.outwordTicketId)
+		} else if (TicketData.tripType === 'Round Trip') {
+			flightTickets.push(
+				TicketData.outwordTicketId,
+				TicketData.returnTicketId
+			)
 			returnid = TicketData.returnTicketId.id
-			console.log('Hello')
 		}
 
 		const response = await fetch(`${backendUrl}/process-details`, {
@@ -89,9 +100,14 @@ export default function ReviewYourBooking() {
 					.DisplayText[0]
 			console.log(seatOptions)
 			console.log(LuggageOptions)
-			//   navigate("/booking/TravelersDetails", {
-			//     state: { flight },
-			//   });
+			navigate('/booking/TravelersDetails', {
+				state: {
+					flights: flightTickets,
+					routingId: TicketData.routingId,
+					travalers: TicketData.travalers,
+					tripType: TicketData.tripType,
+				},
+			})
 		}
 	}
 

@@ -802,7 +802,7 @@ const HeroSection = () => {
 	})
 	const [travellers, setTravellers] = useState([30])
 	const [airposts, setAirposts] = useState([])
-
+	const [searchNewData, setSearchNewData] = useState([])
 	/* const handleDate = (newDate) => {
     if (!newDate) return null;
     const selectedDate = new Date(newDate);
@@ -974,7 +974,7 @@ const HeroSection = () => {
 							handleTravelFusionDate(flightReturnDate) + '-23:59',
 					}),
 				}
-
+				setSearchNewData(requestBody)
 				console.log(requestBody)
 
 				const response = await fetch(
@@ -1325,7 +1325,7 @@ const HeroSection = () => {
 
 				navigate('/list', {
 					state: {
-						FightSearchData: searchData,
+						FightSearchData: searchNewData,
 						oneWay: simplifiedFlights,
 						roundTrip: simplifiedFlightsGroup,
 						tripType: tripType,
