@@ -8,6 +8,9 @@ import SpecialMeal from '../../assets/images/meals/SpecialMeal.jpg'
 import VegMeal from '../../assets/images/meals/VegMeal.jpg'
 import { useTranslation } from 'react-i18next'
 
+import { parseLuggageOptions } from '../../utils/parseLuggageOptions'
+import { parseSeatMap } from '../../utils/parseSeatMap'
+
 export default function SeatSelection() {
 	const { t } = useTranslation()
 	const location = useLocation()
@@ -17,6 +20,25 @@ export default function SeatSelection() {
 	const [activeTab, setActiveTab] = useState('Seats')
 	const [mealCounts, setMealCounts] = useState({})
 	const [luggageCounts, setLuggageCounts] = useState({})
+
+	const [isOutwardSeat, setisOutwardSeat] = useState(false)
+
+	const OutwardTicket = location.state.flights[0]
+	const returnTicket = location.state.flights[1]
+
+	console.log(OutwardTicket)
+
+	console.log('luggageOptions', location.state.luggageOptions)
+
+	const LuggageOptions = parseLuggageOptions(location.state.luggageOptions)
+
+	function flightSplitNumber(input) {
+		const match = input.match(/\d{4}$/)
+		return match ? match[0] : null
+	}
+
+	const OutWardFlightNumber = flightSplitNumber(OutwardTicket.flightNumber)
+	const ReturnFlightNumber = flightSplitNumber(returnTicket.flightNumber)
 
 	const mealsList = [
 		{
@@ -52,8 +74,8 @@ export default function SeatSelection() {
 	]
 
 	useEffect(() => {
-		if (location.state && location.state.flight) {
-			setFlight(location.state.flight)
+		if (location.state && location.state.flights) {
+			setFlight(location.state.flights)
 		}
 	}, [location])
 
@@ -84,6 +106,64 @@ export default function SeatSelection() {
 		})
 	}
 
+	const displayText = location.state.seatOption
+
+	const seatData = parseSeatMap(displayText)
+
+	const OutwardFlightSeats = seatData.filter(
+		outwardseat => outwardseat.flightNumber === OutWardFlightNumber
+	)
+	const ReturnFlightSeats = seatData.filter(
+		returnseat => returnseat.flightNumber === ReturnFlightNumber
+	)
+
+	const Outwardrows = OutwardFlightSeats.reduce((acc, seat) => {
+		if (!acc[seat.row]) acc[seat.row] = []
+		acc[seat.row].push(seat)
+		return acc
+	}, {})
+	const Returnrows = ReturnFlightSeats.reduce((acc, seat) => {
+		if (!acc[seat.row]) acc[seat.row] = []
+		acc[seat.row].push(seat)
+		return acc
+	}, {})
+
+	const OutwardSortedRows = Object.entries(Outwardrows).sort(
+		(a, b) => a[0] - b[0]
+	)
+	const ReturnSortedRows = Object.entries(Returnrows).sort(
+		(a, b) => a[0] - b[0]
+	)
+
+	// seat color
+	const getSeatColor = type => {
+		switch (type) {
+			case 'Unavailable':
+				return 'bg-gray-400 hover:bg-gray-400 cursor-not-allowed '
+			// case 'window':
+			// 	return 'bg-blue-300 hover:bg-blue-400'
+			// case 'aisle':
+			// 	return 'bg-green-300 hover:bg-green-400'
+			// case 'middle':
+			// 	return 'bg-yellow-300 hover:bg-yellow-400'
+			// case 'exit':
+			// 	return 'bg-red-300 hover:bg-red-400'
+			// case 'extra_legroom':
+			// 	return 'bg-purple-300 hover:bg-purple-400'
+			default:
+				// return 'bg-gray-300 hover:bg-gray-400'
+				return 'bg-white border-[0.2px] border-gray-300 hover:bg-gray-400 hover:bg-orange-500 '
+		}
+	}
+
+	// const handleSeatSelect = data => {
+	// 	console.log('selected data', data)
+	// }
+
+	const handleNext = () => {
+		setisOutwardSeat(true)
+	}
+
 	if (!flight)
 		return <div className="text-center mt-20 font-['Lato']">Loading...</div>
 
@@ -93,23 +173,25 @@ export default function SeatSelection() {
 				<div className='flex flex-col lg:flex-row justify-between gap-6'>
 					{/* Left Section: Dynamic Content Based on Active Tab */}
 					<div className='w-full lg:max-w-[680px] order-2 lg:order-1'>
+						<h2 className='mb-4 text-2xl font-semibold'>
+							{!isOutwardSeat ? 'OutWard' : 'Return'} Flight -
+							Seat
+						</h2>
 						<div className='w-full h-auto lg:h-[550px] rounded-md shadow-sm overflow-hidden bg-white'>
 							{/* Tabs */}
 							<div className="flex items-center px-6 bg-[#EE5128] py-3 space-x-8 font-['Plus Jakarta Sans'] text-[16px]">
-								{['Seats', 'Meals', 'Extra luggages'].map(
-									tab => (
-										<span
-											key={tab}
-											onClick={() => setActiveTab(tab)}
-											className={`text-white font-semibold relative flex gap-2 cursor-pointer ${
-												activeTab === tab
-													? 'border-b-2 border-white'
-													: ''
-											}`}>
-											{tab}
-										</span>
-									)
-								)}
+								{['Seats', 'Extra luggages'].map(tab => (
+									<span
+										key={tab}
+										onClick={() => setActiveTab(tab)}
+										className={`text-white font-semibold relative flex gap-2 cursor-pointer ${
+											activeTab === tab
+												? 'border-b-2 border-white'
+												: ''
+										}`}>
+										{tab}
+									</span>
+								))}
 							</div>
 
 							<div className='flex flex-col md:flex-row items-start gap-6 p-6 w-full'>
@@ -117,36 +199,96 @@ export default function SeatSelection() {
 								<div className='w-full md:w-[260px] flex-shrink-0'>
 									{activeTab === 'Seats' && (
 										<>
-											<div className='text-[14px] font-semibold flex justify-between'>
-												<span>
-													{flight?.departureTime}
-												</span>
-												<span>
-													{flight?.arrivalTime}
-												</span>
-											</div>
-											<div className='text-[12px] text-gray-500 flex justify-between mb-1'>
-												<span>
-													{flight.departureCity}
-												</span>
-												<span>
-													{flight.arrivalCity}
-												</span>
-											</div>
-											<div className='text-center text-[12px] text-gray-500 bottom-9 relative'>
-												{flight.duration} ✈
-											</div>
-											<img
-												src={flight.logo}
-												alt='logo'
-												className='h-[40px] object-contain mt-1 mb-1 relative'
-											/>
-											<p className='text-[13px] text-gray-400 relative left-[8px]'>
-												{flight.flightNumber}
-											</p>
-											<p className='bg-green-600 text-white text-[12px] px-2 py-[2px] rounded w-fit bottom-6 left-[65px] relative mt-1'>
-												Business
-											</p>
+											{!isOutwardSeat ? (
+												<>
+													<div className='text-[14px] font-semibold flex justify-between'>
+														<span>
+															{
+																OutwardTicket?.departureTime
+															}
+														</span>
+														<span>
+															{
+																OutwardTicket?.arrivalTime
+															}
+														</span>
+													</div>
+													<div className='text-[12px] text-gray-500 flex justify-between mb-1'>
+														<span>
+															{
+																OutwardTicket.departureCity
+															}
+														</span>
+														<span>
+															{
+																OutwardTicket.arrivalCity
+															}
+														</span>
+													</div>
+													<div className='text-center text-[12px] text-gray-500 bottom-9 relative'>
+														{OutwardTicket.duration}{' '}
+														✈
+													</div>
+													<img
+														src={OutwardTicket.logo}
+														alt='logo'
+														className='h-[40px] object-contain mt-1 mb-1 relative'
+													/>
+													<p className='text-[13px] text-gray-400 relative left-[8px]'>
+														{
+															OutwardTicket.flightNumber
+														}
+													</p>
+													<p className='bg-green-600 text-white text-[12px] px-2 py-[2px] rounded w-fit bottom-6 left-[65px] relative mt-1'>
+														{OutwardTicket.class}
+													</p>
+												</>
+											) : (
+												<>
+													<div className='text-[14px] font-semibold flex justify-between'>
+														<span>
+															{
+																returnTicket?.departureTime
+															}
+														</span>
+														<span>
+															{
+																returnTicket?.arrivalTime
+															}
+														</span>
+													</div>
+													<div className='text-[12px] text-gray-500 flex justify-between mb-1'>
+														<span>
+															{
+																returnTicket.departureCity
+															}
+														</span>
+														<span>
+															{
+																returnTicket.arrivalCity
+															}
+														</span>
+													</div>
+													<div className='text-center text-[12px] text-gray-500 bottom-9 relative'>
+														{returnTicket.duration}{' '}
+														✈
+													</div>
+													<img
+														src={returnTicket.logo}
+														alt='logo'
+														className='h-[40px] object-contain mt-1 mb-1 relative'
+													/>
+													<p className='text-[13px] text-gray-400 relative left-[8px]'>
+														{
+															returnTicket.flightNumber
+														}
+													</p>
+													<p className='bg-green-600 text-white text-[12px] px-2 py-[2px] rounded w-fit bottom-6 left-[65px] relative mt-1'>
+														{returnTicket.class}
+													</p>
+												</>
+											)}
+
 											<div className='mt-5 w-full md:w-[200px] h-[100px]'>
 												<p className='font-semibold text-[14px] mb-2 relative left-2'>
 													Seat fare :
@@ -363,241 +505,367 @@ export default function SeatSelection() {
 								<div className='relative w-full md:w-[300px] md:ml-12 md:bottom-6 mx-auto'>
 									<div className="relative h-[500px] md:h-[540px] bg-[url('/assets/seat-1.png')] bg-cover bg-center overflow-hidden">
 										<div className='h-full w-full overflow-x-hidden overflow-y-auto md:pr-1 no-scrollbar'>
-											<style jsx>{`
-                        .no-scrollbar::-webkit-scrollbar {
-                          display: none;
-                        }
-                        .no-scrollbar {
-                          -ms-overflow-style: none;
-                          scrollbar-width: none;
-                        `}</style>
-											<div className='w-[240px] h-[900px] bg-white rounded-t-[140px] rounded-b-[40px] mt-15 shadow-inner flex flex-col pt-4 px-4 mx-auto'>
+											<div className='w-[240px] min-h-[900px] bg-white rounded-t-[140px] rounded-b-[40px] mt-15 shadow-inner flex flex-col py-4 px-6 mx-auto mb-20'>
 												<div className='flex flex-col items-center flex-shrink-0'>
 													<div className='text-sm font-semibold mb-3'>
 														Front
 													</div>
-													<div className='flex justify-between w-full px-2 mb-2 text-xs font-semibold'>
-														<div className='flex gap-2'>
-															{[
-																'A',
-																'B',
-																'C',
-															].map(l => (
-																<span
-																	key={l}
-																	className='w-5 text-center'>
-																	{l}
-																</span>
-															))}
-														</div>
-														<div className='flex gap-2'>
-															{[
-																'D',
-																'E',
-																'F',
-															].map(l => (
-																<span
-																	key={l}
-																	className='w-5 text-center'>
-																	{l}
-																</span>
-															))}
-														</div>
-													</div>
 												</div>
-												<div className='space-y-2'>
-													{Array.from(
-														{ length: 30 },
-														(_, i) => {
-															const row = i + 1
-															return (
+
+												{!isOutwardSeat
+													? OutwardSortedRows.map(
+															([
+																rowNum,
+																seats,
+															]) => (
 																<div
-																	key={row}
-																	className='flex items-center justify-between gap-2'>
-																	<span className='text-xs w-4 text-right'>
-																		{row}
-																	</span>
-																	<div className='flex gap-1'>
-																		{[
-																			'A',
-																			'B',
-																			'C',
-																		].map(
-																			col => {
-																				const seatId = `${col}${row}`
-																				const isSelected =
-																					selectedSeats.includes(
-																						seatId
-																					)
-																				const isBooked =
-																					[
-																						'C2',
-																						'C4',
-																					].includes(
-																						seatId
-																					)
-																				return (
-																					<div
-																						key={
-																							seatId
-																						}
-																						onClick={() =>
-																							!isBooked &&
-																							handleSeatSelect(
-																								seatId
-																							)
-																						}
-																						className={`w-5 h-5 rounded-sm cursor-pointer ${
-																							isBooked
-																								? 'bg-black'
-																								: isSelected
-																								? 'bg-[#EE5128]'
-																								: 'bg-gray-300'
-																						}`}></div>
-																				)
-																			}
-																		)}
+																	key={rowNum}
+																	className='seat-row flex gap-2 items-center'>
+																	<div className='w-8 text-right font-semibold'>
+																		{rowNum}
 																	</div>
-																	<div className='w-3' />
-																	<div className='flex gap-1'>
-																		{[
-																			'D',
-																			'E',
-																			'F',
-																		].map(
-																			col => {
-																				const seatId = `${col}${row}`
-																				const isSelected =
-																					selectedSeats.includes(
-																						seatId
-																					)
-																				const isBooked =
-																					[
-																						'C2',
-																						'C4',
-																					].includes(
-																						seatId
-																					)
-																				return (
-																					<div
-																						key={
-																							seatId
-																						}
-																						onClick={() =>
-																							!isBooked &&
-																							handleSeatSelect(
-																								seatId
-																							)
-																						}
-																						className={`w-5 h-5 rounded-sm cursor-pointer ${
-																							isBooked
-																								? 'bg-black'
-																								: isSelected
-																								? 'bg-[#EE5128]'
-																								: 'bg-gray-300'
-																						}`}></div>
+																	{seats
+																		.sort(
+																			(
+																				a,
+																				b
+																			) =>
+																				a.column.localeCompare(
+																					b.column
 																				)
-																			}
+																		) // sort columns
+																		.map(
+																			seat => (
+																				<div
+																					key={
+																						seat.seat
+																					}
+																					className={`seat size-6 m-0.5 my-1 rounded flex items-center justify-center text-xs font-medium cursor-pointer   hover:text-white
+								${getSeatColor(seat.type)}`}
+																					title={seat.description.join(
+																						', '
+																					)}
+																					onClick={() =>
+																						handleSeatSelect(
+																							seat
+																						)
+																					}>
+																					{/* {
+																			seat.seat
+																		} */}
+																				</div>
+																			)
 																		)}
-																	</div>
-																	<span className='text-xs w-4 text-left'>
-																		{row}
-																	</span>
 																</div>
 															)
-														}
-													)}
-												</div>
+													  )
+													: ReturnSortedRows.map(
+															([
+																rowNum,
+																seats,
+															]) => (
+																<div
+																	key={rowNum}
+																	className='seat-row flex gap-2 items-center'>
+																	<div className='w-8 text-right font-semibold'>
+																		{rowNum}
+																	</div>
+																	{seats
+																		.sort(
+																			(
+																				a,
+																				b
+																			) =>
+																				a.column.localeCompare(
+																					b.column
+																				)
+																		) // sort columns
+																		.map(
+																			seat => (
+																				<div
+																					key={
+																						seat.seat
+																					}
+																					className={`seat size-6 m-0.5 my-1 rounded flex items-center justify-center text-xs font-medium cursor-pointer   hover:text-white
+								${getSeatColor(seat.type)}`}
+																					title={seat.description.join(
+																						', '
+																					)}
+																					onClick={() =>
+																						handleSeatSelect(
+																							seat
+																						)
+																					}>
+																					{/* {
+																			seat.seat
+																		} */}
+																				</div>
+																			)
+																		)}
+																</div>
+															)
+													  )}
 											</div>
 										</div>
 									</div>
 								</div>
 							</div>
 						</div>
+						<div className='w-full flex mt-4 items-end justify-end'>
+							<button
+								className='bg-[#EE5128] text-white px-6 py-2 mr-10 lg:relative lg:left-5 rounded font-semibold font-jakarta w-full md:w-auto hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200'
+								onClick={() => handleNext()}>
+								Next
+							</button>
+						</div>
 					</div>
 
 					{/* Right Column - On mobile, will display at the top */}
 					<div className='flex flex-col gap-6 w-full lg:max-w-[360px] order-1 lg:order-2'>
 						{/* Booking Details - First on mobile */}
-						<div className='h-auto md:h-[280px] bg-white rounded-[12px] shadow-sm overflow-hidden'>
-							<div className='bg-[#FFE4DB] p-3 rounded-t-[12px]'>
-								<h2 className="font-semibold text-[18px] font-['Plus Jakarta Sans']">
-									{t('booking-details.title')}
-								</h2>
-							</div>
-							<div className='flex justify-between items-center px-6 mt-[20px]'>
-								<div className='text-center'>
-									<p className="text-[20px] font-bold font-['Plus Jakarta Sans']">
-										{/* {flight.departureTime} */}
-										{new Date(
-											flight?.departureTime
-										).toLocaleTimeString([], {
-											hour: '2-digit',
-											minute: '2-digit',
-										})}
-									</p>
-									<p className="text-xs text-gray-500 mt-1 font-['Lato']">
-										{flight.departureCity}
-									</p>
+						{location.state.tripType === 'One way' ? (
+							<div className='max-w-[377px] w-full h-[280px] bg-white rounded-[12px]'>
+								<div className='bg-[#FFE4DB] p-3 rounded-t-[12px]'>
+									<h2 className='font-semibold text-[18px] font-jakarta'>
+										{t('booking-details.title')}
+									</h2>
 								</div>
-								<div className='flex flex-col items-center relative'>
-									<p className="text-xs text-gray-500 mb-[2px] font-['Lato']">
-										{flight.duration}
-									</p>
-									<div className='flex items-center justify-center'>
-										<span className='w-[6px] h-[6px] bg-gray-300 rounded-full' />
-										<div className='border-t border-dashed w-8 border-gray-300 mx-2' />
-										<span className='text-black text-sm'>
-											✈
+
+								<div className='flex justify-between items-center px-6 mt-[20px]'>
+									<div className='text-center'>
+										<p className='text-[20px] font-bold font-jakarta'>
+											{/* {flight.departureTime} */}
+											{OutwardTicket.departureTime}
+										</p>
+										<p className='text-xs text-gray-500 mt-1'>
+											{OutwardTicket.departureCity}
+										</p>
+									</div>
+									<div className='flex flex-col items-center relative'>
+										<p className='text-xs text-gray-500 mb-[2px]'>
+											{OutwardTicket.duration}
+										</p>
+										<div className='flex items-center justify-center'>
+											<span className='w-[6px] h-[6px] bg-gray-300 rounded-full' />
+											<div className='border-t border-dashed w-8 border-gray-300 mx-2' />
+											<span className='text-black text-sm'>
+												✈
+											</span>
+											<div className='border-t border-dashed w-8 border-gray-300 mx-2' />
+											<span className='w-[6px] h-[6px] bg-gray-300 rounded-full' />
+										</div>
+										<div className='mt-[6px] bg-green-600 text-white text-xs px-2 py-[2px] rounded'>
+											{OutwardTicket.class}
+										</div>
+									</div>
+									<div className='text-center'>
+										<p className='text-[20px] font-bold font-jakarta'>
+											{/* {flight.arrivalTime} */}
+											{OutwardTicket?.arrivalTime}
+										</p>
+										<p className='text-xs text-gray-500 mt-1'>
+											{OutwardTicket.arrivalCity}
+										</p>
+									</div>
+								</div>
+
+								<div className='flex justify-between px-6 mt-6'>
+									<div className='text-left w-1/2 border-r pr-4'>
+										<p className='text-sm font-semibold text-black font-jakarta m'>
+											{t('booking-details.departure')}
+										</p>
+										<p className='text-xs text-gray-500 mt-[2px]'>
+											Thu, 06 jul, 2025
+										</p>
+									</div>
+									<div className='text-left w-1/2 pl-4'>
+										<p className='text-sm font-semibold text-black font-jakarta ml-5'>
+											{t('booking-details.landing')}
+										</p>
+										<p className='text-xs text-gray-500 mt-[2px] ml-5'>
+											Thu, 06 jul, 2025
+										</p>
+									</div>
+								</div>
+
+								<div className='flex justify-around mt-6 text-sm font-medium font-jakarta'>
+									<span>{t('booking-details.policy')}</span>
+									<span className='ml-10'>
+										{t('booking-details.refund')}
+									</span>
+									<span>
+										{t('booking-details.reschedule')}
+									</span>
+								</div>
+							</div>
+						) : location.state.tripType === 'Round Trip' ? (
+							<div className='flex flex-col gap-6'>
+								<div className='max-w-[377px] w-full h-[280px] bg-white rounded-[12px]'>
+									<div className='bg-[#FFE4DB] p-3 rounded-t-[12px]'>
+										<h2 className='font-semibold text-[18px] font-jakarta'>
+											{t('booking-details.title')}
+										</h2>
+									</div>
+
+									<div className='flex justify-between items-center px-6 mt-[20px]'>
+										<div className='text-center'>
+											<p className='text-[20px] font-bold font-jakarta'>
+												{/* {flight.departureTime} */}
+												{OutwardTicket?.departureTime}
+											</p>
+											<p className='text-xs text-gray-500 mt-1'>
+												{OutwardTicket.departureCity}
+											</p>
+										</div>
+										<div className='flex flex-col items-center relative'>
+											<p className='text-xs text-gray-500 mb-[2px]'>
+												{OutwardTicket.duration}
+											</p>
+											<div className='flex items-center justify-center'>
+												<span className='w-[6px] h-[6px] bg-gray-300 rounded-full' />
+												<div className='border-t border-dashed w-8 border-gray-300 mx-2' />
+												<span className='text-black text-sm'>
+													✈
+												</span>
+												<div className='border-t border-dashed w-8 border-gray-300 mx-2' />
+												<span className='w-[6px] h-[6px] bg-gray-300 rounded-full' />
+											</div>
+											<div className='mt-[6px] bg-green-600 text-white text-xs px-2 py-[2px] rounded'>
+												{OutwardTicket.class}
+											</div>
+										</div>
+										<div className='text-center'>
+											<p className='text-[20px] font-bold font-jakarta'>
+												{/* {flight.arrivalTime} */}
+												{OutwardTicket?.arrivalTime}
+											</p>
+											<p className='text-xs text-gray-500 mt-1'>
+												{OutwardTicket.arrivalCity}
+											</p>
+										</div>
+									</div>
+
+									<div className='flex justify-between px-6 mt-6'>
+										<div className='text-left w-1/2 border-r pr-4'>
+											<p className='text-sm font-semibold text-black font-jakarta m'>
+												{t('booking-details.departure')}
+											</p>
+											<p className='text-xs text-gray-500 mt-[2px]'>
+												Thu, 06 jul, 2025
+											</p>
+										</div>
+										<div className='text-left w-1/2 pl-4'>
+											<p className='text-sm font-semibold text-black font-jakarta ml-5'>
+												{t('booking-details.landing')}
+											</p>
+											<p className='text-xs text-gray-500 mt-[2px] ml-5'>
+												Thu, 06 jul, 2025
+											</p>
+										</div>
+									</div>
+
+									<div className='flex justify-around mt-6 text-sm font-medium font-jakarta'>
+										<span>
+											{t('booking-details.policy')}
 										</span>
-										<div className='border-t border-dashed w-8 border-gray-300 mx-2' />
-										<span className='w-[6px] h-[6px] bg-gray-300 rounded-full' />
+										<span className='ml-10'>
+											{t('booking-details.refund')}
+										</span>
+										<span>
+											{t('booking-details.reschedule')}
+										</span>
 									</div>
-									<div className="mt-[6px] bg-green-600 text-white text-xs px-2 py-[2px] rounded font-['Lato']">
-										Refundable
+								</div>
+								<div className='max-w-[377px] w-full h-[280px] bg-white rounded-[12px]'>
+									<div className='bg-[#FFE4DB] p-3 rounded-t-[12px]'>
+										<h2 className='font-semibold text-[18px] font-jakarta'>
+											{t('booking-details.title')}
+										</h2>
+									</div>
+
+									<div className='flex justify-between items-center px-6 mt-[20px]'>
+										<div className='text-center'>
+											<p className='text-[20px] font-bold font-jakarta'>
+												{/* {flight.departureTime} */}
+												{returnTicket?.departureTime}
+											</p>
+											<p className='text-xs text-gray-500 mt-1'>
+												{returnTicket.departureCity}
+											</p>
+										</div>
+										<div className='flex flex-col items-center relative'>
+											<p className='text-xs text-gray-500 mb-[2px]'>
+												{returnTicket.duration}
+											</p>
+											<div className='flex items-center justify-center'>
+												<span className='w-[6px] h-[6px] bg-gray-300 rounded-full' />
+												<div className='border-t border-dashed w-8 border-gray-300 mx-2' />
+												<span className='text-black text-sm'>
+													✈
+												</span>
+												<div className='border-t border-dashed w-8 border-gray-300 mx-2' />
+												<span className='w-[6px] h-[6px] bg-gray-300 rounded-full' />
+											</div>
+											<div className='mt-[6px] bg-green-600 text-white text-xs px-2 py-[2px] rounded'>
+												{returnTicket.class}
+											</div>
+										</div>
+										<div className='text-center'>
+											<p className='text-[20px] font-bold font-jakarta'>
+												{/* {flight.arrivalTime} */}
+												{returnTicket?.arrivalTime}
+											</p>
+											<p className='text-xs text-gray-500 mt-1'>
+												{returnTicket.arrivalCity}
+											</p>
+										</div>
+									</div>
+
+									<div className='flex justify-between px-6 mt-6'>
+										<div className='text-left w-1/2 border-r pr-4'>
+											<p className='text-sm font-semibold text-black font-jakarta m'>
+												{t('booking-details.departure')}
+											</p>
+											<p className='text-xs text-gray-500 mt-[2px]'>
+												Thu, 06 jul, 2025
+											</p>
+										</div>
+										<div className='text-left w-1/2 pl-4'>
+											<p className='text-sm font-semibold text-black font-jakarta ml-5'>
+												{t('booking-details.landing')}
+											</p>
+											<p className='text-xs text-gray-500 mt-[2px] ml-5'>
+												Thu, 06 jul, 2025
+											</p>
+										</div>
+									</div>
+
+									<div className='flex justify-around mt-6 text-sm font-medium font-jakarta'>
+										<span>
+											{t('booking-details.policy')}
+										</span>
+										<span className='ml-10'>
+											{t('booking-details.refund')}
+										</span>
+										<span>
+											{t('booking-details.reschedule')}
+										</span>
 									</div>
 								</div>
-								<div className='text-center'>
-									<p className="text-[20px] font-bold font-['Plus Jakarta Sans']">
-										{/* {flight.arrivalTime} */}
-										{new Date(
-											flight?.arrivalTime
-										).toLocaleTimeString([], {
-											hour: '2-digit',
-											minute: '2-digit',
-										})}
-									</p>
-									<p className="text-xs text-gray-500 mt-1 font-['Lato']">
-										{flight.arrivalCity}
-									</p>
+							</div>
+						) : (
+							<div className='max-w-[377px] w-full h-[280px] bg-white rounded-[12px]'>
+								<div className='bg-[#FFE4DB] p-3 rounded-t-[12px]'>
+									<h2 className='font-semibold text-[18px] font-jakarta'>
+										{t('booking-details.title')}
+									</h2>
+								</div>
+
+								<div className='flex justify-between items-center px-6 mt-[20px]'>
+									Some thing error
 								</div>
 							</div>
-							<div className='flex justify-between px-6 mt-6'>
-								<div className='text-left w-1/2 border-r pr-4'>
-									<p className="text-sm font-semibold text-black font-['Plus Jakarta Sans']">
-										{t('booking-details.departure')}
-									</p>
-									<p className="text-xs text-gray-500 mt-[2px] font-['Lato']">
-										Thu, 06 Jul, 2025
-									</p>
-								</div>
-								<div className='text-left w-1/2 pl-4'>
-									<p className="text-sm font-semibold text-black font-['Plus Jakarta Sans']">
-										{t('booking-details.landing')}
-									</p>
-									<p className="text-xs text-gray-500 mt-[2px] font-['Lato']">
-										Thu, 06 Jul, 2025
-									</p>
-								</div>
-							</div>
-							<div className="flex justify-around mt-6 mb-4 text-sm font-medium font-['Plus Jakarta Sans'] ml-2">
-								<span className='relative mr-8'>
-									{t('booking-details.policy')}
-								</span>
-								<span>{t('booking-details.refund')}</span>
-								<span>{t('booking-details.reschedule')}</span>
-							</div>
-						</div>
+						)}
 
 						{/* Price Summary - Second on mobile */}
 						<div className='bg-white rounded-md shadow-sm'>

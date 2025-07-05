@@ -106,6 +106,8 @@ export default function ReviewYourBooking() {
 					routingId: TicketData.routingId,
 					travalers: TicketData.travalers,
 					tripType: TicketData.tripType,
+					seatOption: seatOptions,
+					luggageOptions: LuggageOptions,
 				},
 			})
 		}
