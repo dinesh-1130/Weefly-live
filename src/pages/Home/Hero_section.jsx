@@ -751,59 +751,59 @@
 // };
 
 // export default HeroSection;
-import { ArrowLeftRightIcon, MapPin, Minus, Plus } from 'lucide-react'
-import { useState, useEffect, useRef } from 'react'
-import PaperDesktop from '../../assets/images/paper.svg'
-import PaperMobile from '../../assets/images/paper-mobile.png'
-import TakeOffPlane from '../../assets/images/TakeOffPlane.svg'
-import LandingPlane from '../../assets/images/LandingPlane.svg'
-import DateFrom from '../../assets/images/DateFrom.svg'
-import DateTo from '../../assets/images/DateTo.svg'
-import TravelerIcon from '../../assets/images/TravelerIcon.svg'
-import BannerBottom from '../../assets/images/banner-bottom.png'
-import DatePicker from 'react-datepicker'
-import 'react-datepicker/dist/react-datepicker.css'
-import { useNavigate } from 'react-router'
-import LoadingScreen from '../../components/LoadingScreen'
-import { useTranslation } from 'react-i18next'
-
-import airportsData from '../../constants/airports.json'
-import axios from 'axios'
+import { ArrowLeftRightIcon, MapPin, Minus, Plus } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import PaperDesktop from "../../assets/images/paper.svg";
+import PaperMobile from "../../assets/images/paper-mobile.png";
+import TakeOffPlane from "../../assets/images/TakeOffPlane.svg";
+import LandingPlane from "../../assets/images/LandingPlane.svg";
+import DateFrom from "../../assets/images/DateFrom.svg";
+import DateTo from "../../assets/images/DateTo.svg";
+import TravelerIcon from "../../assets/images/TravelerIcon.svg";
+import BannerBottom from "../../assets/images/banner-bottom.png";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { useNavigate } from "react-router";
+import LoadingScreen from "../../components/LoadingScreen";
+import { useTranslation } from "react-i18next";
+import { fetchExchangeRates, convertToRequestedCurrency } from '../../utils/Currencyconverter';
+import airportsData from "../../constants/airports.json";
+import axios from "axios";
 
 const HeroSection = () => {
-	const { t } = useTranslation()
-	const navigate = useNavigate()
-	const [from, setFrom] = useState('')
-	const [to, setTo] = useState('')
-	const [travelers, setTravelers] = useState(1)
-	const [travelClass, setTravelClass] = useState('Economy')
-	const [showDropdown, setShowDropdown] = useState(false)
-	const dropdownRef = useRef(null)
-	const [travelType, setTravelType] = useState('Adult')
-	const [adults, setAdults] = useState(1)
-	const [children, setChildren] = useState(0)
-	const [origin, setOrigin] = useState('')
-	const [destination, setDestination] = useState('')
-	const [flightReturnDate, setflightReturnDate] = useState(null)
-	const [searchCount, setSearchCount] = useState(0)
-	const [flightsData, setFlightsData] = useState([])
-	const [loading, setLoading] = useState(false)
-	const [tripType, setTripType] = useState('Round Trip')
-	const [flightTypeFilter, setFlightTypeFilter] = useState('Domestic')
-	const [isDirectFlight, setIsDirectFlight] = useState(false)
-	const [flightDepatureDate, setflightDepatureDate] = useState(new Date())
-	const [routingId, setRoutingId] = useState('')
-	const [searchData, setSearchdata] = useState({
-		from: '',
-		to: '',
-		flightDepatureDate: null,
-		flightReturnDate: null,
-		travelClass: '',
-	})
-	const [travellers, setTravellers] = useState([30])
-	const [airposts, setAirposts] = useState([])
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [travelers, setTravelers] = useState(1);
+  const [travelClass, setTravelClass] = useState("Economy");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+  const [travelType, setTravelType] = useState("Adult");
+  const [adults, setAdults] = useState(1);
+  const [children, setChildren] = useState(0);
+  const [origin, setOrigin] = useState("");
+  const [destination, setDestination] = useState("");
+  const [flightReturnDate, setflightReturnDate] = useState(null);
+  const [searchCount, setSearchCount] = useState(0);
+  const [flightsData, setFlightsData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [tripType, setTripType] = useState("Round Trip");
+  const [flightTypeFilter, setFlightTypeFilter] = useState("Domestic");
+  const [isDirectFlight, setIsDirectFlight] = useState(false);
+  const [flightDepatureDate, setflightDepatureDate] = useState(new Date());
+  const [routingId, setRoutingId] = useState("");
+  const [searchData, setSearchdata] = useState({
+    from: "",
+    to: "",
+    flightDepatureDate: null,
+    flightReturnDate: null,
+    travelClass: "",
+  });
+  const [travellers, setTravellers] = useState([30]);
+  const [airposts, setAirposts] = useState([]);
 
-	/* const handleDate = (newDate) => {
+  /* const handleDate = (newDate) => {
     if (!newDate) return null;
     const selectedDate = new Date(newDate);
     const year = selectedDate.getFullYear();
@@ -886,221 +886,215 @@ const HeroSection = () => {
     setSearchCount((prev) => prev + 1);
   }; */
 
-	const handleTravelFusionDate = newDate => {
-		if (!newDate) {
-			return
-		} // Handle null or invalid date
-		else {
-			// Ensure newDate is a Date object
-			const selectedDate = new Date(newDate)
+  const handleTravelFusionDate = (newDate) => {
+    if (!newDate) {
+      return;
+    } // Handle null or invalid date
+    else {
+      // Ensure newDate is a Date object
+      const selectedDate = new Date(newDate);
 
-			const year = selectedDate.getFullYear()
-			const month = String(selectedDate.getMonth() + 1).padStart(2, '0')
-			const day = String(selectedDate.getDate()).padStart(2, '0')
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+      const day = String(selectedDate.getDate()).padStart(2, "0");
 
-			const formattedDate = `${day}/${month}/${year}`
-			return formattedDate
-		}
-	}
+      const formattedDate = `${day}/${month}/${year}`;
+      return formattedDate;
+    }
+  };
 
-	const handleTravelfusionSearch = e => {
-		e.preventDefault()
+  const handleTravelfusionSearch = (e) => {
+    e.preventDefault();
 
-		const formattedFlightDepatureDate =
-			handleTravelFusionDate(flightDepatureDate) + '-00:01'
+    const formattedFlightDepatureDate =
+      handleTravelFusionDate(flightDepatureDate) + "-00:01";
 
-		console.log({
-			from,
-			to,
-			flightDepatureDate,
-			flightReturnDate,
-			travelClass,
-		})
-		if (flightReturnDate !== null && tripType == 'Round Trip') {
-			const formattedFlightReturnDate =
-				handleTravelFusionDate(flightReturnDate) + '-23:59'
-			setSearchdata({
-				from: from,
-				to: to,
-				flightDepatureDate: formattedFlightDepatureDate,
-				flightReturnDate: formattedFlightReturnDate,
-				travelClass: travelClass,
-			})
-		} else {
-			setSearchdata({
-				from: from,
-				to: to,
-				flightDepatureDate: formattedFlightDepatureDate,
-				travelClass: travelClass,
-			})
-			setflightReturnDate(null)
-		}
-		console.log(adults)
-		setOrigin(from)
-		setDestination(to)
-		setSearchCount(prev => prev + 1)
-	}
+    console.log({
+      from,
+      to,
+      flightDepatureDate,
+      flightReturnDate,
+      travelClass,
+    });
+    if (flightReturnDate !== null && tripType == "Round Trip") {
+      const formattedFlightReturnDate =
+        handleTravelFusionDate(flightReturnDate) + "-23:59";
+      setSearchdata({
+        from: from,
+        to: to,
+        flightDepatureDate: formattedFlightDepatureDate,
+        flightReturnDate: formattedFlightReturnDate,
+        travelClass: travelClass,
+      });
+    } else {
+      setSearchdata({
+        from: from,
+        to: to,
+        flightDepatureDate: formattedFlightDepatureDate,
+        travelClass: travelClass,
+      });
+      setflightReturnDate(null);
+    }
+    console.log(adults);
+    setOrigin(from);
+    setDestination(to);
+    setSearchCount((prev) => prev + 1);
+  };
 
-	const travelFusionBackendUrl = import.meta.env.VITE_BACKEND_URL
-	useEffect(() => {
-		// make an array of N adults
-		const adult = Array(adults).fill(30)
-		// make an array of N children
-		const child = Array(children).fill(7)
-		// combine them
-		setTravellers([...adult, ...child])
-	}, [adults, children])
+  const travelFusionBackendUrl = import.meta.env.VITE_BACKEND_URL;
+  useEffect(() => {
+    // make an array of N adults
+    const adult = Array(adults).fill(30);
+    // make an array of N children
+    const child = Array(children).fill(7);
+    // combine them
+    setTravellers([...adult, ...child]);
+  }, [adults, children]);
 
-	// Fetch flights based on the search parameters
-	useEffect(() => {
-		const fetchFlights = async () => {
-			console.log('Travelfusion routing API Call')
-			try {
-				const requestBody = {
-					mode: 'plane',
-					origin: {
-						descriptor: from,
-					},
-					destination: {
-						descriptor: to,
-					},
-					dateOfSearch:
-						handleTravelFusionDate(flightDepatureDate) + '-00:01',
-					travellers: travellers,
-					incrementalResults: true,
-					// this will **conditionally add** returnDateOfSearch if flightReturnDate exists
-					...(flightReturnDate && {
-						returnDateOfSearch:
-							handleTravelFusionDate(flightReturnDate) + '-23:59',
-					}),
-				}
+  // Fetch flights based on the search parameters
+  useEffect(() => {
+    const fetchFlights = async () => {
+      console.log("Travelfusion routing API Call");
+      try {
+        const requestBody = {
+          mode: "plane",
+          origin: {
+            descriptor: from,
+          },
+          destination: {
+            descriptor: to,
+          },
+          dateOfSearch: handleTravelFusionDate(flightDepatureDate) + "-00:01",
+          travellers: travellers,
+          incrementalResults: true,
+          // this will **conditionally add** returnDateOfSearch if flightReturnDate exists
+          ...(flightReturnDate && {
+            returnDateOfSearch:
+              handleTravelFusionDate(flightReturnDate) + "-23:59",
+          }),
+        };
 
-				console.log(requestBody)
+        console.log(requestBody);
 
-				const response = await fetch(
-					`${travelFusionBackendUrl}/start-routing`,
-					{
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json',
-						},
-						body: JSON.stringify(requestBody),
-					}
-				)
+        const response = await fetch(
+          `${travelFusionBackendUrl}/start-routing`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(requestBody),
+          }
+        );
 
-				if (!response.ok) {
-					throw new Error('Failed to fetch flight data')
-				}
+        if (!response.ok) {
+          throw new Error("Failed to fetch flight data");
+        }
 
-				const data = await response.json()
-				console.log(data)
-				setRoutingId(data.routingId)
-			} catch (error) {
-				console.error(error)
-			}
-		}
+        const data = await response.json();
+        console.log(data);
+        setRoutingId(data.routingId);
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
-		fetchFlights()
-	}, [searchCount])
+    fetchFlights();
+  }, [searchCount]);
 
-	useEffect(() => {
-		const fetchFlights = async () => {
-			console.log('Travelfusion Search API Call')
-			try {
-				const response = await fetch(
-					`${travelFusionBackendUrl}/check-routing`,
-					{
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json',
-						},
-						body: JSON.stringify({
-							routingId: routingId,
-						}),
-					}
-				)
+  useEffect(() => {
+    const fetchFlights = async () => {
+      console.log("Travelfusion Search API Call");
+      try {
+        const response = await fetch(
+          `${travelFusionBackendUrl}/check-routing`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              routingId: routingId,
+            }),
+          }
+        );
 
-				if (!response.ok) {
-					throw new Error('Failed to fetch flight data')
-				}
+        if (!response.ok) {
+          throw new Error("Failed to fetch flight data");
+        }
 
-				const data = await response.json()
+        const data = await response.json();
 
-				const routerList = data.flightList[0].Router
+        const routerList = data.flightList[0].Router;
+        const rates = await fetchExchangeRates("CVE");
+        const simplifiedFlights = routerList.flatMap((supplier) => {
+          const groups = supplier.GroupList || [];
+          return groups.flatMap((groupContainer) => {
+            const groupItems = groupContainer.Group || [];
 
-				const simplifiedFlights = routerList.flatMap(supplier => {
-					const groups = supplier.GroupList || []
-					return groups.flatMap(groupContainer => {
-						const groupItems = groupContainer.Group || []
+            return groupItems.flatMap((group) => {
+              const outwardList = group.OutwardList?.[0]?.Outward || [];
+              const allFlights = [...outwardList];
 
-						return groupItems.flatMap(group => {
-							const outwardList =
-								group.OutwardList?.[0]?.Outward || []
-							const allFlights = [...outwardList]
+              return allFlights
+                .map((flight) => {
+                  const segment = flight.SegmentList?.[0]?.Segment?.[0];
+                  if (!segment) return null; // guard
 
-							return allFlights
-								.map(flight => {
-									const segment =
-										flight.SegmentList?.[0]?.Segment?.[0]
-									if (!segment) return null // guard
+                  const origin = segment?.Origin?.[0];
+                  const destination = segment?.Destination?.[0];
+                  const logo = segment?.Operator?.[0]?.Name?.[0].toLowerCase();
+				                  const originalPrice = parseFloat(
+                  flight.Price?.[0]?.Amount?.[0] || "0"
+                );
+                const originalCurrency =
+                  flight.Price?.[0]?.Currency?.[0] || "N/A";
+                let convertedPrice = originalPrice;
 
-									const origin = segment?.Origin?.[0]
-									const destination =
-										segment?.Destination?.[0]
-									const logo =
-										segment?.Operator?.[0]?.Name?.[0].toLowerCase()
-									return {
-										id: flight.Id?.[0] || 'N/A',
-										airline:
-											segment?.Operator?.[0]?.Name?.[0] ||
-											'Unknown Airline',
-										logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
-										flightNumber:
-											segment?.FlightId?.[0]?.Code?.[0] ||
-											'N/A',
-										class:
-											segment?.TravelClass?.[0]
-												?.TfClass?.[0] || 'Wrong',
-										departureTime:
-											segment?.DepartDate?.[0]?.split(
-												'-'
-											)[1] || 'N/A',
-										departureCity:
-											origin?.Code?.[0] || 'N/A',
-										arrivalTime:
-											segment?.ArriveDate?.[0]?.split(
-												'-'
-											)[1] || 'N/A',
-										arrivalCity:
-											destination?.Code?.[0] || 'N/A',
-										duration:
-											Math.round(
-												(Number(
-													segment?.Duration?.[0]
-												) || 0) / 60
-											) + 'hr',
-										price: parseFloat(
-											flight.Price?.[0]?.Amount?.[0] ||
-												'0'
-										),
-										originalPrice:
-											parseFloat(
-												flight.Price?.[0]
-													?.Amount?.[0] || '0'
-											) + 50,
-										currency:
-											flight.Price?.[0]?.Currency?.[0] ||
-											'GBP',
-									}
-								})
-								.filter(Boolean)
-						})
-					})
-				})
+                try {
+                  convertedPrice = parseFloat(
+                    convertToRequestedCurrency(
+                      originalPrice,
+                      originalCurrency,
+                      "CVE",
+                      rates
+                    ).toFixed(2)
+                  );
+                } catch (err) {
+                  console.error("Currency conversion failed", err.message);
+                  convertedPrice = originalPrice; // fallback
+                }
+                  return {
+                    id: flight.Id?.[0] || "N/A",
+                    airline:
+                      segment?.Operator?.[0]?.Name?.[0] || "Unknown Airline",
+                    logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
+                    flightNumber: segment?.FlightId?.[0]?.Code?.[0] || "N/A",
+                    class: segment?.TravelClass?.[0]?.TfClass?.[0] || "Wrong",
+                    departureTime:
+                      segment?.DepartDate?.[0]?.split("-")[1] || "N/A",
+                    departureCity: origin?.Code?.[0] || "N/A",
+                    arrivalTime:
+                      segment?.ArriveDate?.[0]?.split("-")[1] || "N/A",
+                    arrivalCity: destination?.Code?.[0] || "N/A",
+                    duration:
+                      Math.round((Number(segment?.Duration?.[0]) || 0) / 60) +
+                      "hr",
+                  originalPrice: convertedPrice,
+                  price: convertedPrice,
+                  convertedcurrencyfrom: originalCurrency,
+                  convertedPricefrom: originalPrice,
+                  currency: "CVE",
+                  };
+                })
+                .filter(Boolean);
+            });
+          });
+        });
 
-				console.log('simplifiedFlights', simplifiedFlights)
-				setFlightsData(simplifiedFlights)
-				/* const simplifiedFlightsGroup = routerList.flatMap((supplier) => {
+        console.log("simplifiedFlights", simplifiedFlights);
+        setFlightsData(simplifiedFlights);
+        /* const simplifiedFlightsGroup = routerList.flatMap((supplier) => {
           const groups = supplier.GroupList || [];
           return groups.flatMap((groupContainer) => {
             const groupItems = groupContainer.Group || [];
@@ -1190,334 +1184,310 @@ const HeroSection = () => {
           });
         }); */
 
-				const simplifiedFlightsGroup = routerList.flatMap(supplier => {
-					const groups = supplier.GroupList || []
-					return groups.flatMap(groupContainer => {
-						const groupItems = groupContainer.Group || []
-						return groupItems.flatMap(group => {
-							const outwardList =
-								group.OutwardList?.[0]?.Outward || []
-							const returnList =
-								group.ReturnList?.[0]?.Return || []
-							const outwardFlights = outwardList
-								.map(flight => {
-									const segment =
-										flight.SegmentList?.[0]?.Segment?.[0]
-									if (!segment) return null
+        const simplifiedFlightsGroup = routerList.flatMap((supplier) => {
+          const groups = supplier.GroupList || [];
+          return groups.flatMap((groupContainer) => {
+            const groupItems = groupContainer.Group || [];
+            return groupItems.flatMap((group) => {
+              const outwardList = group.OutwardList?.[0]?.Outward || [];
+              const returnList = group.ReturnList?.[0]?.Return || [];
+              const outwardFlights = outwardList
+                .map((flight) => {
+                  const segment = flight.SegmentList?.[0]?.Segment?.[0];
+                  if (!segment) return null;
 
-									const origin = segment?.Origin?.[0]
-									const destination =
-										segment?.Destination?.[0]
-									const logo =
-										segment?.Operator?.[0]?.Name?.[0].toLowerCase()
+                  const origin = segment?.Origin?.[0];
+                  const destination = segment?.Destination?.[0];
+                  const logo = segment?.Operator?.[0]?.Name?.[0].toLowerCase();
+				                  const originalPrice = parseFloat(
+                  flight.Price?.[0]?.Amount?.[0] || "0"
+                );
+                const originalCurrency =
+                  flight.Price?.[0]?.Currency?.[0] || "N/A";
+                let convertedPrice = originalPrice;
 
-									return {
-										id: flight.Id?.[0] || 'N/A',
-										airline:
-											segment?.Operator?.[0]?.Name?.[0] ||
-											'Unknown Airline',
-										logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
-										flightNumber:
-											segment?.FlightId?.[0]?.Code?.[0] ||
-											'N/A',
-										class:
-											segment?.TravelClass?.[0]
-												?.SupplierClass?.[0] ||
-											'Economy',
-										departureTime:
-											segment?.DepartDate?.[0]?.split(
-												'-'
-											)[1] || 'N/A',
-										departureCity:
-											origin?.Code?.[0] || 'N/A',
-										arrivalTime:
-											segment?.ArriveDate?.[0]?.split(
-												'-'
-											)[1] || 'N/A',
-										arrivalCity:
-											destination?.Code?.[0] || 'N/A',
-										duration:
-											Math.round(
-												(Number(
-													segment?.Duration?.[0]
-												) || 0) / 60
-											) + 'hr',
-										price: parseFloat(
-											flight.Price?.[0]?.Amount?.[0] ||
-												'0'
-										),
-										originalPrice:
-											parseFloat(
-												flight.Price?.[0]
-													?.Amount?.[0] || '0'
-											) + 50,
-										currency:
-											flight.Price?.[0]?.Currency?.[0] ||
-											'GBP',
-										type: 'outward',
-									}
-								})
-								.filter(Boolean)
-							const returnFlights = returnList
-								.map(flight => {
-									const segment =
-										flight.SegmentList?.[0]?.Segment?.[0]
-									if (!segment) return null
+                try {
+                  convertedPrice = parseFloat(
+                    convertToRequestedCurrency(
+                      originalPrice,
+                      originalCurrency,
+                      "CVE",
+                      rates
+                    ).toFixed(2)
+                  );
+                } catch (err) {
+                  console.error("Currency conversion failed", err.message);
+                  convertedPrice = originalPrice; // fallback
+                }
 
-									const origin = segment?.Origin?.[0]
-									const destination =
-										segment?.Destination?.[0]
-									const logo =
-										segment?.Operator?.[0]?.Name?.[0].toLowerCase()
+                  return {
+                    id: flight.Id?.[0] || "N/A",
+                    airline:
+                      segment?.Operator?.[0]?.Name?.[0] || "Unknown Airline",
+                    logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
+                    flightNumber: segment?.FlightId?.[0]?.Code?.[0] || "N/A",
+                    class:
+                      segment?.TravelClass?.[0]?.SupplierClass?.[0] ||
+                      "Economy",
+                    departureTime:
+                      segment?.DepartDate?.[0]?.split("-")[1] || "N/A",
+                    departureCity: origin?.Code?.[0] || "N/A",
+                    arrivalTime:
+                      segment?.ArriveDate?.[0]?.split("-")[1] || "N/A",
+                    arrivalCity: destination?.Code?.[0] || "N/A",
+                    duration:
+                      Math.round((Number(segment?.Duration?.[0]) || 0) / 60) +
+                      "hr",
+                  originalPrice: convertedPrice,
+                  price: convertedPrice,
+                  convertedcurrencyfrom: originalCurrency,
+                  convertedPricefrom: originalPrice,
+                  currency: "CVE",
+                    type: "outward",
+                  };
+                })
+                .filter(Boolean);
+              const returnFlights = returnList
+                .map((flight) => {
+                  const segment = flight.SegmentList?.[0]?.Segment?.[0];
+                  if (!segment) return null;
 
-									return {
-										id: flight.Id?.[0] || 'N/A',
-										airline:
-											segment?.Operator?.[0]?.Name?.[0] ||
-											'Unknown Airline',
-										logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
-										flightNumber:
-											segment?.FlightId?.[0]?.Code?.[0] ||
-											'N/A',
-										class:
-											segment?.TravelClass?.[0]
-												?.SupplierClass?.[0] ||
-											'Economy',
-										departureTime:
-											segment?.DepartDate?.[0]?.split(
-												'-'
-											)[1] || 'N/A',
-										departureCity:
-											origin?.Code?.[0] || 'N/A',
-										arrivalTime:
-											segment?.ArriveDate?.[0]?.split(
-												'-'
-											)[1] || 'N/A',
-										arrivalCity:
-											destination?.Code?.[0] || 'N/A',
-										duration:
-											Math.round(
-												(Number(
-													segment?.Duration?.[0]
-												) || 0) / 60
-											) + 'hr',
-										price: parseFloat(
-											flight.Price?.[0]?.Amount?.[0] ||
-												'0'
-										),
-										originalPrice:
-											parseFloat(
-												flight.Price?.[0]
-													?.Amount?.[0] || '0'
-											) + 50,
-										currency:
-											flight.Price?.[0]?.Currency?.[0] ||
-											'GBP',
-										type: 'return',
-									}
-								})
-								.filter(Boolean)
-							return [...outwardFlights, ...returnFlights]
-						})
-					})
-				})
-				console.log('simplifiedflightgroup', simplifiedFlightsGroup)
+                  const origin = segment?.Origin?.[0];
+                  const destination = segment?.Destination?.[0];
+                  const logo = segment?.Operator?.[0]?.Name?.[0].toLowerCase();
+                const originalPrice = parseFloat(
+                  flight.Price?.[0]?.Amount?.[0] || "0"
+                );
+                const originalCurrency =
+                  flight.Price?.[0]?.Currency?.[0] || "N/A";
+                let convertedPrice = originalPrice;
 
-				navigate('/list', {
-					state: {
-						FightSearchData: searchData,
-						oneWay: simplifiedFlights,
-						roundTrip: simplifiedFlightsGroup,
-						tripType: tripType,
-						routingId: routingId,
-					},
-				})
-			} catch (error) {
-				console.error(error)
-			}
-		}
+                try {
+                  convertedPrice = parseFloat(
+                    convertToRequestedCurrency(
+                      originalPrice,
+                      originalCurrency,
+                      "CVE",
+                      rates
+                    ).toFixed(2)
+                  );
+                } catch (err) {
+                  console.error("Currency conversion failed", err.message);
+                  convertedPrice = originalPrice; // fallback
+                }
+				
+                  return {
+                    id: flight.Id?.[0] || "N/A",
+                    airline:
+                      segment?.Operator?.[0]?.Name?.[0] || "Unknown Airline",
+                    logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
+                    flightNumber: segment?.FlightId?.[0]?.Code?.[0] || "N/A",
+                    class:
+                      segment?.TravelClass?.[0]?.SupplierClass?.[0] ||
+                      "Economy",
+                    departureTime:
+                      segment?.DepartDate?.[0]?.split("-")[1] || "N/A",
+                    departureCity: origin?.Code?.[0] || "N/A",
+                    arrivalTime:
+                      segment?.ArriveDate?.[0]?.split("-")[1] || "N/A",
+                    arrivalCity: destination?.Code?.[0] || "N/A",
+                    duration:
+                      Math.round((Number(segment?.Duration?.[0]) || 0) / 60) +
+                      "hr",
+                  originalPrice: convertedPrice,
+                  price: convertedPrice,
+                  convertedcurrencyfrom: originalCurrency,
+                  convertedPricefrom: originalPrice,
+                  currency: "CVE",
+                    type: "return",
+                  };
+                })
+                .filter(Boolean);
+              return [...outwardFlights, ...returnFlights];
+            });
+          });
+        });
+        console.log("simplifiedflightgroup", simplifiedFlightsGroup);
 
-		fetchFlights()
-	}, [routingId])
+        navigate("/list", {
+          state: {
+            FightSearchData: searchData,
+            oneWay: simplifiedFlights,
+            roundTrip: simplifiedFlightsGroup,
+            tripType: tripType,
+            routingId: routingId,
+          },
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
-	useEffect(() => {
-		const handleClickOutside = event => {
-			if (
-				dropdownRef.current &&
-				!dropdownRef.current.contains(event.target)
-			) {
-				setShowDropdown(false)
-			}
-		}
-		document.addEventListener('mousedown', handleClickOutside)
-		return () =>
-			document.removeEventListener('mousedown', handleClickOutside)
-	}, [])
+    fetchFlights();
+  }, [routingId]);
 
-	useEffect(() => {
-		const fetchAirport = async () => {
-			try {
-				const res = await axios.get(
-					`${travelFusionBackendUrl}/get-airportlist`
-				)
-				setAirposts(res.data.Airportdata)
-			} catch (error) {
-				console.error(error)
-			}
-		}
-		fetchAirport()
-	}, [])
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-	if (loading) return <LoadingScreen />
-	return (
-		<>
-			<div
-				className={`py-52 relative bg-white/10 bg-[url('/banner-img.png')]
-        bg-cover bg-center bg-no-repeat flex flex-col justify-center items-center px-4 lg:px-10 xl:px-40 overflow-hidden`}>
-				<div className='h-full w-full flex flex-col justify-center items-center'>
-					<div className='mt-8 h-full w-full flex flex-col justify-center items-center gap-2'>
-						<h1
-							data-aos='fade-up'
-							className='text-4xl xl:text-5xl font-semibold text-center font-jakarta text-white'>
-							{t('hero.title')}
-						</h1>
-						<div
-							data-aos='fade-up'
-							className='relative pl-20 hidden lg:block'>
-							<img
-								src={PaperDesktop}
-								alt='banner-2'
-								height={171}
-								width={662}
-								className='relative h-20 mix-blend-screen'
-							/>
-							<p className='absolute top-7 left-36 z-[1px] text-black font-semibold text-base font-sans'>
-								{t('hero.description')}
-							</p>
-						</div>
-						<div
-							data-aos='fade-up'
-							className='relative block lg:hidden mt-4 mb-4'>
-							<img
-								src={PaperMobile}
-								alt='banner-2'
-								height={100}
-								width={443}
-								className='relative h-20 -mb-10'
-							/>
-							<p className='absolute top-5 left-1/2 -translate-x-1/2 leading-5 z-[1px] text-black font-semibold text-sm sm:text-base font-sans text-center'>
-								{t('hero.description')}
-							</p>
-						</div>
-						<div className='w-full -mb-30 mt-10 font-sans block z-10'>
-							<p
-								data-aos='fade-left'
-								className='text-[18px] tracking-wider text-white font-bold mb-6 font-sans'>
-								{t('hero.bookNow')}
-							</p>
-							<form
-								onSubmit={handleTravelfusionSearch}
-								className='w-full max-w-6xl bg-white rounded-xl shadow-lg px-4 py-1 z-10 min-h-[168px] mt-5'>
-								{/* Filters Row */}
-								<div className='flex items-start justify-between flex-wrap gap-4 mb-5'>
-									<div className='flex flex-col sm:flex-row gap-6'>
-										{['One Way', 'Round Trip'].map(type => (
-											<label
-												key={type}
-												className='flex items-center gap-2 cursor-pointer'>
-												<div
-													className={`w-4 h-4 rounded-full border-2 flex items-center justify-center translate-y-4 translate-x-4 ${
-														tripType === type
-															? 'bg-[#EE5128] border-[#EE5128] text-white'
-															: 'bg-gray-300 border-gray-300'
-													}`}>
-													{tripType === type && (
-														<span className='text-[10px] font-bold'>
-															✓
-														</span>
-													)}
-												</div>
-												<span
-													className={`text-sm translate-y-4 translate-x-4 ${
-														tripType === type
-															? 'font-semibold text-black'
-															: 'text-gray-500'
-													}`}>
-													{type}
-												</span>
-												<input
-													type='radio'
-													name='tripType'
-													className='hidden'
-													value={type}
-													checked={tripType === type}
-													onChange={() =>
-														setTripType(type)
-													}
-												/>
-											</label>
-										))}
-									</div>
+  useEffect(() => {
+    const fetchAirport = async () => {
+      try {
+        const res = await axios.get(
+          `${travelFusionBackendUrl}/get-airportlist`
+        );
+        setAirposts(res.data.Airportdata);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchAirport();
+  }, []);
 
-									<label className='flex items-center gap-2 ml-auto cursor-pointer'>
-										<div
-											className={`w-4 h-4 rounded-full border-2 flex items-center justify-center translate-y-4 -translate-x-18  ${
-												isDirectFlight
-													? 'bg-[#EE5128] border-[#EE5128] text-white'
-													: 'bg-gray-300 border-gray-300'
-											}`}
-											onClick={() =>
-												setIsDirectFlight(
-													!isDirectFlight
-												)
-											}>
-											{isDirectFlight && (
-												<span className='text-[10px] font-bold'>
-													✓
-												</span>
-											)}
-										</div>
-										<span
-											className={`text-sm translate-y-4 -translate-x-18   ${
-												isDirectFlight
-													? 'font-semibold text-black'
-													: 'text-gray-500'
-											}`}
-											onClick={() =>
-												setIsDirectFlight(
-													!isDirectFlight
-												)
-											}>
-											Direct flight only
-										</span>
-									</label>
-								</div>
+  if (loading) return <LoadingScreen />;
+  return (
+    <>
+      <div
+        className={`py-52 relative bg-white/10 bg-[url('/banner-img.png')]
+        bg-cover bg-center bg-no-repeat flex flex-col justify-center items-center px-4 lg:px-10 xl:px-40 overflow-hidden`}
+      >
+        <div className="h-full w-full flex flex-col justify-center items-center">
+          <div className="mt-8 h-full w-full flex flex-col justify-center items-center gap-2">
+            <h1
+              data-aos="fade-up"
+              className="text-4xl xl:text-5xl font-semibold text-center font-jakarta text-white"
+            >
+              {t("hero.title")}
+            </h1>
+            <div data-aos="fade-up" className="relative pl-20 hidden lg:block">
+              <img
+                src={PaperDesktop}
+                alt="banner-2"
+                height={171}
+                width={662}
+                className="relative h-20 mix-blend-screen"
+              />
+              <p className="absolute top-7 left-36 z-[1px] text-black font-semibold text-base font-sans">
+                {t("hero.description")}
+              </p>
+            </div>
+            <div
+              data-aos="fade-up"
+              className="relative block lg:hidden mt-4 mb-4"
+            >
+              <img
+                src={PaperMobile}
+                alt="banner-2"
+                height={100}
+                width={443}
+                className="relative h-20 -mb-10"
+              />
+              <p className="absolute top-5 left-1/2 -translate-x-1/2 leading-5 z-[1px] text-black font-semibold text-sm sm:text-base font-sans text-center">
+                {t("hero.description")}
+              </p>
+            </div>
+            <div className="w-full -mb-30 mt-10 font-sans block z-10">
+              <p
+                data-aos="fade-left"
+                className="text-[18px] tracking-wider text-white font-bold mb-6 font-sans"
+              >
+                {t("hero.bookNow")}
+              </p>
+              <form
+                onSubmit={handleTravelfusionSearch}
+                className="w-full max-w-6xl bg-white rounded-xl shadow-lg px-4 py-1 z-10 min-h-[168px] mt-5"
+              >
+                {/* Filters Row */}
+                <div className="flex items-start justify-between flex-wrap gap-4 mb-5">
+                  <div className="flex flex-col sm:flex-row gap-6">
+                    {["One Way", "Round Trip"].map((type) => (
+                      <label
+                        key={type}
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        <div
+                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center translate-y-4 translate-x-4 ${
+                            tripType === type
+                              ? "bg-[#EE5128] border-[#EE5128] text-white"
+                              : "bg-gray-300 border-gray-300"
+                          }`}
+                        >
+                          {tripType === type && (
+                            <span className="text-[10px] font-bold">✓</span>
+                          )}
+                        </div>
+                        <span
+                          className={`text-sm translate-y-4 translate-x-4 ${
+                            tripType === type
+                              ? "font-semibold text-black"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          {type}
+                        </span>
+                        <input
+                          type="radio"
+                          name="tripType"
+                          className="hidden"
+                          value={type}
+                          checked={tripType === type}
+                          onChange={() => setTripType(type)}
+                        />
+                      </label>
+                    ))}
+                  </div>
 
-								{/* Main Inputs Row */}
-								<div className='flex flex-col md:flex-row gap-1'>
-									{/* From-To Section */}
-									<div className='flex items-center w-full md:w-[660px] min-h-[90px] rounded-xl border border-gray-200 overflow-hidden relative'>
-										{/* FROM */}
-										{/* FROM */}
-										<div className='flex-1 px-4 py-3'>
-											<label className='text-xs text-gray-500'>
-												From
-											</label>
-											<input
-												type='text'
-												value={from}
-												onChange={e =>
-													setFrom(e.target.value)
-												}
-												placeholder='[HYD] Rajiv Gandhi International Airport'
-												className={`text-[18px] font-semibold outline-none w-full bg-transparent ${
-													from
-														? 'text-black'
-														: 'text-[#64748B]'
-												}`}
-											/>
+                  <label className="flex items-center gap-2 ml-auto cursor-pointer">
+                    <div
+                      className={`w-4 h-4 rounded-full border-2 flex items-center justify-center translate-y-4 -translate-x-18  ${
+                        isDirectFlight
+                          ? "bg-[#EE5128] border-[#EE5128] text-white"
+                          : "bg-gray-300 border-gray-300"
+                      }`}
+                      onClick={() => setIsDirectFlight(!isDirectFlight)}
+                    >
+                      {isDirectFlight && (
+                        <span className="text-[10px] font-bold">✓</span>
+                      )}
+                    </div>
+                    <span
+                      className={`text-sm translate-y-4 -translate-x-18   ${
+                        isDirectFlight
+                          ? "font-semibold text-black"
+                          : "text-gray-500"
+                      }`}
+                      onClick={() => setIsDirectFlight(!isDirectFlight)}
+                    >
+                      Direct flight only
+                    </span>
+                  </label>
+                </div>
 
-											{/* <select
+                {/* Main Inputs Row */}
+                <div className="flex flex-col md:flex-row gap-1">
+                  {/* From-To Section */}
+                  <div className="flex items-center w-full md:w-[660px] min-h-[90px] rounded-xl border border-gray-200 overflow-hidden relative">
+                    {/* FROM */}
+                    {/* FROM */}
+                    <div className="flex-1 px-4 py-3">
+                      <label className="text-xs text-gray-500">From</label>
+                      <input
+                        type="text"
+                        value={from}
+                        onChange={(e) => setFrom(e.target.value)}
+                        placeholder="[HYD] Rajiv Gandhi International Airport"
+                        className={`text-[18px] font-semibold outline-none w-full bg-transparent ${
+                          from ? "text-black" : "text-[#64748B]"
+                        }`}
+                      />
+
+                      {/* <select
 												value={from}
 												onChange={e =>
 													setFrom(e.target.value)
@@ -1540,269 +1510,238 @@ const HeroSection = () => {
 													)
 												)}
 											</select> */}
-										</div>
+                    </div>
 
-										{/* Center Divider */}
-										<div className='absolute top-0 bottom-0 left-1/2 w-[1px] bg-gray-200 -translate-x-1/2' />
+                    {/* Center Divider */}
+                    <div className="absolute top-0 bottom-0 left-1/2 w-[1px] bg-gray-200 -translate-x-1/2" />
 
-										{/* SWAP BUTTON */}
-										<div className='absolute left-1/2 -translate-x-1/2 z-10'>
-											<button
-												type='button'
-												onClick={() => {
-													const temp = from
-													setFrom(to)
-													setTo(temp)
-												}}
-												className='w-8 h-8 rounded-full border border-gray-300 bg-white hover:bg-gray-100 flex items-center justify-center'>
-												<ArrowLeftRightIcon className='h-4 w-4 text-gray-600' />
-											</button>
-										</div>
+                    {/* SWAP BUTTON */}
+                    <div className="absolute left-1/2 -translate-x-1/2 z-10">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const temp = from;
+                          setFrom(to);
+                          setTo(temp);
+                        }}
+                        className="w-8 h-8 rounded-full border border-gray-300 bg-white hover:bg-gray-100 flex items-center justify-center"
+                      >
+                        <ArrowLeftRightIcon className="h-4 w-4 text-gray-600" />
+                      </button>
+                    </div>
 
-										{/* TO */}
-										<div className='flex-1 pl-40 pr-4 py-3 ml-[1px]'>
-											<label className='text-xs text-gray-500'>
-												To
-											</label>
-											<input
-												type='text'
-												value={to}
-												onChange={e =>
-													setTo(e.target.value)
-												}
-												placeholder='[BOM] Chhatrapati Shivaji International Airport'
-												className={`text-[18px] font-semibold outline-none w-full bg-transparent ${
-													to
-														? 'text-black'
-														: 'text-[#64748B]'
-												}`}
-											/>
-										</div>
-									</div>
-									{/* Departure Date */}
-									<div className='w-full md:w-[180px] h-[90px] px-4 py-3 rounded-xl border border-gray-200'>
-										<p className='text-xs text-gray-500 mb-1 flex items-center justify-between'>
-											Departure Date
-											<svg
-												xmlns='http://www.w3.org/2000/svg'
-												className='w-4 h-4 text-[#0F172A]'
-												fill='none'
-												viewBox='0 0 24 24'
-												stroke='currentColor'>
-												<path
-													strokeLinecap='round'
-													strokeLinejoin='round'
-													strokeWidth='2'
-													d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
-												/>
-											</svg>
-										</p>
-										<DatePicker
-											selected={flightDepatureDate}
-											onChange={setflightDepatureDate}
-											dateFormat='dd MMM yyyy'
-											placeholderText='Select Date'
-											className='text-[16px] font-semibold text-[#0F172A] w-full outline-none bg-transparent '
-										/>
-										<p className='text-xs text-gray-500 mt-1'>
-											{flightDepatureDate &&
-												flightDepatureDate.toLocaleDateString(
-													'en-US',
-													{
-														weekday: 'long',
-													}
-												)}
-										</p>
-									</div>
+                    {/* TO */}
+                    <div className="flex-1 pl-40 pr-4 py-3 ml-[1px]">
+                      <label className="text-xs text-gray-500">To</label>
+                      <input
+                        type="text"
+                        value={to}
+                        onChange={(e) => setTo(e.target.value)}
+                        placeholder="[BOM] Chhatrapati Shivaji International Airport"
+                        className={`text-[18px] font-semibold outline-none w-full bg-transparent ${
+                          to ? "text-black" : "text-[#64748B]"
+                        }`}
+                      />
+                    </div>
+                  </div>
+                  {/* Departure Date */}
+                  <div className="w-full md:w-[180px] h-[90px] px-4 py-3 rounded-xl border border-gray-200">
+                    <p className="text-xs text-gray-500 mb-1 flex items-center justify-between">
+                      Departure Date
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-4 h-4 text-[#0F172A]"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </p>
+                    <DatePicker
+                      selected={flightDepatureDate}
+                      onChange={setflightDepatureDate}
+                      dateFormat="dd MMM yyyy"
+                      placeholderText="Select Date"
+                      className="text-[16px] font-semibold text-[#0F172A] w-full outline-none bg-transparent "
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      {flightDepatureDate &&
+                        flightDepatureDate.toLocaleDateString("en-US", {
+                          weekday: "long",
+                        })}
+                    </p>
+                  </div>
 
-									{/* Return Date (Round Trip only) */}
-									{tripType === 'Round Trip' && (
-										<div className='w-full md:w-[180px] h-[90px] px-4 py-3 rounded-xl border border-gray-200'>
-											<p className='text-xs text-gray-500 mb-1 flex items-center justify-between'>
-												Return Date
-												<svg
-													xmlns='http://www.w3.org/2000/svg'
-													className='w-4 h-4 text-[#0F172A]'
-													fill='none'
-													viewBox='0 0 24 24'
-													stroke='currentColor'>
-													<path
-														strokeLinecap='round'
-														strokeLinejoin='round'
-														strokeWidth='2'
-														d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
-													/>
-												</svg>
-											</p>
-											<DatePicker
-												selected={flightReturnDate}
-												onChange={setflightReturnDate}
-												dateFormat='dd MMM yyyy'
-												placeholderText='Select Date'
-												minDate={flightDepatureDate}
-												className='text-[16px] font-semibold text-[#0F172A] w-full outline-none bg-transparent'
-											/>
-											<p className='text-xs text-gray-500 mt-1'>
-												Book a round trip
-											</p>
-										</div>
-									)}
+                  {/* Return Date (Round Trip only) */}
+                  {tripType === "Round Trip" && (
+                    <div className="w-full md:w-[180px] h-[90px] px-4 py-3 rounded-xl border border-gray-200">
+                      <p className="text-xs text-gray-500 mb-1 flex items-center justify-between">
+                        Return Date
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-4 h-4 text-[#0F172A]"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                      </p>
+                      <DatePicker
+                        selected={flightReturnDate}
+                        onChange={setflightReturnDate}
+                        dateFormat="dd MMM yyyy"
+                        placeholderText="Select Date"
+                        minDate={flightDepatureDate}
+                        className="text-[16px] font-semibold text-[#0F172A] w-full outline-none bg-transparent"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Book a round trip
+                      </p>
+                    </div>
+                  )}
 
-									{/* Traveller & Class */}
-									<div
-										className='w-full md:w-[220px] h-[90px] px-4 py-3 rounded-xl border border-gray-200 relative cursor-pointer'
-										ref={dropdownRef}
-										onClick={() =>
-											setShowDropdown(!showDropdown)
-										}>
-										{/* Dropdown content */}
-										{showDropdown && (
-											<div className='absolute bottom-full left-0 mb-2 w-full bg-white border border-gray-200 rounded-xl z-50 shadow-md p-3'>
-												{/* Adult */}
-												<div className='flex justify-between items-center mb-2'>
-													<span className='text-sm text-gray-600'>
-														Adults
-													</span>
-													<div className='flex items-center gap-3'>
-														<Minus
-															className={`w-4 h-4 cursor-pointer ${
-																adults > 1
-																	? 'text-black'
-																	: 'text-gray-300'
-															}`}
-															onClick={e => {
-																e.stopPropagation()
-																if (adults > 1)
-																	setAdults(
-																		adults -
-																			1
-																	)
-															}}
-														/>
-														<span className='text-sm font-semibold'>
-															{adults}
-														</span>
-														<Plus
-															className='w-4 h-4 cursor-pointer text-black'
-															onClick={e => {
-																e.stopPropagation()
-																setAdults(
-																	adults + 1
-																)
-															}}
-														/>
-													</div>
-												</div>
+                  {/* Traveller & Class */}
+                  <div
+                    className="w-full md:w-[220px] h-[90px] px-4 py-3 rounded-xl border border-gray-200 relative cursor-pointer"
+                    ref={dropdownRef}
+                    onClick={() => setShowDropdown(!showDropdown)}
+                  >
+                    {/* Dropdown content */}
+                    {showDropdown && (
+                      <div className="absolute bottom-full left-0 mb-2 w-full bg-white border border-gray-200 rounded-xl z-50 shadow-md p-3">
+                        {/* Adult */}
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm text-gray-600">Adults</span>
+                          <div className="flex items-center gap-3">
+                            <Minus
+                              className={`w-4 h-4 cursor-pointer ${
+                                adults > 1 ? "text-black" : "text-gray-300"
+                              }`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (adults > 1) setAdults(adults - 1);
+                              }}
+                            />
+                            <span className="text-sm font-semibold">
+                              {adults}
+                            </span>
+                            <Plus
+                              className="w-4 h-4 cursor-pointer text-black"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setAdults(adults + 1);
+                              }}
+                            />
+                          </div>
+                        </div>
 
-												{/* Children */}
-												<div className='flex justify-between items-center mb-4'>
-													<span className='text-sm text-gray-600'>
-														Children
-													</span>
-													<div className='flex items-center gap-3'>
-														<Minus
-															className={`w-4 h-4 cursor-pointer ${
-																children > 0
-																	? 'text-black'
-																	: 'text-gray-300'
-															}`}
-															onClick={e => {
-																e.stopPropagation()
-																if (
-																	children > 0
-																)
-																	setChildren(
-																		children -
-																			1
-																	)
-															}}
-														/>
-														<span className='text-sm font-semibold'>
-															{children}
-														</span>
-														<Plus
-															className='w-4 h-4 cursor-pointer text-black'
-															onClick={e => {
-																e.stopPropagation()
-																setChildren(
-																	children + 1
-																)
-															}}
-														/>
-													</div>
-												</div>
+                        {/* Children */}
+                        <div className="flex justify-between items-center mb-4">
+                          <span className="text-sm text-gray-600">
+                            Children
+                          </span>
+                          <div className="flex items-center gap-3">
+                            <Minus
+                              className={`w-4 h-4 cursor-pointer ${
+                                children > 0 ? "text-black" : "text-gray-300"
+                              }`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (children > 0) setChildren(children - 1);
+                              }}
+                            />
+                            <span className="text-sm font-semibold">
+                              {children}
+                            </span>
+                            <Plus
+                              className="w-4 h-4 cursor-pointer text-black"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setChildren(children + 1);
+                              }}
+                            />
+                          </div>
+                        </div>
 
-												{/* Class list */}
-												{[
-													'Economy',
-													'Premium Economy',
-													'Business',
-													'First Class',
-												].map(cls => (
-													<div
-														key={cls}
-														className={`py-1 px-2 rounded text-sm cursor-pointer hover:bg-gray-100 ${
-															travelClass === cls
-																? 'bg-gray-100 font-semibold'
-																: ''
-														}`}
-														onClick={e => {
-															e.stopPropagation()
-															setTravelClass(cls)
-															setShowDropdown(
-																false
-															)
-														}}>
-														{cls}
-													</div>
-												))}
-											</div>
-										)}
+                        {/* Class list */}
+                        {[
+                          "Economy",
+                          "Premium Economy",
+                          "Business",
+                          "First Class",
+                        ].map((cls) => (
+                          <div
+                            key={cls}
+                            className={`py-1 px-2 rounded text-sm cursor-pointer hover:bg-gray-100 ${
+                              travelClass === cls
+                                ? "bg-gray-100 font-semibold"
+                                : ""
+                            }`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setTravelClass(cls);
+                              setShowDropdown(false);
+                            }}
+                          >
+                            {cls}
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
-										{/* Static label + selected value */}
-										<p className='text-xs text-gray-500 mb-1'>
-											Travellers & Class
-										</p>
-										<div className='flex justify-between items-center font-semibold text-[16px] text-[#0F172A]'>
-											<span>
-												{adults + children}{' '}
-												<span className='font-normal text-sm'>
-													Travellers
-												</span>
-											</span>
-										</div>
-										<p className='text-xs text-gray-500 mt-1'>
-											{travelClass}
-										</p>
-									</div>
-								</div>
+                    {/* Static label + selected value */}
+                    <p className="text-xs text-gray-500 mb-1">
+                      Travellers & Class
+                    </p>
+                    <div className="flex justify-between items-center font-semibold text-[16px] text-[#0F172A]">
+                      <span>
+                        {adults + children}{" "}
+                        <span className="font-normal text-sm">Travellers</span>
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">{travelClass}</p>
+                  </div>
+                </div>
 
-								{/* Search Button */}
-								<div className='w-full flex justify-center translate-y-2.5 '>
-									<button
-										type='submit'
-										className='bg-[#EE5128] hover:bg-[#d64520] text-white text-[18px] font-semibold px-18 py-2 rounded-full transition '>
-										{t('hero.search')}
-									</button>
-								</div>
-							</form>
-						</div>{' '}
-						{/* .w-full -mb-30 mt-10 */}
-					</div>{' '}
-					{/* .mt-10 h-full */}
-				</div>{' '}
-				{/* .h-full w-full */}
-				<img
-					src={BannerBottom}
-					alt='banner-bottom'
-					height={40}
-					width={662}
-					className='w-full absolute -bottom-[26px] md:-bottom-[40px] object-cover h-20'
-				/>
-			</div>{' '}
-			{/* .min-h-screen */}
-		</>
-	)
-}
+                {/* Search Button */}
+                <div className="w-full flex justify-center translate-y-2.5 ">
+                  <button
+                    type="submit"
+                    className="bg-[#EE5128] hover:bg-[#d64520] text-white text-[18px] font-semibold px-18 py-2 rounded-full transition "
+                  >
+                    {t("hero.search")}
+                  </button>
+                </div>
+              </form>
+            </div>{" "}
+            {/* .w-full -mb-30 mt-10 */}
+          </div>{" "}
+          {/* .mt-10 h-full */}
+        </div>{" "}
+        {/* .h-full w-full */}
+        <img
+          src={BannerBottom}
+          alt="banner-bottom"
+          height={40}
+          width={662}
+          className="w-full absolute -bottom-[26px] md:-bottom-[40px] object-cover h-20"
+        />
+      </div>{" "}
+      {/* .min-h-screen */}
+    </>
+  );
+};
 
-export default HeroSection
+export default HeroSection;
