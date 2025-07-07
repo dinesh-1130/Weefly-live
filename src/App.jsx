@@ -44,6 +44,8 @@ import PackageSection from './pages/AgentDashboard/PackagePage/PackageSection'
 import AgentCRMpage from './pages/AgentDashboard/AgentCRMpage'
 
 import SupportTicket from './pages/AgentDashboard/supportTicket/SupportTicket'
+import TicketConfirm from './pages/FlightBooking/TicketConfirm'
+import TicketNotConfirm from './pages/FlightBooking/TicketNotConfirm'
 const App = () => {
 	useEffect(() => {
 		Aos.init({
@@ -75,6 +77,14 @@ const App = () => {
 							/>
 							<Route path='Payment' element={<PaymentPage />} />
 						</Route>
+						<Route
+							path='ticketconfirm'
+							element={<TicketConfirm />}
+						/>
+						<Route
+							path='ticketnotconfirm'
+							element={<TicketNotConfirm />}
+						/>
 						<Route path='profile' element={<ProfilePage />} />
 						<Route path='/Contact' element={<ContactUsPage />} />
 					</Route>
