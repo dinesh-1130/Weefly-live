@@ -951,14 +951,23 @@ seat.seat
 						<div className='mt-6 w-full lg:max-w-[656px] mx-auto text-center lg:ml-[-215px] flex flex-col md:flex-row justify-center items-center gap-4'>
 							<button
 								onClick={e => {
-									!isOutwardSeat
-										? handleNext()
-										: handleProcessTerm(e)
+									location.state.tripType === 'One Way'
+										? handleProcessTerm(e)
+										: location.state.tripType ===
+										  'Round Trip'
+										? !isOutwardSeat
+											? handleNext()
+											: handleProcessTerm(e)
+										: null
 								}}
 								className="bg-[#EE5128] text-white px-6 py-2 lg:relative lg:left-5 rounded font-semibold font-['Plus Jakarta Sans'] w-full md:w-auto hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200">
-								{!isOutwardSeat
-									? 'next'
-									: t('continue-booking')}
+								{location.state.tripType === 'One Way'
+									? t('continue-booking')
+									: location.state.tripType === 'Round Trip'
+									? !isOutwardSeat
+										? 'next'
+										: t('continue-booking')
+									: null}
 							</button>
 							<button className='text-[#EE5128] font-semibold text-sm lg:relative lg:left-16 mt-2 md:mt-0 hover:underline'>
 								{t('skip-extra')}

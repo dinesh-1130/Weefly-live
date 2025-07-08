@@ -104,6 +104,8 @@ function TravelersDetails() {
 	const OutwardTicket = location.state?.flights?.[0]
 	const returnTicket = location.state?.flights?.[1]
 
+	console.log(OutwardTicket)
+
 	const handleTravellerChange = (field, value) => {
 		const updatedTravellers = [...travellerList.Traveller]
 
@@ -1166,7 +1168,7 @@ function TravelersDetails() {
 					</div>
 
 					{/* Booking Details Sidebar */}
-					{location.state.tripType === 'One way' ? (
+					{location.state.tripType === 'One Way' ? (
 						<div className='max-w-[377px] w-full h-[280px] bg-white rounded-[12px]'>
 							<div className='bg-[#FFE4DB] p-3 rounded-t-[12px]'>
 								<h2 className='font-semibold text-[18px] font-jakarta'>
