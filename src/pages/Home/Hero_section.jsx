@@ -888,7 +888,25 @@ const HeroSection = () => {
 
     setSearchCount((prev) => prev + 1);
   }; */
+const listSupplierRoute = async () => {
+  try {
+    const response = await fetch(`${travelFusionBackendUrl}/get-supplierroute`);
 
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json(); // Convert the response body to JSON
+	const iata=data.suppliers[0].airportRoutes
+    console.log("Supplier route data:", iata); // Log the parsed data
+  } catch (error) {
+    console.error("Failed to fetch supplier route:", error);
+  }
+};
+
+  useEffect(() => {
+    listSupplierRoute();
+  }, []);
 	const handleTravelFusionDate = newDate => {
 		if (!newDate) {
 			return
