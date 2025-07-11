@@ -286,6 +286,7 @@ export default function SeatSelection() {
     );
     console.log(formattedSeats);
     console.log(formattedLuggageOption);
+    console.log(travellerDetails);
     requestBody = JSON.stringify({
       mode: "plane",
       routingId: routingId,
@@ -294,6 +295,7 @@ export default function SeatSelection() {
       bookingProfile: travellerDetails,
       seatOptions: formattedSeats,
       luggageOptions: formattedLuggageOption,
+      countryOfUser:travellerDetails.BillingDetails.Address.CountryCode
     });
     const response = await fetch(`${backendUrl}/process-terms`, {
       method: "POST",

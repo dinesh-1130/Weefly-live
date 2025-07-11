@@ -104,16 +104,16 @@ export default function ReviewYourBooking() {
 			const structuredFeatures=res.Features;
 			console.log(AlternativeFares);
 			console.log(structuredFeatures)
-			// navigate('/booking/TravelersDetails', {
-			// 	state: {
-			// 		flights: flightTickets,
-			// 		routingId: TicketData.routingId,
-			// 		travalers: TicketData.travalers,
-			// 		tripType: TicketData.tripType,
-			// 		seatOption: seatOptions,
-			// 		luggageOptions: LuggageOptions,
-			// 	},
-			// })
+			navigate('/booking/TravelersDetails', {
+				state: {
+					flights: flightTickets,
+					routingId: TicketData.routingId,
+					travalers: TicketData.travalers,
+					tripType: TicketData.tripType,
+					seatOption: seatOptions,
+					luggageOptions: LuggageOptions,
+				},
+			})
 		}
 	}
 
