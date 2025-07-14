@@ -3129,18 +3129,36 @@ const FlightResults = ({
                           destination: destination,
                         });
 
+                        // navigate("/booking/ReviewYourBooking", {
+                        //   state: {
+                        //     outwordTicketId: flight,
+                        //     routingId: routingId,
+                        //     tripType: TripType,
+                        //     travalers: travalers,
+
+                        //     // Add back navigation data safely
+                        //     origin: origin,
+                        //     destination: destination,
+                        //     flightsData: flights,
+                        //     TripType: TripType,
+                        //   },
+                        // });
+
                         navigate("/booking/ReviewYourBooking", {
                           state: {
-                            outwordTicketId: flight,
+                            outwordTicketId: selectOutWard,
+                            returnTicketId: id || selectReturn,
                             routingId: routingId,
                             tripType: TripType,
                             travalers: travalers,
-
-                            // Add back navigation data safely
+                            // Add back navigation data
                             origin: origin,
                             destination: destination,
                             flightsData: flights,
                             TripType: TripType,
+                            ...(SearchProps && {
+                              FightSearchData: SearchProps,
+                            }),
                           },
                         });
                       }}
@@ -3905,21 +3923,23 @@ const SearchBox = ({
   const [routeId, setRouteId] = useState("");
   const [searchCount, setSearchCount] = useState(0);
   const travelFusionBackendUrl = import.meta.env.VITE_BACKEND_URL;
-const listSupplierRoute = async () => {
-  try {
-    const response = await fetch(`${travelFusionBackendUrl}/get-supplierroute`);
+  const listSupplierRoute = async () => {
+    try {
+      const response = await fetch(
+        `${travelFusionBackendUrl}/get-supplierroute`
+      );
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json(); // Convert the response body to JSON
+      const iata = data.suppliers[0].airportRoutes;
+      console.log("Supplier route data:", iata); // Log the parsed data
+    } catch (error) {
+      console.error("Failed to fetch supplier route:", error);
     }
-
-    const data = await response.json(); // Convert the response body to JSON
-	const iata=data.suppliers[0].airportRoutes
-    console.log("Supplier route data:", iata); // Log the parsed data
-  } catch (error) {
-    console.error("Failed to fetch supplier route:", error);
-  }
-};
+  };
 
   useEffect(() => {
     listSupplierRoute();

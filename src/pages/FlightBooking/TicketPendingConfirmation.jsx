@@ -1,0 +1,43 @@
+import waiting1 from "/assets/ticketpage/waiting1.png";
+import AirIndiaLogo from "../../assets/images/AirIndiaLogo.svg";
+import FlightLogo from "../../assets/images/FlightIcon.svg";
+import { Link } from "react-router";
+
+function TicketPendingConfirmation() {
+  return (
+    <div className="py-[30px] px-10 xl:px-40">
+      <img
+        src={waiting1}
+        alt={"Ticket Pending Confirmation"}
+        className="size-[60px] xl:size-[133px] mx-auto"
+        data-aos="zoom-out"
+      />
+      <div className="text-center mt-[30px]" data-aos="fade-up">
+        <p className="font-jakarta font-medium text-[18px] xl:text-[22px] text-[#555555] mb-[10px]">
+          Please wait for your confirmation
+        </p>
+        <p className="font-jakarta font-medium text-[16px] xl:text-[20px] text-[#555555]">
+          Kindly check your email...
+        </p>
+      </div>
+
+      <div className=" max-w-[430px] w-full mx-auto mt-[70px] flex flex-col gap-[37px]">
+        {/* <button
+          data-aos="fade-up"
+          className="font-jakarta font-semibold text-[18px] w-full bg-[#EE5128] py-[14px] rounded-[8px] text-white mt-[20px] drop-shadow-xl drop-shadow-[#FD74014D]"
+        >
+          Download invoice
+        </button> */}
+        <Link
+          data-aos="fade-up"
+          to={"/"}
+          className="text-[#EE5128] font-jakarta font-semibold text-[18px] text-center mx-auto"
+        >
+          Back to home
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+export default TicketPendingConfirmation;

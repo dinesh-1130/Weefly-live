@@ -1,8 +1,10 @@
 import {
+  LucideLuggage,
   LucideMessageCircleWarning,
   LuggageIcon,
   Minus,
   Plus,
+  ShoppingBag,
   X,
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
@@ -245,7 +247,7 @@ export default function SeatSelection() {
   const getSeatColor = (type) => {
     switch (type) {
       case "Unavailable":
-        return "bg-gray-400 hover:bg-gray-400 pointer-events-none";
+        return "bg-gray-300 hover:bg-gray-400 pointer-events-none";
       // case 'window':
       // 	return 'bg-blue-300 hover:bg-blue-400'
       // case 'aisle':
@@ -254,8 +256,8 @@ export default function SeatSelection() {
       // 	return 'bg-yellow-300 hover:bg-yellow-400'
       // case 'exit':
       // 	return 'bg-red-300 hover:bg-red-400'
-      // case 'extra_legroom':
-      // 	return 'bg-purple-300 hover:bg-purple-400'
+      case "extra_legroom":
+        return "bg-purple-300 hover:bg-purple-400";
       default:
         // return 'bg-gray-300 hover:bg-gray-400'
         return "bg-white border-[0.2px] border-gray-300 hover:bg-gray-400 hover:bg-orange-500 ";
@@ -266,7 +268,7 @@ export default function SeatSelection() {
   // 	console.log('selected data', data)
   // }
 
-   let requestBody;
+  let requestBody;
 
   const handleNext = () => {
     setisOutwardSeat(true);
@@ -391,7 +393,7 @@ export default function SeatSelection() {
                 luggageSurcharge: luggageSurcharge,
                 Address: travellerDetails.BillingDetails.Address,
                 Email: travellerDetails.ContactDetails.Email,
-				requestBody:requestBody
+                requestBody: requestBody,
               },
             });
           } else {
@@ -438,6 +440,15 @@ export default function SeatSelection() {
   if (!flight)
     return <div className="text-center mt-20 font-['Lato']">Loading...</div>;
 
+  console.log(OutwardSortedRows);
+
+  const convertCurrency = (amount, rate) => {
+    if (typeof amount !== "number" || typeof rate !== "number") {
+      throw new Error("Amount and rate must be numbers");
+    }
+    return parseFloat((amount * rate).toFixed(2));
+  };
+
   return (
     <div className="font-sans flex justify-center">
       <div className="w-full max-w-[1140px] px-4">
@@ -465,7 +476,7 @@ export default function SeatSelection() {
 
               <div className="flex flex-col md:flex-row items-start gap-6 p-6 w-full">
                 {/* Left Content Based on Active Tab */}
-                <div className="w-full md:w-[260px] flex-shrink-0">
+                <div className="w-full md:w-[260px] flex-shrink-0 font-jakarta">
                   {activeTab === "Seats" && (
                     <>
                       {!isOutwardSeat ? (
@@ -520,30 +531,107 @@ export default function SeatSelection() {
                         </>
                       )}
 
-                      <div className="mt-5 w-full md:w-[200px] h-[100px]">
-                        <p className="font-semibold text-[14px] mb-2 relative left-2">
-                          Seat fare :
-                        </p>
-                        <div className="border rounded-md bg-white px-3 py-4 text-sm h-full flex flex-col justify-between">
-                          <div className="flex justify-between">
-                            <span>{t("seats.adult")} 2 :</span>
-                            <span>$800</span>
-                          </div>
-                          <div className="flex justify-between font-bold">
-                            <span>{t("seats.totalFare")} :</span>
-                            <span>$800</span>
+                      {!isOutwardSeat ? (
+                        <div className="mt-5 w-full  min-h-[100px]">
+                          {/* <p className="font-semibold text-[14px] mb-2 relative left-2">
+                            Outward Seat fare :
+                          </p> */}
+                          <div className=" rounded-md bg-white px-3 py-4 text-sm h-full flex flex-col justify-between">
+                            <div className="flex flex-col">
+                              <span className="font-medium mb-2">
+                                Outward Selected seat:
+                              </span>
+                              {selectOutwardSeats.map((s, i) => (
+                                <li
+                                  key={i}
+                                  className="flex flex-col mb-1 justify-between text-nowrap"
+                                >
+                                  <div className="flex justify-between items-center text-sm font-medium">
+                                    <span className="">
+                                      {s.seat + " " + s.description.join(", ")}
+                                    </span>
+                                    <span>
+                                      {" "}
+                                      <span className="text-xs">CVE</span>{" "}
+                                      {convertCurrency(s.price, 127.18)}
+                                    </span>
+                                  </div>
+                                </li>
+                              ))}
+                            </div>
+                            <div className="flex justify-between font-bold">
+                              <span>{t("seats.totalFare")} :</span>
+                              <span>
+                                CVE{" "}
+                                {convertCurrency(
+                                  selectOutwardSeats.reduce(
+                                    (amt, acc) => amt + acc.price,
+                                    0
+                                  ),
+                                  127.18
+                                )}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      ) : (
+                        <div className="mt-5 w-full  min-h-[100px]">
+                          {/* <p className="font-semibold text-[14px] mb-2 relative left-2">
+                            Return Seat fare :
+                          </p> */}
+                          <div className=" rounded-md bg-white px-3 py-4 text-sm h-full flex flex-col justify-between">
+                            <div className="flex flex-col">
+                              <span className="font-medium mb-2">
+                                Return Selected seat:
+                              </span>
+                              {selectReturnSeats.map((s, i) => (
+                                <li
+                                  key={i}
+                                  className="flex flex-col mb-1 justify-between text-nowrap"
+                                >
+                                  <div className="flex justify-between items-center text-sm font-medium">
+                                    <span className="">
+                                      {s.seat + " " + s.description.join(", ")}
+                                    </span>
+                                    <span>
+                                      {" "}
+                                      <span className="text-xs">CVE</span>{" "}
+                                      {convertCurrency(s.price, 127.18)}
+                                    </span>
+                                  </div>
+                                </li>
+                              ))}
+                            </div>
+                            <div className="flex justify-between font-bold">
+                              <span>{t("seats.totalFare")} :</span>
+                              <span>
+                                CVE{" "}
+                                {convertCurrency(
+                                  selectReturnSeats.reduce(
+                                    (amt, acc) => amt + acc.price,
+                                    0
+                                  ),
+                                  127.18
+                                )}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       <div className="mt-12">
                         <p className="font-semibold text-[14px] mb-2">
                           {t("seats.type.title")} :
                         </p>
                         <div className="grid grid-cols-2 text-[12px] gap-y-2 gap-x-4">
-                          <span>
+                          <span className="flex items-center">
                             <span className="inline-block w-6 h-4 border border-gray-400 mr-2" />
                             {/* {t('seats.type.free')} */}
                             Available
+                          </span>
+                          <span className="flex items-center">
+                            <span className="inline-block w-6 h-4 bg-purple-300 mr-2" />
+                            Extra Legroom
                           </span>
                           {/* <span>
 														<span className='inline-block w-6 h-4 bg-blue-500 mr-2' />
@@ -565,12 +653,14 @@ export default function SeatSelection() {
 														<span className='inline-block w-6 h-4 bg-pink-400 mr-2' />
 														$300-500
 													</span> */}
-                          <span>
+                          <span className="flex items-center">
                             <span className="inline-block w-6 h-4 bg-orange-600 mr-2" />
-                            Your booked
+                            Your booking
                           </span>
-                          <span>
-                            <span className="inline-block w-6 h-4 bg-gray-500 mr-2" />
+                          <span className="flex items-center">
+                            <span className="inline-flex w-6 h-4 bg-gray-300 mr-2 justify-center items-center">
+                              <X className="w-4 text-red-400" />
+                            </span>
                             {/* {t(
 															'seats.type.non-reclining'
 														)} */}
@@ -642,7 +732,7 @@ export default function SeatSelection() {
                       <p className="font-semibold text-[16px] mb-4">
                         Select {t("luggages.title")}
                       </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full overflow-auto h-[400px] no-scrollbar">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full overflow-y-auto h-[400px] no-scrollbar">
                         {convertedLuggageOptions.map((Luggage, index) => {
                           const isSelected = selectedLuggage.some(
                             (l) => l === Luggage
@@ -672,13 +762,36 @@ export default function SeatSelection() {
 															/> */}
 
                               <div className="flex flex-col gap-1">
-                                <LuggageIcon />
-                                <div className="text-xs">
-                                  {Luggage.weights.map((w) => w)}
+                                <div className="flex gap-2">
+                                  {Luggage.weights.includes("15Kg") && (
+                                    <div className="flex items-end">
+                                      <ShoppingBag className="size-5" />
+                                      {
+                                        Luggage.weights.filter(
+                                          (item) => item === "15Kg"
+                                        ).length
+                                      }
+                                    </div>
+                                  )}
+                                  {Luggage.weights.includes("23Kg") && (
+                                    <div className="flex">
+                                      <div className="">
+                                        <LucideLuggage />
+                                      </div>
+                                      {
+                                        Luggage.weights.filter(
+                                          (item) => item === "23Kg"
+                                        ).length
+                                      }
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="text-xs text-nowrap">
+                                  {Luggage.weights.map((w) => w + " , ")}
                                 </div>
                               </div>
-                              <div className="flex">
-                                <div className="flex flex-col justify-between items-center mb-2">
+                              <div className="flex gap-2 flex-col">
+                                <div className="flex flex-col justify-between items-center">
                                   {/* <span className="font-base text-base ">
 										              {Luggage.name}
 										            </span> */}
@@ -687,8 +800,8 @@ export default function SeatSelection() {
                                     {Luggage.name}
                                   </span>
                                 </div>
-                                <div className="flex justify-center text-xs">
-                                  <span className="font-bold text-center">
+                                <div className="flex text-sm">
+                                  <span className="font-bold text-center text-nowrap">
                                     {Luggage.price} CVE
                                   </span>
                                 </div>
@@ -742,7 +855,12 @@ export default function SeatSelection() {
                                         title={
                                           seat.seat +
                                           " " +
-                                          seat.description.join(", ")
+                                          seat.description.join(", ") +
+                                          "|" +
+                                          " " +
+                                          convertCurrency(seat.price, 127.18) +
+                                          " " +
+                                          "CVE"
                                         }
                                         onClick={() =>
                                           !isSelected
@@ -750,7 +868,12 @@ export default function SeatSelection() {
                                             : removeOutwardSeat(seat)
                                         }
                                       >
-                                        {isSelected ? (
+                                        {seat.type === "Unavailable" ? (
+                                          <div>
+                                            {" "}
+                                            <X className="w-4 text-red-400" />{" "}
+                                          </div>
+                                        ) : isSelected ? (
                                           <div className="w-full h-full bg-orange-600" />
                                         ) : (
                                           ""
@@ -786,14 +909,28 @@ export default function SeatSelection() {
                                         key={seat.seat}
                                         className={`seat size-6 m-0.5 my-1 rounded flex items-center justify-center text-xs font-medium cursor-pointer   hover:text-white
 ${getSeatColor(seat.type)} `}
-                                        title={seat.description.join(", ")}
+                                        title={
+                                          seat.seat +
+                                          " " +
+                                          seat.description.join(", ") +
+                                          "|" +
+                                          " " +
+                                          convertCurrency(seat.price, 127.18) +
+                                          " " +
+                                          "CVE"
+                                        }
                                         onClick={() =>
                                           !isSelected
                                             ? handleReturnSeatSelect(seat)
                                             : removeReturnSeat(seat)
                                         }
                                       >
-                                        {isSelected ? (
+                                        {seat.type === "Unavailable" ? (
+                                          <div>
+                                            {" "}
+                                            <X className="w-4 text-red-400" />{" "}
+                                          </div>
+                                        ) : isSelected ? (
                                           <div className="w-full h-full bg-orange-600" />
                                         ) : (
                                           ""
@@ -821,31 +958,6 @@ seat.seat
 						</div> */}
 
             {/* Button */}
-            <div className="mt-6 w-full lg:max-w-[656px] mx-auto text-center lg:ml-[-215px] flex flex-col md:flex-row justify-center items-center gap-4">
-              <button
-                onClick={(e) => {
-                  location.state.tripType === "One Way"
-                    ? handleProcessTerm(e)
-                    : location.state.tripType === "Round Trip"
-                    ? !isOutwardSeat
-                      ? handleNext()
-                      : handleProcessTerm(e)
-                    : null;
-                }}
-                className="bg-[#EE5128] text-white px-6 py-2 lg:relative lg:left-5 rounded font-semibold font-['Plus Jakarta Sans'] w-full md:w-auto hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200"
-              >
-                {location.state.tripType === "One Way"
-                  ? t("continue-booking")
-                  : location.state.tripType === "Round Trip"
-                  ? !isOutwardSeat
-                    ? "next"
-                    : t("continue-booking")
-                  : null}
-              </button>
-              <button className="text-[#EE5128] font-semibold text-sm lg:relative lg:left-16 mt-2 md:mt-0 hover:underline">
-                {t("skip-extra")}
-              </button>
-            </div>
           </div>
 
           {/* Right Column - On mobile, will display at the top */}
@@ -922,7 +1034,7 @@ seat.seat
               </div>
             ) : location.state.tripType === "Round Trip" ? (
               <div className="flex flex-col gap-6">
-                <div className="max-w-[377px] w-full h-[280px] bg-white rounded-[12px]">
+                <div className="max-w-[377px] w-full min-h-[280px] bg-white rounded-[12px] pb-4">
                   <div className="bg-[#FFE4DB] p-3 rounded-t-[12px]">
                     <h2 className="font-semibold text-[18px] font-jakarta">
                       {t("booking-details.title")}
@@ -984,19 +1096,6 @@ seat.seat
                     </div>
                   </div>
 
-                  <div className="flex justify-around mt-6 text-sm font-medium font-jakarta">
-                    <span>{t("booking-details.policy")}</span>
-                    <span className="ml-10">{t("booking-details.refund")}</span>
-                    <span>{t("booking-details.reschedule")}</span>
-                  </div>
-                </div>
-                <div className="max-w-[377px] w-full h-[280px] bg-white rounded-[12px]">
-                  <div className="bg-[#FFE4DB] p-3 rounded-t-[12px]">
-                    <h2 className="font-semibold text-[18px] font-jakarta">
-                      {t("booking-details.title")}
-                    </h2>
-                  </div>
-
                   <div className="flex justify-between items-center px-6 mt-[20px]">
                     <div className="text-center">
                       <p className="text-[20px] font-bold font-jakarta">
@@ -1051,12 +1150,6 @@ seat.seat
                       </p>
                     </div>
                   </div>
-
-                  <div className="flex justify-around mt-6 text-sm font-medium font-jakarta">
-                    <span>{t("booking-details.policy")}</span>
-                    <span className="ml-10">{t("booking-details.refund")}</span>
-                    <span>{t("booking-details.reschedule")}</span>
-                  </div>
                 </div>
               </div>
             ) : (
@@ -1074,19 +1167,58 @@ seat.seat
             )}
 
             {/* Price Summary - Second on mobile */}
-            {/* <div className="bg-white rounded-md shadow-sm">
+            <div className="bg-white rounded-md shadow-sm">
               <div className="bg-[#FFE4DB] p-4 font-semibold font-['Plus Jakarta Sans']">
                 {t("summary.title")}
               </div>
               <div className="p-4 space-y-3 text-[14px] text-black font-['Lato']">
                 <div className="flex justify-between">
-                  <span>{t("summary.adult")} x 1</span>
+                  <span>Outward Flight Ticket</span>
                   <span className="font-semibold flex gap-1">
-                    <span>{flight.currency}</span>
-                    <span>{flight.price}</span>
+                    <span>CVE</span>
+                    <span>{OutwardTicket.price}</span>
                   </span>
                 </div>
                 <div className="flex justify-between">
+                  <span>Return Flight Ticket</span>
+                  <span className="font-semibold flex gap-1">
+                    <span>CVE</span>
+                    <span>{returnTicket.price}</span>
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Outward seat x {selectOutwardSeats.length}</span>
+                  <span className="font-semibold flex gap-1">
+                    <span>CVE</span>
+                    <span>
+                      {" "}
+                      {convertCurrency(
+                        selectOutwardSeats.reduce(
+                          (amt, acc) => amt + acc.price,
+                          0
+                        ),
+                        127.18
+                      )}
+                    </span>
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Return seat x {selectReturnSeats.length}</span>
+                  <span className="font-semibold flex gap-1">
+                    <span>CVE</span>
+                    <span>
+                      {" "}
+                      {convertCurrency(
+                        selectReturnSeats.reduce(
+                          (amt, acc) => amt + acc.price,
+                          0
+                        ),
+                        127.18
+                      )}
+                    </span>
+                  </span>
+                </div>
+                {/* <div className="flex justify-between">
                   <span>{t("summary.totalTax")} +</span>
                   <span className="font-semibold flex gap-1">
                     <span>{flight.currency}</span> <span>500.00</span>
@@ -1098,24 +1230,59 @@ seat.seat
                     {" "}
                     <span>{flight.currency}</span> <span>200.00</span>
                   </span>
-                </div>
+                </div> */}
                 <div className="flex justify-between border-t pt-3 text-[#EE5128] font-semibold">
                   <span>{t("summary.total")}</span>
                   <span>
                     {" "}
-                    <span>{flight.currency}</span>{" "}
+                    <span>CVE</span>{" "}
                     <span>
-                      {(parseFloat(flight.price) + 500 + 200).toLocaleString(
-                        "en-ZA",
-                        {
-                          minimumFractionDigits: 2,
-                        }
-                      )}
+                      {convertCurrency(
+                        selectOutwardSeats.reduce(
+                          (amt, acc) => amt + acc.price,
+                          0
+                        ),
+                        127.18
+                      ) +
+                        convertCurrency(
+                          selectReturnSeats.reduce(
+                            (amt, acc) => amt + acc.price,
+                            0
+                          ),
+                          127.18
+                        )}
                     </span>
                   </span>
                 </div>
               </div>
-            </div> */}
+            </div>
+
+            <div className="mt-6 w-full mx-auto text-center  flex flex-col md:flex-row justify-start items-center gap-4">
+              <button
+                onClick={(e) => {
+                  location.state.tripType === "One Way"
+                    ? handleProcessTerm(e)
+                    : location.state.tripType === "Round Trip"
+                    ? !isOutwardSeat
+                      ? handleNext()
+                      : handleProcessTerm(e)
+                    : null;
+                }}
+                className="bg-[#EE5128] text-white px-6 py-2 lg:relative lg:left-5 rounded font-semibold font-['Plus Jakarta Sans'] w-full md:w-auto hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200"
+              >
+                {location.state.tripType === "One Way"
+                  ? t("continue-booking")
+                  : location.state.tripType === "Round Trip"
+                  ? !isOutwardSeat
+                    ? "Next"
+                    : t("continue-booking")
+                  : null}
+              </button>
+              <button className="text-[#EE5128] font-semibold text-sm lg:relative mt-2 md:mt-0 hover:underline px-10">
+                {/* {t("skip-extra")} */}
+                Skip Extra
+              </button>
+            </div>
           </div>
         </div>
 
