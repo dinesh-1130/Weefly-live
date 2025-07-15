@@ -113,7 +113,7 @@ export default function ReviewYourBooking() {
         res.requiredParameterList[0].RequiredParameter[15].DisplayText[0];
       const LuggageOptions =
         res.requiredParameterList[0].RequiredParameter[16].DisplayText[0];
-let sf = res.Features.Feature;  
+      let sf = res.Features.Feature;
 
       console.log(sf);
       console.log(sf);
@@ -419,44 +419,85 @@ const FeaturesPlanPopup = ({
   luggage,
   tickets,
 }) => {
-  async function convertAllPricesToCVE(features) {
-                const rates = await fetchExchangeRates("CVE");
-  features.forEach(feature => {
-    if (feature.Option && Array.isArray(feature.Option)) {
-      feature.Option.forEach(option => {
-        const optionData = option["$"];
-        if (optionData.Currency && optionData.Value) {
-          const originalPrice = parseFloat(optionData.Value);
-          const originalCurrency = optionData.Currency;
-
-          // Convert to CVE using your provided method
-          const convertedPrice = parseFloat(
-            convertToRequestedCurrency(originalPrice, originalCurrency, "CVE", rates).toFixed(2)
-          );
-
-          // Update the value and currency
-          optionData.Value = convertedPrice.toString();
-          optionData.Currency = "CVE";
+    const transactionUrl = import.meta.env.VITE_TRANSACTION_URL;
+  const getCommissionDetail = async (tfPrice) => {
+    try {
+      const res = await fetch(`${transactionUrl}/getcommissiondetails`);
+      const result = await res.json();
+      console.log(result.commissionDetail);
+      const commissionDetails = result.commissionDetail;
+      if (!commissionDetails) {
+        return console.log("Error");
+      } else {
+        const Tax = commissionDetails.Tax;
+        const Commission = commissionDetails.Commission;
+        if (Tax && Commission) {
+          console.log(Tax, Commission);
+          if (commissionDetails.CommissionType.toLowerCase() === "percentage") {
+            const commissionAmount = (tfPrice * Commission) / 100;
+            const totalAmount = tfPrice + commissionAmount;
+            return totalAmount.toFixed(2);
+          } else if (
+            commissionDetails.CommissionType.toLowerCase() === "amount"
+          ) {
+            const totalAmount = tfPrice + Commission;
+            return totalAmount.toFixed(2);
+          }
         }
-
-        // Optional: convert MinValue too if present
-        if (optionData.Currency && optionData.MinValue) {
-          const originalMin = parseFloat(optionData.MinValue);
-          const originalCurrency = optionData.Currency;
-
-          const convertedMin = parseFloat(
-            convertToRequestedCurrency(originalMin, originalCurrency, "CVE", rates).toFixed(2)
-          );
-
-          optionData.MinValue = convertedMin.toString();
-          optionData.Currency = "CVE"; // ensure currency is updated
-        }
-      });
+      }
+    } catch (error) {
+      console.error(error);
     }
-  });
+  };
 
-  return features;
-}
+  async function convertAllPricesToCVE(features) {
+    const rates = await fetchExchangeRates("CVE");
+    for (const feature of features) {
+      if (feature.Option && Array.isArray(feature.Option)) {
+        for (const option of feature.Option) {
+          const optionData = option["$"];
+
+          if (optionData.Currency && optionData.Value) {
+            const originalPrice = parseFloat(optionData.Value);
+            const originalCurrency = optionData.Currency;
+
+            const tfPrice = parseFloat(
+              convertToRequestedCurrency(
+                originalPrice,
+                originalCurrency,
+                "CVE",
+                rates
+              ).toFixed(2)
+            );
+
+            const convertedPrice = await getCommissionDetail(tfPrice);
+            optionData.Value = convertedPrice.toString();
+            optionData.Currency = "CVE";
+          }
+
+          if (optionData.Currency && optionData.MinValue) {
+            const originalMin = parseFloat(optionData.MinValue);
+            const originalCurrency = optionData.Currency;
+
+            const tfMin = parseFloat(
+              convertToRequestedCurrency(
+                originalMin,
+                originalCurrency,
+                "CVE",
+                rates
+              ).toFixed(2)
+            );
+
+            const convertedMin = await getCommissionDetail(tfMin);
+            optionData.MinValue = convertedMin.toString();
+            optionData.Currency = "CVE";
+          }
+        }
+      }
+    }
+
+    return features;
+  }
 
   const [selectedTab, setSelectedTab] = useState("outward");
   console.log("AlternativeFares:", AlternativeFares);
@@ -466,9 +507,8 @@ const FeaturesPlanPopup = ({
   console.log("se" + seat);
   console.log("ti" + tickets);
 
-
   const updatedFeatures = convertAllPricesToCVE(structuredFeatures);
-  console.log(updatedFeatures)
+  console.log(updatedFeatures);
   const navigate = useNavigate();
   const handleNavigate = () => {
     navigate("/booking/TravelersDetails", {

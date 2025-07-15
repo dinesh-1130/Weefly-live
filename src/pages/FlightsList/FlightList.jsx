@@ -3908,8 +3908,6 @@ const SearchBox = ({
   SearchProps,
 }) => {
   const { t } = useTranslation();
-  const [tax, setTax] = useState("");
-  const [price, setPrice] = useState(0);
   const [isDirectFlight, setIsDirectFlight] = useState(false);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -4103,7 +4101,7 @@ const SearchBox = ({
         if (Tax && Commission) {
           console.log(Tax, Commission);
           if (commissionDetails.CommissionType.toLowerCase() === "percentage") {
-            setTax(`${Tax}%`);
+ 
 
             const commissionAmount = (tfPrice * Commission) / 100;
             const totalAmount = tfPrice + commissionAmount;
@@ -4172,350 +4170,228 @@ const SearchBox = ({
         const rates = await fetchExchangeRates("CVE"); // CVE as base currency
         const routerList = firstFlight.Router;
 
-        const simplifiedFlights = routerList.flatMap((supplier) => {
-          // Check if supplier has GroupList
-          if (
-            !supplier ||
-            !supplier.GroupList ||
-            !Array.isArray(supplier.GroupList)
-          ) {
-            return [];
-          }
-
-          const groups = supplier.GroupList;
-          return groups.flatMap((groupContainer) => {
-            // Check if groupContainer has Group
-            if (
-              !groupContainer ||
-              !groupContainer.Group ||
-              !Array.isArray(groupContainer.Group)
-            ) {
+        const simplifiedFlightsNested = await Promise.all(
+          routerList.map(async (supplier) => {
+            if (!supplier?.GroupList || !Array.isArray(supplier.GroupList))
               return [];
-            }
 
-            const groupItems = groupContainer.Group;
+            const groupResults = supplier.GroupList.flatMap(
+              (groupContainer) => {
+                if (
+                  !groupContainer?.Group ||
+                  !Array.isArray(groupContainer.Group)
+                )
+                  return [];
 
-            return groupItems.flatMap((group) => {
-              // Check if group has OutwardList
-              if (
-                !group ||
-                !group.OutwardList ||
-                !Array.isArray(group.OutwardList) ||
-                group.OutwardList.length === 0
-              ) {
-                return [];
-              }
+                return groupContainer.Group.flatMap((group) => {
+                  if (
+                    !group?.OutwardList ||
+                    !Array.isArray(group.OutwardList) ||
+                    group.OutwardList.length === 0
+                  ) {
+                    return [];
+                  }
 
-              const outwardList = group.OutwardList[0]?.Outward || [];
-              const allFlights = [...outwardList];
+                  const outwardList = group.OutwardList[0]?.Outward || [];
+                  return outwardList.map(async (flight) => {
+                    try {
+                      if (
+                        !flight?.SegmentList ||
+                        !Array.isArray(flight.SegmentList) ||
+                        flight.SegmentList.length === 0
+                      ) {
+                        return null;
+                      }
 
-              return allFlights
-                .map((flight) => {
-                  try {
-                    // Add safety checks for each property access
-                    if (
-                      !flight ||
-                      !flight.SegmentList ||
-                      !Array.isArray(flight.SegmentList) ||
-                      flight.SegmentList.length === 0
-                    ) {
-                      return null;
-                    }
+                      const segmentList = flight.SegmentList[0];
+                      if (
+                        !segmentList?.Segment ||
+                        !Array.isArray(segmentList.Segment) ||
+                        segmentList.Segment.length === 0
+                      ) {
+                        return null;
+                      }
 
-                    const segmentList = flight.SegmentList[0];
-                    if (
-                      !segmentList ||
-                      !segmentList.Segment ||
-                      !Array.isArray(segmentList.Segment) ||
-                      segmentList.Segment.length === 0
-                    ) {
-                      return null;
-                    }
+                      const segment = segmentList.Segment[0];
+                      if (!segment) return null;
 
-                    const segment = segmentList.Segment[0];
-                    if (!segment) return null;
-
-                    // Safe property access with fallbacks
-                    const origin =
-                      segment.Origin && Array.isArray(segment.Origin)
+                      const origin = Array.isArray(segment.Origin)
                         ? segment.Origin[0]
                         : null;
-                    const destination =
-                      segment.Destination && Array.isArray(segment.Destination)
+                      const destination = Array.isArray(segment.Destination)
                         ? segment.Destination[0]
                         : null;
 
-                    const operatorName =
-                      segment.Operator &&
-                      Array.isArray(segment.Operator) &&
-                      segment.Operator[0] &&
-                      segment.Operator[0].Name &&
-                      Array.isArray(segment.Operator[0].Name)
-                        ? segment.Operator[0].Name[0]
-                        : "Unknown Airline";
+                      const operatorName =
+                        segment.Operator &&
+                        Array.isArray(segment.Operator) &&
+                        segment.Operator[0]?.Name &&
+                        Array.isArray(segment.Operator[0].Name)
+                          ? segment.Operator[0].Name[0]
+                          : "Unknown Airline";
 
-                    const logo = operatorName.toLowerCase();
+                      const logo = operatorName.toLowerCase();
 
-                    const flightId =
-                      segment.FlightId &&
-                      Array.isArray(segment.FlightId) &&
-                      segment.FlightId[0] &&
-                      segment.FlightId[0].Code &&
-                      Array.isArray(segment.FlightId[0].Code)
-                        ? segment.FlightId[0].Code[0]
-                        : "N/A";
+                      const flightId =
+                        segment.FlightId &&
+                        Array.isArray(segment.FlightId) &&
+                        segment.FlightId[0]?.Code &&
+                        Array.isArray(segment.FlightId[0].Code)
+                          ? segment.FlightId[0].Code[0]
+                          : "N/A";
 
-                    const travelClass =
-                      segment.TravelClass &&
-                      Array.isArray(segment.TravelClass) &&
-                      segment.TravelClass[0] &&
-                      segment.TravelClass[0].TfClass &&
-                      Array.isArray(segment.TravelClass[0].TfClass)
-                        ? segment.TravelClass[0].TfClass[0]
-                        : "Economy";
+                      const travelClass =
+                        segment.TravelClass &&
+                        Array.isArray(segment.TravelClass) &&
+                        segment.TravelClass[0]?.TfClass &&
+                        Array.isArray(segment.TravelClass[0].TfClass)
+                          ? segment.TravelClass[0].TfClass[0]
+                          : "Economy";
 
-                    const departureTime =
-                      segment.DepartDate && Array.isArray(segment.DepartDate)
+                      const departureTime = Array.isArray(segment.DepartDate)
                         ? segment.DepartDate[0]?.split("-")[1] || "N/A"
                         : "N/A";
 
-                    const arrivalTime =
-                      segment.ArriveDate && Array.isArray(segment.ArriveDate)
+                      const arrivalTime = Array.isArray(segment.ArriveDate)
                         ? segment.ArriveDate[0]?.split("-")[1] || "N/A"
                         : "N/A";
 
-                    const duration =
-                      segment.Duration && Array.isArray(segment.Duration)
+                      const duration = Array.isArray(segment.Duration)
                         ? Math.round((Number(segment.Duration[0]) || 0) / 60) +
                           "hr"
                         : "N/A";
 
-                    // *** CURRENCY CONVERSION LOGIC ***
-                    const originalPrice =
-                      flight.Price &&
-                      Array.isArray(flight.Price) &&
-                      flight.Price[0] &&
-                      flight.Price[0].Amount &&
-                      Array.isArray(flight.Price[0].Amount)
-                        ? parseFloat(flight.Price[0].Amount[0] || "0")
-                        : 0;
+                      const originalPrice =
+                        flight.Price &&
+                        Array.isArray(flight.Price) &&
+                        flight.Price[0]?.Amount &&
+                        Array.isArray(flight.Price[0].Amount)
+                          ? parseFloat(flight.Price[0].Amount[0] || "0")
+                          : 0;
 
+                      const originalCurrency =
+                        flight.Price &&
+                        Array.isArray(flight.Price) &&
+                        flight.Price[0]?.Currency &&
+                        Array.isArray(flight.Price[0].Currency)
+                          ? flight.Price[0].Currency[0]
+                          : "N/A";
+
+                      let convertedPrice;
+
+                      try {
+                        const tfPrice = parseFloat(
+                          convertToRequestedCurrency(
+                            originalPrice,
+                            originalCurrency,
+                            "CVE", // Target currency
+                            rates
+                          ).toFixed(2)
+                        );
+
+                        convertedPrice = await getCommissionDetail(tfPrice);
+                      } catch (err) {
+                        console.error(
+                          "Currency conversion failed:",
+                          err.message
+                        );
+                        return null;
+                      }
+
+                      return {
+                        id:
+                          Array.isArray(flight.Id) && flight.Id.length > 0
+                            ? flight.Id[0]
+                            : "N/A",
+                        airline: operatorName,
+                        logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
+                        flightNumber: flightId,
+                        class: travelClass,
+                        departureTime: departureTime,
+                        departureCity:
+                          origin?.Code && Array.isArray(origin.Code)
+                            ? origin.Code[0] || "N/A"
+                            : "N/A",
+                        arrivalTime: arrivalTime,
+                        arrivalCity:
+                          destination?.Code && Array.isArray(destination.Code)
+                            ? destination.Code[0] || "N/A"
+                            : "N/A",
+                        duration: duration,
+                        price: convertedPrice,
+                        originalPrice: convertedPrice,
+                        convertedcurrencyfrom: originalCurrency,
+                        convertedPricefrom: originalPrice,
+                        currency: "CVE",
+                      };
+                    } catch (flightError) {
+                      console.error(
+                        "Error processing individual flight:",
+                        flightError
+                      );
+                      return null;
+                    }
+                  });
+                });
+              }
+            );
+
+            return await Promise.all(groupResults);
+          })
+        );
+
+        // Flatten and filter null values
+        const simplifiedFlights = simplifiedFlightsNested
+          .flat()
+          .filter(Boolean);
+
+        const simplifiedFlightsGroupNested = await Promise.all(
+          routerList.flatMap((supplier) => {
+            if (!supplier?.GroupList || !Array.isArray(supplier.GroupList))
+              return [];
+
+            return supplier.GroupList.flatMap((groupContainer) => {
+              if (
+                !groupContainer?.Group ||
+                !Array.isArray(groupContainer.Group)
+              )
+                return [];
+
+              return groupContainer.Group.map(async (group) => {
+                const outwardList = group.OutwardList?.[0]?.Outward ?? [];
+                const returnList = group.ReturnList?.[0]?.Return ?? [];
+
+                const processFlight = async (flight, type) => {
+                  try {
+                    const segment = flight?.SegmentList?.[0]?.Segment?.[0];
+                    if (!segment) return null;
+
+                    const origin = segment.Origin?.[0] ?? {};
+                    const destination = segment.Destination?.[0] ?? {};
+                    const operatorName =
+                      segment.Operator?.[0]?.Name?.[0] ?? "Unknown Airline";
+                    const logo = operatorName.toLowerCase();
+                    const flightId = segment.FlightId?.[0]?.Code?.[0] ?? "N/A";
+                    const travelClass =
+                      segment.TravelClass?.[0]?.SupplierClass?.[0] ?? "Economy";
+
+                    const departureTime =
+                      segment.DepartDate?.[0]?.split("-")[1] ?? "N/A";
+                    const arrivalTime =
+                      segment.ArriveDate?.[0]?.split("-")[1] ?? "N/A";
+                    const duration = segment.Duration?.[0]
+                      ? Math.round(Number(segment.Duration[0]) / 60) + "hr"
+                      : "N/A";
+
+                    const originalPrice = parseFloat(
+                      flight.Price?.[0]?.Amount?.[0] ?? "0"
+                    );
                     const originalCurrency =
-                      flight.Price &&
-                      Array.isArray(flight.Price) &&
-                      flight.Price[0] &&
-                      flight.Price[0].Currency &&
-                      Array.isArray(flight.Price[0].Currency)
-                        ? flight.Price[0].Currency[0]
-                        : "N/A";
+                      flight.Price?.[0]?.Currency?.[0] ?? "N/A";
 
                     let convertedPrice;
-
                     try {
-                      let tfPrice = parseFloat(
-                        convertToRequestedCurrency(
-                          originalPrice,
-                          originalCurrency,
-                          "CVE", // Target currency
-                          rates
-                        ).toFixed(2)
-                      );
-                      convertedPrice = getCommissionDetail(tfPrice);
-                    } catch (err) {
-                      return console.error(
-                        "Currency conversion failed",
-                        err.message
-                      );
-                    }
-
-                    return {
-                      id:
-                        flight.Id && Array.isArray(flight.Id)
-                          ? flight.Id[0] || "N/A"
-                          : "N/A",
-                      airline: operatorName,
-                      logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
-                      flightNumber: flightId,
-                      class: travelClass,
-                      departureTime: departureTime,
-                      departureCity:
-                        origin && origin.Code && Array.isArray(origin.Code)
-                          ? origin.Code[0] || "N/A"
-                          : "N/A",
-                      arrivalTime: arrivalTime,
-                      arrivalCity:
-                        destination &&
-                        destination.Code &&
-                        Array.isArray(destination.Code)
-                          ? destination.Code[0] || "N/A"
-                          : "N/A",
-                      duration: duration,
-                      // *** CURRENCY FIELDS ***
-                      price: convertedPrice,
-                      originalPrice: convertedPrice,
-                      convertedcurrencyfrom: originalCurrency, // Original currency
-                      convertedPricefrom: originalPrice, // Original price amount
-                      currency: "CVE", // Target currency
-                    };
-                  } catch (flightError) {
-                    console.error(
-                      "Error processing individual flight:",
-                      flightError
-                    );
-                    return null;
-                  }
-                })
-                .filter(Boolean); // Remove null entries
-            });
-          });
-        });
-
-        // Complete Round Trip flight processing with currency conversion
-        const simplifiedFlightsGroup = routerList.flatMap((supplier) => {
-          // Check if supplier has GroupList
-          if (
-            !supplier ||
-            !supplier.GroupList ||
-            !Array.isArray(supplier.GroupList)
-          ) {
-            return [];
-          }
-
-          const groups = supplier.GroupList;
-          return groups.flatMap((groupContainer) => {
-            // Check if groupContainer has Group
-            if (
-              !groupContainer ||
-              !groupContainer.Group ||
-              !Array.isArray(groupContainer.Group)
-            ) {
-              return [];
-            }
-
-            const groupItems = groupContainer.Group;
-            return groupItems.flatMap((group) => {
-              // Safely extract outward and return lists
-              const outwardList =
-                group.OutwardList &&
-                Array.isArray(group.OutwardList) &&
-                group.OutwardList[0] &&
-                group.OutwardList[0].Outward
-                  ? group.OutwardList[0].Outward
-                  : [];
-
-              const returnList =
-                group.ReturnList &&
-                Array.isArray(group.ReturnList) &&
-                group.ReturnList[0] &&
-                group.ReturnList[0].Return
-                  ? group.ReturnList[0].Return
-                  : [];
-
-              // Process outward flights with currency conversion
-              const outwardFlights = outwardList
-                .map((flight) => {
-                  try {
-                    // Safety checks for flight structure
-                    if (
-                      !flight ||
-                      !flight.SegmentList ||
-                      !Array.isArray(flight.SegmentList) ||
-                      flight.SegmentList.length === 0
-                    ) {
-                      return null;
-                    }
-
-                    const segmentList = flight.SegmentList[0];
-                    if (
-                      !segmentList ||
-                      !segmentList.Segment ||
-                      !Array.isArray(segmentList.Segment) ||
-                      segmentList.Segment.length === 0
-                    ) {
-                      return null;
-                    }
-
-                    const segment = segmentList.Segment[0];
-                    if (!segment) return null;
-
-                    // Safe property extraction with fallbacks
-                    const origin =
-                      segment.Origin && Array.isArray(segment.Origin)
-                        ? segment.Origin[0]
-                        : null;
-                    const destination =
-                      segment.Destination && Array.isArray(segment.Destination)
-                        ? segment.Destination[0]
-                        : null;
-
-                    const operatorName =
-                      segment.Operator &&
-                      Array.isArray(segment.Operator) &&
-                      segment.Operator[0] &&
-                      segment.Operator[0].Name &&
-                      Array.isArray(segment.Operator[0].Name)
-                        ? segment.Operator[0].Name[0]
-                        : "Unknown Airline";
-
-                    const logo = operatorName.toLowerCase();
-
-                    const flightId =
-                      segment.FlightId &&
-                      Array.isArray(segment.FlightId) &&
-                      segment.FlightId[0] &&
-                      segment.FlightId[0].Code &&
-                      Array.isArray(segment.FlightId[0].Code)
-                        ? segment.FlightId[0].Code[0]
-                        : "N/A";
-
-                    const travelClass =
-                      segment.TravelClass &&
-                      Array.isArray(segment.TravelClass) &&
-                      segment.TravelClass[0] &&
-                      segment.TravelClass[0].SupplierClass &&
-                      Array.isArray(segment.TravelClass[0].SupplierClass)
-                        ? segment.TravelClass[0].SupplierClass[0]
-                        : "Economy";
-
-                    const departureTime =
-                      segment.DepartDate && Array.isArray(segment.DepartDate)
-                        ? segment.DepartDate[0]?.split("-")[1] || "N/A"
-                        : "N/A";
-
-                    const arrivalTime =
-                      segment.ArriveDate && Array.isArray(segment.ArriveDate)
-                        ? segment.ArriveDate[0]?.split("-")[1] || "N/A"
-                        : "N/A";
-
-                    const duration =
-                      segment.Duration && Array.isArray(segment.Duration)
-                        ? Math.round((Number(segment.Duration[0]) || 0) / 60) +
-                          "hr"
-                        : "N/A";
-
-                    // *** CURRENCY CONVERSION FOR OUTWARD FLIGHTS ***
-                    const originalPrice =
-                      flight.Price &&
-                      Array.isArray(flight.Price) &&
-                      flight.Price[0] &&
-                      flight.Price[0].Amount &&
-                      Array.isArray(flight.Price[0].Amount)
-                        ? parseFloat(flight.Price[0].Amount[0] || "0")
-                        : 0;
-
-                    const originalCurrency =
-                      flight.Price &&
-                      Array.isArray(flight.Price) &&
-                      flight.Price[0] &&
-                      flight.Price[0].Currency &&
-                      Array.isArray(flight.Price[0].Currency)
-                        ? flight.Price[0].Currency[0]
-                        : "N/A";
-
-                    let convertedPrice = originalPrice;
-
-                    try {
-                      convertedPrice = parseFloat(
+                      const tfPrice = parseFloat(
                         convertToRequestedCurrency(
                           originalPrice,
                           originalCurrency,
@@ -4523,204 +4399,55 @@ const SearchBox = ({
                           rates
                         ).toFixed(2)
                       );
+                      console.log("tf" , tfPrice)
+                      convertedPrice = await getCommissionDetail(tfPrice);
+                      console.log("priceaftercommision", convertedPrice)
                     } catch (err) {
                       console.error("Currency conversion failed", err.message);
-                      convertedPrice = originalPrice; // fallback
+                      return null;
                     }
 
                     return {
-                      id:
-                        flight.Id && Array.isArray(flight.Id)
-                          ? flight.Id[0] || "N/A"
-                          : "N/A",
+                      id: flight.Id?.[0] ?? "N/A",
                       airline: operatorName,
                       logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
                       flightNumber: flightId,
                       class: travelClass,
-                      departureTime: departureTime,
-                      departureCity:
-                        origin && origin.Code && Array.isArray(origin.Code)
-                          ? origin.Code[0] || "N/A"
-                          : "N/A",
-                      arrivalTime: arrivalTime,
-                      arrivalCity:
-                        destination &&
-                        destination.Code &&
-                        Array.isArray(destination.Code)
-                          ? destination.Code[0] || "N/A"
-                          : "N/A",
-                      duration: duration,
+                      departureTime,
+                      departureCity: origin.Code?.[0] ?? "N/A",
+                      arrivalTime,
+                      arrivalCity: destination.Code?.[0] ?? "N/A",
+                      duration,
                       price: convertedPrice,
                       originalPrice: convertedPrice,
                       convertedcurrencyfrom: originalCurrency,
                       convertedPricefrom: originalPrice,
                       currency: "CVE",
-                      type: "outward",
+                      type,
                     };
-                  } catch (error) {
-                    console.error("Error processing outward flight:", error);
+                  } catch (err) {
+                    console.error(`Error processing ${type} flight`, err);
                     return null;
                   }
-                })
-                .filter(Boolean); // Remove null entries
+                };
 
-              // Process return flights with same currency conversion logic
-              const returnFlights = returnList
-                .map((flight) => {
-                  try {
-                    // Safety checks for flight structure
-                    if (
-                      !flight ||
-                      !flight.SegmentList ||
-                      !Array.isArray(flight.SegmentList) ||
-                      flight.SegmentList.length === 0
-                    ) {
-                      return null;
-                    }
+                const outwardFlights = await Promise.all(
+                  outwardList.map((f) => processFlight(f, "outward"))
+                );
+                const returnFlights = await Promise.all(
+                  returnList.map((f) => processFlight(f, "return"))
+                );
 
-                    const segmentList = flight.SegmentList[0];
-                    if (
-                      !segmentList ||
-                      !segmentList.Segment ||
-                      !Array.isArray(segmentList.Segment) ||
-                      segmentList.Segment.length === 0
-                    ) {
-                      return null;
-                    }
-
-                    const segment = segmentList.Segment[0];
-                    if (!segment) return null;
-
-                    // Safe property extraction with fallbacks
-                    const origin =
-                      segment.Origin && Array.isArray(segment.Origin)
-                        ? segment.Origin[0]
-                        : null;
-                    const destination =
-                      segment.Destination && Array.isArray(segment.Destination)
-                        ? segment.Destination[0]
-                        : null;
-
-                    const operatorName =
-                      segment.Operator &&
-                      Array.isArray(segment.Operator) &&
-                      segment.Operator[0] &&
-                      segment.Operator[0].Name &&
-                      Array.isArray(segment.Operator[0].Name)
-                        ? segment.Operator[0].Name[0]
-                        : "Unknown Airline";
-
-                    const logo = operatorName.toLowerCase();
-
-                    const flightId =
-                      segment.FlightId &&
-                      Array.isArray(segment.FlightId) &&
-                      segment.FlightId[0] &&
-                      segment.FlightId[0].Code &&
-                      Array.isArray(segment.FlightId[0].Code)
-                        ? segment.FlightId[0].Code[0]
-                        : "N/A";
-
-                    const travelClass =
-                      segment.TravelClass &&
-                      Array.isArray(segment.TravelClass) &&
-                      segment.TravelClass[0] &&
-                      segment.TravelClass[0].SupplierClass &&
-                      Array.isArray(segment.TravelClass[0].SupplierClass)
-                        ? segment.TravelClass[0].SupplierClass[0]
-                        : "Economy";
-
-                    const departureTime =
-                      segment.DepartDate && Array.isArray(segment.DepartDate)
-                        ? segment.DepartDate[0]?.split("-")[1] || "N/A"
-                        : "N/A";
-
-                    const arrivalTime =
-                      segment.ArriveDate && Array.isArray(segment.ArriveDate)
-                        ? segment.ArriveDate[0]?.split("-")[1] || "N/A"
-                        : "N/A";
-
-                    const duration =
-                      segment.Duration && Array.isArray(segment.Duration)
-                        ? Math.round((Number(segment.Duration[0]) || 0) / 60) +
-                          "hr"
-                        : "N/A";
-
-                    // *** CURRENCY CONVERSION FOR RETURN FLIGHTS ***
-                    const originalPrice =
-                      flight.Price &&
-                      Array.isArray(flight.Price) &&
-                      flight.Price[0] &&
-                      flight.Price[0].Amount &&
-                      Array.isArray(flight.Price[0].Amount)
-                        ? parseFloat(flight.Price[0].Amount[0] || "0")
-                        : 0;
-
-                    const originalCurrency =
-                      flight.Price &&
-                      Array.isArray(flight.Price) &&
-                      flight.Price[0] &&
-                      flight.Price[0].Currency &&
-                      Array.isArray(flight.Price[0].Currency)
-                        ? flight.Price[0].Currency[0]
-                        : "N/A";
-
-                    let convertedPrice = originalPrice;
-
-                    try {
-                      convertedPrice = parseFloat(
-                        convertToRequestedCurrency(
-                          originalPrice,
-                          originalCurrency,
-                          "CVE",
-                          rates
-                        ).toFixed(2)
-                      );
-                    } catch (err) {
-                      console.error("Currency conversion failed", err.message);
-                      convertedPrice = originalPrice; // fallback
-                    }
-
-                    return {
-                      id:
-                        flight.Id && Array.isArray(flight.Id)
-                          ? flight.Id[0] || "N/A"
-                          : "N/A",
-                      airline: operatorName,
-                      logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
-                      flightNumber: flightId,
-                      class: travelClass,
-                      departureTime: departureTime,
-                      departureCity:
-                        origin && origin.Code && Array.isArray(origin.Code)
-                          ? origin.Code[0] || "N/A"
-                          : "N/A",
-                      arrivalTime: arrivalTime,
-                      arrivalCity:
-                        destination &&
-                        destination.Code &&
-                        Array.isArray(destination.Code)
-                          ? destination.Code[0] || "N/A"
-                          : "N/A",
-                      duration: duration,
-                      price: convertedPrice,
-                      originalPrice: convertedPrice,
-                      convertedcurrencyfrom: originalCurrency,
-                      convertedPricefrom: originalPrice,
-                      currency: "CVE",
-                      type: "return",
-                    };
-                  } catch (error) {
-                    console.error("Error processing return flight:", error);
-                    return null;
-                  }
-                })
-                .filter(Boolean); // Remove null entries
-
-              return [...outwardFlights, ...returnFlights];
+                return [...outwardFlights, ...returnFlights].filter(Boolean);
+              });
             });
-          });
-        });
+          })
+        );
+
+        // Flatten and filter nulls
+        const simplifiedFlightsGroup = (
+          await Promise.all(simplifiedFlightsGroupNested)
+        ).flat();
 
         console.log("simplifiedflightgroup", simplifiedFlightsGroup);
         console.log(TripType);
