@@ -3908,7 +3908,8 @@ const SearchBox = ({
   SearchProps,
 }) => {
   const { t } = useTranslation();
-
+  const [tax, setTax] = useState("");
+  const [price, setPrice] = useState(0);
   const [isDirectFlight, setIsDirectFlight] = useState(false);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -4087,6 +4088,38 @@ const SearchBox = ({
       fetchFlights();
     }
   }, [searchCount]);
+  const transactionUrl = import.meta.env.VITE_TRANSACTION_URL;
+  const getCommissionDetail = async (tfPrice) => {
+    try {
+      const res = await fetch(`${transactionUrl}/getcommissiondetails`);
+      const result = await res.json();
+      console.log(result.commissionDetail);
+      const commissionDetails = result.commissionDetail;
+      if (!commissionDetails) {
+        return console.log("Error");
+      } else {
+        const Tax = commissionDetails.Tax;
+        const Commission = commissionDetails.Commission;
+        if (Tax && Commission) {
+          console.log(Tax, Commission);
+          if (commissionDetails.CommissionType.toLowerCase() === "percentage") {
+            setTax(`${Tax}%`);
+
+            const commissionAmount = (tfPrice * Commission) / 100;
+            const totalAmount = tfPrice + commissionAmount;
+            return totalAmount.toFixed(2);
+          } else if (
+            commissionDetails.CommissionType.toLowerCase() === "amount"
+          ) {
+            const totalAmount = tfPrice + Commission;
+            return totalAmount.toFixed(2);
+          }
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
     const fetchFlights = async () => {
@@ -4276,10 +4309,10 @@ const SearchBox = ({
                         ? flight.Price[0].Currency[0]
                         : "N/A";
 
-                    let convertedPrice = originalPrice;
+                    let convertedPrice;
 
                     try {
-                      convertedPrice = parseFloat(
+                      let tfPrice = parseFloat(
                         convertToRequestedCurrency(
                           originalPrice,
                           originalCurrency,
@@ -4287,9 +4320,12 @@ const SearchBox = ({
                           rates
                         ).toFixed(2)
                       );
+                      convertedPrice = getCommissionDetail(tfPrice);
                     } catch (err) {
-                      console.error("Currency conversion failed", err.message);
-                      convertedPrice = originalPrice; // fallback to original price
+                      return console.error(
+                        "Currency conversion failed",
+                        err.message
+                      );
                     }
 
                     return {
@@ -4315,8 +4351,8 @@ const SearchBox = ({
                           : "N/A",
                       duration: duration,
                       // *** CURRENCY FIELDS ***
-                      price: convertedPrice, // Converted price for display
-                      originalPrice: convertedPrice, // Converted price (keep same for consistency)
+                      price: convertedPrice,
+                      originalPrice: convertedPrice,
                       convertedcurrencyfrom: originalCurrency, // Original currency
                       convertedPricefrom: originalPrice, // Original price amount
                       currency: "CVE", // Target currency

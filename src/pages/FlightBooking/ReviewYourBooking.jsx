@@ -10,6 +10,11 @@ import White_eSim from "../../assets/images/ReviewYourBooking/white_eSim.svg";
 import White_Extra_Luggage from "../../assets/images/ReviewYourBooking/White_Extra_luggage.svg";
 import White_Visa_Process from "../../assets/images/ReviewYourBooking/White_Visa_process.svg";
 import { useTranslation } from "react-i18next";
+
+import {
+  fetchExchangeRates,
+  convertToRequestedCurrency,
+} from "../../utils/Currencyconverter";
 import {
   ArrowRight,
   Check,
@@ -40,7 +45,7 @@ export default function ReviewYourBooking() {
   const [structuredFeatures, setstructuredFeatures] = useState([]);
   const [seatOptions, setseatOptions] = useState([]);
   const [luggageOptions, setluggageOptions] = useState([]);
-  const [tickets,setTickets]=useState([]);
+  const [tickets, setTickets] = useState([]);
   console.log(TicketData.outwordTicketId);
   console.log(TicketData.returnTicketId);
   console.log("tripType", TicketData.tripType);
@@ -108,11 +113,39 @@ export default function ReviewYourBooking() {
         res.requiredParameterList[0].RequiredParameter[15].DisplayText[0];
       const LuggageOptions =
         res.requiredParameterList[0].RequiredParameter[16].DisplayText[0];
+let sf = res.Features.Feature;  
+
+      console.log(sf);
+      console.log(sf);
+      let result = [];
+
+      sf.forEach((item) => {
+        const type = item?.$?.Type || "";
+        const label = item?.$?.Label || "";
+
+        // Always check Type for these
+        if (
+          type === "FlightChange" ||
+          type === "Cancellation" ||
+          type === "SmallCabinBag" ||
+          type === "HoldBag" ||
+          type === "LargeCabinBag"
+        ) {
+          result.push(item);
+        }
+
+        // For all Seat types regardless of label
+        if (type === "Seat") {
+          result.push(item);
+        }
+      });
+
+      console.log(result);
       setseatOptions(seatOptions);
       setluggageOptions(LuggageOptions);
       setAlternativeFares(res.AlternativeFares);
-      setstructuredFeatures(res.Features);
-      setTickets(flightTickets)
+      setstructuredFeatures(result);
+      setTickets(flightTickets);
       setIsPopupOpen(true);
     }
   };
@@ -203,18 +236,23 @@ export default function ReviewYourBooking() {
           </button>
         </div>
       </div>
-      {AlternativeFares && structuredFeatures && isPopupOpen && seatOptions && luggageOptions && tickets && (
-        <FeaturesPlanPopup
-          setIsPopupOpen={setIsPopupOpen}
-          handleProcessDetails={handleProcessDetails}
-          TicketData={TicketData}
-          AlternativeFares={AlternativeFares}
-          structuredFeatures={structuredFeatures}
-          seat={seatOptions}
-          luggage={luggageOptions}
-          tickets={tickets}
-        />
-      )}
+      {AlternativeFares &&
+        structuredFeatures &&
+        isPopupOpen &&
+        seatOptions &&
+        luggageOptions &&
+        tickets && (
+          <FeaturesPlanPopup
+            setIsPopupOpen={setIsPopupOpen}
+            handleProcessDetails={handleProcessDetails}
+            TicketData={TicketData}
+            AlternativeFares={AlternativeFares}
+            structuredFeatures={structuredFeatures}
+            seat={seatOptions}
+            luggage={luggageOptions}
+            tickets={tickets}
+          />
+        )}
     </>
   );
 }
@@ -379,15 +417,58 @@ const FeaturesPlanPopup = ({
   structuredFeatures,
   seat,
   luggage,
-  tickets
+  tickets,
 }) => {
-  const [selectedTab, setSelectedTab] = useState("outward");
-console.log("AlternativeFares:", AlternativeFares);
-console.log("structuredFeatures:", structuredFeatures);
+  async function convertAllPricesToCVE(features) {
+                const rates = await fetchExchangeRates("CVE");
+  features.forEach(feature => {
+    if (feature.Option && Array.isArray(feature.Option)) {
+      feature.Option.forEach(option => {
+        const optionData = option["$"];
+        if (optionData.Currency && optionData.Value) {
+          const originalPrice = parseFloat(optionData.Value);
+          const originalCurrency = optionData.Currency;
 
-  console.log("lu"+luggage);
-  console.log("se"+seat);
-  console.log("ti"+tickets);
+          // Convert to CVE using your provided method
+          const convertedPrice = parseFloat(
+            convertToRequestedCurrency(originalPrice, originalCurrency, "CVE", rates).toFixed(2)
+          );
+
+          // Update the value and currency
+          optionData.Value = convertedPrice.toString();
+          optionData.Currency = "CVE";
+        }
+
+        // Optional: convert MinValue too if present
+        if (optionData.Currency && optionData.MinValue) {
+          const originalMin = parseFloat(optionData.MinValue);
+          const originalCurrency = optionData.Currency;
+
+          const convertedMin = parseFloat(
+            convertToRequestedCurrency(originalMin, originalCurrency, "CVE", rates).toFixed(2)
+          );
+
+          optionData.MinValue = convertedMin.toString();
+          optionData.Currency = "CVE"; // ensure currency is updated
+        }
+      });
+    }
+  });
+
+  return features;
+}
+
+  const [selectedTab, setSelectedTab] = useState("outward");
+  console.log("AlternativeFares:", AlternativeFares);
+  console.log("structuredFeatures:", structuredFeatures);
+
+  console.log("lu" + luggage);
+  console.log("se" + seat);
+  console.log("ti" + tickets);
+
+
+  const updatedFeatures = convertAllPricesToCVE(structuredFeatures);
+  console.log(updatedFeatures)
   const navigate = useNavigate();
   const handleNavigate = () => {
     navigate("/booking/TravelersDetails", {
@@ -397,7 +478,7 @@ console.log("structuredFeatures:", structuredFeatures);
         travalers: TicketData.travalers,
         tripType: TicketData.tripType,
         seatOption: seat,
-        luggageOptions:luggage,
+        luggageOptions: luggage,
         // Add price information
         outwordPrice: TicketData.outwordTicketId.price,
         returnPrice: TicketData.returnTicketId?.price || 0,
