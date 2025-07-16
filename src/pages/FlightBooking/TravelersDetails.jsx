@@ -2396,6 +2396,7 @@ function TravelersDetails() {
       },
     },
     Address: {
+      Company: "",
       Flat: "",
       BuildingName: "",
       BuildingNumber: "",
@@ -2439,6 +2440,7 @@ function TravelersDetails() {
             },
           },
           Address: {
+            Company: "",
             Flat: "",
             BuildingName: "",
             BuildingNumber: "",
@@ -2877,6 +2879,7 @@ function TravelersDetails() {
                             placeholder="Enter last name"
                           />
                         </div>
+
                         <div>
                           <label className="block text-sm font-medium mb-1">
                             Date of Birth
@@ -2895,6 +2898,23 @@ function TravelersDetails() {
                               )
                             }
                             className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Company
+                          </label>
+                          <input
+                            type="text"
+                            value={traveller.Address?.Company || ""}
+                            onChange={(e) =>
+                              handleTravellerChange(
+                                "address.Company",
+                                e.target.value
+                              )
+                            }
+                            className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                            placeholder="Enter company"
                           />
                         </div>
                         <div>
@@ -3003,6 +3023,23 @@ function TravelersDetails() {
                             }
                             className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
                             placeholder="Enter city"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Province/State
+                          </label>
+                          <input
+                            type="text"
+                            value={traveller.Address?.Province || ""}
+                            onChange={(e) =>
+                              handleTravellerChange(
+                                "address.Province",
+                                e.target.value
+                              )
+                            }
+                            className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                            placeholder="Enter province/state"
                           />
                         </div>
                         <div>
@@ -3241,6 +3278,20 @@ function TravelersDetails() {
                       />
                     </div>
 
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Company
+                      </label>
+                      <input
+                        type="text"
+                        value={billingDetails.Address.Company}
+                        onChange={(e) =>
+                          handleBillingChange("address.Company", e.target.value)
+                        }
+                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                        placeholder="Enter company"
+                      />
+                    </div>
                     {/* Flat/Apartment */}
                     <div>
                       <label className="block text-sm font-medium mb-1">
@@ -3351,7 +3402,23 @@ function TravelersDetails() {
                         placeholder="Enter city"
                       />
                     </div>
-
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Province/State
+                      </label>
+                      <input
+                        type="text"
+                        value={billingDetails.Address.Province}
+                        onChange={(e) =>
+                          handleBillingChange(
+                            "address.Province",
+                            e.target.value
+                          )
+                        }
+                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                        placeholder="Enter province/state"
+                      />
+                    </div>
                     {/* Postcode */}
                     <div>
                       <label className="block text-sm font-medium mb-1">

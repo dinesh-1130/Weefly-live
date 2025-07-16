@@ -16,6 +16,18 @@ const paymentIcons = {
   payLater: "/assets/paymentpage/paylater.png",
 };
 
+import Brand1 from "../../assets/images/PaymentBrands/brand1.png";
+import Brand2 from "../../assets/images/PaymentBrands/brand2.png";
+import Brand3 from "../../assets/images/PaymentBrands/brand3.png";
+import Brand4 from "../../assets/images/PaymentBrands/brand4.png";
+import Brand5 from "../../assets/images/PaymentBrands/brand5.png";
+import Brand6 from "../../assets/images/PaymentBrands/brand6.png";
+import Brand7 from "../../assets/images/PaymentBrands/brand7.png";
+import Brand8 from "../../assets/images/PaymentBrands/brand8.png";
+import Brand9 from "../../assets/images/PaymentBrands/brand9.png";
+import Brand10 from "../../assets/images/PaymentBrands/brand10.png";
+import Brand11 from "../../assets/images/PaymentBrands/brand11.png";
+
 export default function PaymentPage() {
   const { t } = useTranslation();
   const location = useLocation();
@@ -610,6 +622,26 @@ export default function PaymentPage() {
                     <span className="text-xs">CVE</span> <span>{price}</span>
                   </span>
                 </div>
+              </div>
+            </div>
+
+            <div className="mt-10 bg-white p-4 rounded-md">
+              <p className="text-xl font-jakarta mb-6 font-semibold">
+                Supported Card
+              </p>
+
+              <div className="grid grid-cols-6 gap-5 items-center">
+                <img src={Brand1} alt="brand1" height={50} width={50} />
+                <img src={Brand2} alt="brand2" height={50} width={50} />
+                <img src={Brand3} alt="brand3" height={50} width={50} />
+                <img src={Brand4} alt="brand4" height={50} width={50} />
+                <img src={Brand5} alt="brand5" height={50} width={50} />
+                <img src={Brand6} alt="brand6" height={50} width={50} />
+                <img src={Brand7} alt="brand7" height={50} width={50} />
+                <img src={Brand8} alt="brand8" height={50} width={50} />
+                <img src={Brand9} alt="brand9" height={50} width={50} />
+                <img src={Brand10} alt="brand10" height={50} width={50} />
+                <img src={Brand11} alt="brand11" height={50} width={50} />
               </div>
             </div>
 

@@ -16,8 +16,17 @@ function TicketPendingConfirmation() {
         <p className="font-jakarta font-medium text-[18px] xl:text-[22px] text-[#555555] mb-[10px]">
           Please wait for your confirmation
         </p>
-        <p className="font-jakarta font-medium text-[16px] xl:text-[20px] text-[#555555]">
+        <p className="font-jakarta font-medium text-[16px] xl:text-[20px] text-[#555555]  mb-[30px]">
           Kindly check your email...
+        </p>
+        <p className="font-jakarta font-medium text-[16px] xl:text-[20px] text-[#555555]  mb-[10px] max-w-4xl mx-auto text-pretty">
+          The airline did not give a clear indication of the status of this
+          booking. If the booking succeeded, you should receive an email
+          confirmation from them shortly. If in doubt, please contact our help
+          desk:{" "}
+          <Link to={"/"} className="text-orange-600 underline">
+            Contact us
+          </Link>
         </p>
       </div>
 
