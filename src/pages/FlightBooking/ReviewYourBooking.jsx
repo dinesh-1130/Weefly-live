@@ -10,6 +10,11 @@ import White_eSim from "../../assets/images/ReviewYourBooking/white_eSim.svg";
 import White_Extra_Luggage from "../../assets/images/ReviewYourBooking/White_Extra_luggage.svg";
 import White_Visa_Process from "../../assets/images/ReviewYourBooking/White_Visa_process.svg";
 import { useTranslation } from "react-i18next";
+
+import {
+  fetchExchangeRates,
+  convertToRequestedCurrency,
+} from "../../utils/Currencyconverter";
 import {
   ArrowRight,
   Check,
@@ -36,7 +41,11 @@ export default function ReviewYourBooking() {
   const TicketData = location.state;
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-
+  const [AlternativeFares, setAlternativeFares] = useState([]);
+  const [structuredFeatures, setstructuredFeatures] = useState([]);
+  const [seatOptions, setseatOptions] = useState([]);
+  const [luggageOptions, setluggageOptions] = useState([]);
+  const [tickets, setTickets] = useState([]);
   console.log(TicketData.outwordTicketId);
   console.log(TicketData.returnTicketId);
   console.log("tripType", TicketData.tripType);
@@ -104,37 +113,40 @@ export default function ReviewYourBooking() {
         res.requiredParameterList[0].RequiredParameter[15].DisplayText[0];
       const LuggageOptions =
         res.requiredParameterList[0].RequiredParameter[16].DisplayText[0];
-      console.log(seatOptions);
-      console.log(LuggageOptions);
-      const AlternativeFares = res.AlternativeFares;
-      const structuredFeatures = res.Features;
-      console.log(AlternativeFares);
-      console.log(structuredFeatures);
-      // navigate("/booking/TravelersDetails", {
-      //   state: {
-      //     flights: flightTickets,
-      //     routingId: TicketData.routingId,
-      //     travalers: TicketData.travalers,
-      //     tripType: TicketData.tripType,
-      //     seatOption: seatOptions,
-      //     luggageOptions: LuggageOptions,
-      //   },
-      // });
+      let sf = res.Features.Feature;
 
-      navigate("/booking/TravelersDetails", {
-        state: {
-          flights: flightTickets,
-          routingId: TicketData.routingId,
-          travalers: TicketData.travalers,
-          tripType: TicketData.tripType,
-          seatOption: seatOptions,
-          luggageOptions: LuggageOptions,
-          // Add price information
-          outwordPrice: TicketData.outwordTicketId.price,
-          returnPrice: TicketData.returnTicketId?.price || 0,
-          currency: TicketData.outwordTicketId.currency || "CVE",
-        },
+      console.log(sf);
+      console.log(sf);
+      let result = [];
+
+      sf.forEach((item) => {
+        const type = item?.$?.Type || "";
+        const label = item?.$?.Label || "";
+
+        // Always check Type for these
+        if (
+          type === "FlightChange" ||
+          type === "Cancellation" ||
+          type === "SmallCabinBag" ||
+          type === "HoldBag" ||
+          type === "LargeCabinBag"
+        ) {
+          result.push(item);
+        }
+
+        // For all Seat types regardless of label
+        if (type === "Seat") {
+          result.push(item);
+        }
       });
+
+      console.log(result);
+      setseatOptions(seatOptions);
+      setluggageOptions(LuggageOptions);
+      setAlternativeFares(res.AlternativeFares);
+      setstructuredFeatures(result);
+      setTickets(flightTickets);
+      setIsPopupOpen(true);
     }
   };
 
@@ -217,20 +229,30 @@ export default function ReviewYourBooking() {
         <div className="text-center xl:text-right mt-[40px]">
           <button
             // onClick={() => handleProcessDetails()}
-            onClick={() => setIsPopupOpen(true)}
+            onClick={() => handleProcessDetails()}
             className="bg-[#EE5128] text-white text-[15px] px-[37px] py-[14px] rounded-[5px] font-semibold text-nowrap hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200"
           >
             {t("continue-booking")}
           </button>
         </div>
       </div>
-      {isPopupOpen && (
-        <FeaturesPlanPopup
-          setIsPopupOpen={setIsPopupOpen}
-          handleProcessDetails={handleProcessDetails}
-          TicketData={TicketData}
-        />
-      )}
+      {AlternativeFares &&
+        structuredFeatures &&
+        isPopupOpen &&
+        seatOptions &&
+        luggageOptions &&
+        tickets && (
+          <FeaturesPlanPopup
+            setIsPopupOpen={setIsPopupOpen}
+            handleProcessDetails={handleProcessDetails}
+            TicketData={TicketData}
+            AlternativeFares={AlternativeFares}
+            structuredFeatures={structuredFeatures}
+            seat={seatOptions}
+            luggage={luggageOptions}
+            tickets={tickets}
+          />
+        )}
     </>
   );
 }
@@ -390,10 +412,120 @@ function FlightPriceCard({ title, flight }) {
 
 const FeaturesPlanPopup = ({
   setIsPopupOpen,
-  handleProcessDetails,
   TicketData,
+  AlternativeFares,
+  structuredFeatures,
+  seat,
+  luggage,
+  tickets,
 }) => {
+    const transactionUrl = import.meta.env.VITE_TRANSACTION_URL;
+  const getCommissionDetail = async (tfPrice) => {
+    try {
+      const res = await fetch(`${transactionUrl}/getcommissiondetails`);
+      const result = await res.json();
+      console.log(result.commissionDetail);
+      const commissionDetails = result.commissionDetail;
+      if (!commissionDetails) {
+        return console.log("Error");
+      } else {
+        const Tax = commissionDetails.Tax;
+        const Commission = commissionDetails.Commission;
+        if (Tax && Commission) {
+          console.log(Tax, Commission);
+          if (commissionDetails.CommissionType.toLowerCase() === "percentage") {
+            const commissionAmount = (tfPrice * Commission) / 100;
+            const totalAmount = tfPrice + commissionAmount;
+            return totalAmount.toFixed(2);
+          } else if (
+            commissionDetails.CommissionType.toLowerCase() === "amount"
+          ) {
+            const totalAmount = tfPrice + Commission;
+            return totalAmount.toFixed(2);
+          }
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  async function convertAllPricesToCVE(features) {
+    const rates = await fetchExchangeRates("CVE");
+    for (const feature of features) {
+      if (feature.Option && Array.isArray(feature.Option)) {
+        for (const option of feature.Option) {
+          const optionData = option["$"];
+
+          if (optionData.Currency && optionData.Value) {
+            const originalPrice = parseFloat(optionData.Value);
+            const originalCurrency = optionData.Currency;
+
+            const tfPrice = parseFloat(
+              convertToRequestedCurrency(
+                originalPrice,
+                originalCurrency,
+                "CVE",
+                rates
+              ).toFixed(2)
+            );
+
+            const convertedPrice = await getCommissionDetail(tfPrice);
+            optionData.Value = convertedPrice.toString();
+            optionData.Currency = "CVE";
+          }
+
+          if (optionData.Currency && optionData.MinValue) {
+            const originalMin = parseFloat(optionData.MinValue);
+            const originalCurrency = optionData.Currency;
+
+            const tfMin = parseFloat(
+              convertToRequestedCurrency(
+                originalMin,
+                originalCurrency,
+                "CVE",
+                rates
+              ).toFixed(2)
+            );
+
+            const convertedMin = await getCommissionDetail(tfMin);
+            optionData.MinValue = convertedMin.toString();
+            optionData.Currency = "CVE";
+          }
+        }
+      }
+    }
+
+    return features;
+  }
+
   const [selectedTab, setSelectedTab] = useState("outward");
+  console.log("AlternativeFares:", AlternativeFares);
+  console.log("structuredFeatures:", structuredFeatures);
+
+  console.log("lu" + luggage);
+  console.log("se" + seat);
+  console.log("ti" + tickets);
+
+  const updatedFeatures = convertAllPricesToCVE(structuredFeatures);
+  console.log(updatedFeatures);
+  const navigate = useNavigate();
+  const handleNavigate = () => {
+    navigate("/booking/TravelersDetails", {
+      state: {
+        flights: tickets,
+        routingId: TicketData.routingId,
+        travalers: TicketData.travalers,
+        tripType: TicketData.tripType,
+        seatOption: seat,
+        luggageOptions: luggage,
+        // Add price information
+        outwordPrice: TicketData.outwordTicketId.price,
+        returnPrice: TicketData.returnTicketId?.price || 0,
+        currency: TicketData.outwordTicketId.currency || "CVE",
+      },
+    });
+  };
   return (
     <div className="fixed top-0 left-0 h-full w-full flex justify-center items-center bg-black/20 z-50 backdrop-blur-lg">
       <div className="p-6 bg-white rounded-2xl max-w-9/12 w-full">
@@ -740,8 +872,8 @@ const FeaturesPlanPopup = ({
             {selectedTab.includes("outward") ? (
               " Select MAD - LHR"
             ) : (
-              <p className="" onClick={() => handleProcessDetails()}>
-                Contine
+              <p className="" onClick={() => handleNavigate()}>
+                Continue
               </p>
             )}
           </button>
