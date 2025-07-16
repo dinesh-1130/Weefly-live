@@ -2779,6 +2779,9 @@ function TravelersDetails() {
 
                   {expandedTravellers.has(index) && (
                     <div className="p-6">
+                      <p className="text-gray-400 mb-4">
+                        *As per your passport
+                      </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium mb-1">
@@ -3186,6 +3189,7 @@ function TravelersDetails() {
 
               {billingExpanded && (
                 <div className="p-6">
+                  <p className="text-gray-400 mb-4">*As per your passport</p>
                   <div className="mb-4">
                     <label className="flex items-center gap-2">
                       <input
