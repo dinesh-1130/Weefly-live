@@ -48,6 +48,7 @@ import TicketConfirm from "./pages/FlightBooking/TicketConfirm";
 import TicketNotConfirm from "./pages/FlightBooking/TicketNotConfirm";
 import ErrorPage from "./pages/ErrorPage";
 import TicketPendingConfirmation from "./pages/FlightBooking/TicketPendingConfirmation";
+import SupplierError from "./pages/FlightBooking/SupplierError";
 const App = () => {
   useEffect(() => {
     Aos.init({
@@ -78,6 +79,7 @@ const App = () => {
               path="ticketwaiting"
               element={<TicketPendingConfirmation />}
             />
+            <Route path="UnconfirmedSupplier" element={ <SupplierError/> }/>
             <Route path="profile" element={<ProfilePage />} />
             <Route path="/Contact" element={<ContactUsPage />} />
           </Route>

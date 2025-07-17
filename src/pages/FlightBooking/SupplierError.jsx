@@ -3,7 +3,7 @@ import AirIndiaLogo from "../../assets/images/AirIndiaLogo.svg";
 import FlightLogo from "../../assets/images/FlightIcon.svg";
 import { Link } from "react-router";
 
-function TicketPendingConfirmation() {
+function SupplierError() {
   return (
     <div className="py-[30px] px-10 xl:px-40">
       <img
@@ -14,12 +14,16 @@ function TicketPendingConfirmation() {
       />
       <div className="text-center mt-[30px]" data-aos="fade-up">
         <h1 className="text-4xl font-bold font-jakarta text-orange-600 mb-6">
-          Unconfirmed
+          Unconfirmed By Supplier
         </h1>
         {/* <p className="font-jakarta font-medium text-[18px] xl:text-[22px] text-[#555555] mb-[10px]">
-          Please wait for your confirmation, Kindly check your email...
+          Please wait for your confirmation, <b>Retry after 15 minutes.</b>
+        </p>
+        <p className="font-jakarta font-medium text-[16px] xl:text-[20px] text-[#555555]  mb-[30px]">
+          Kindly check your email...
         </p> */}
-        <p className="font-jakarta font-medium text-[16px] xl:text-[20px] text-[#555555]  mb-[30px] leading-7">
+
+         <p className="font-jakarta font-medium text-[16px] xl:text-[20px] text-[#555555]  mb-[30px] leading-7">
           <span className="text-orange-600 text-xl">
           We're Processing Your Request.
           </span> <br />
@@ -59,4 +63,4 @@ Thank you for your patience.
   );
 }
 
-export default TicketPendingConfirmation;
+export default SupplierError;
