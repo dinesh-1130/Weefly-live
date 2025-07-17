@@ -62,6 +62,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<RootLayout />}>
           <Route path="*" element={<ErrorPage />} />
+          <Route path="/error" element={<ErrorPage />} />
 
           {/* Website Route */}
           <Route path="" element={<WebsiteLayout />}>
