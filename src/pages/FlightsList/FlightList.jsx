@@ -2859,6 +2859,7 @@ const FlightResults = ({
   travalers,
   searchData,
   SearchProps,
+
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState("");
@@ -3870,6 +3871,7 @@ function FlightList() {
               travalers={travalers}
               searchData={searchData}
               SearchProps={SearchProps} // ✅ Make sure this line exists
+              selectOutWard={selectOutWard}
             />
           )}
 
