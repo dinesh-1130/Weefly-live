@@ -2859,7 +2859,6 @@ const FlightResults = ({
   travalers,
   searchData,
   SearchProps,
-
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState("");
@@ -3147,8 +3146,8 @@ const FlightResults = ({
 
                         navigate("/booking/ReviewYourBooking", {
                           state: {
-                            outwordTicketId: selectOutWard,
-                            returnTicketId: id || selectReturn,
+                            outwordTicketId: flight,
+                            // returnTicketId: id || selectReturn,
                             routingId: routingId,
                             tripType: TripType,
                             travalers: travalers,
