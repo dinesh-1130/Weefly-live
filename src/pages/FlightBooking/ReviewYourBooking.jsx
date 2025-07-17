@@ -119,32 +119,32 @@ export default function ReviewYourBooking() {
       console.log(sf);
       let result = [];
 
-      sf.forEach((item) => {
-        const type = item?.$?.Type || "";
-        const label = item?.$?.Label || "";
+      // sf.forEach((item) => {
+      //   const type = item?.$?.Type || "";
+      //   const label = item?.$?.Label || "";
 
-        // Always check Type for these
-        if (
-          type === "FlightChange" ||
-          type === "Cancellation" ||
-          type === "SmallCabinBag" ||
-          type === "HoldBag" ||
-          type === "LargeCabinBag"
-        ) {
-          result.push(item);
-        }
+      //   // Always check Type for these
+      //   if (
+      //     type === "FlightChange" ||
+      //     type === "Cancellation" ||
+      //     type === "SmallCabinBag" ||
+      //     type === "HoldBag" ||
+      //     type === "LargeCabinBag"
+      //   ) {
+      //     result.push(item);
+      //   }
 
-        // For all Seat types regardless of label
-        if (type === "Seat") {
-          result.push(item);
-        }
-      });
+      //   // For all Seat types regardless of label
+      //   if (type === "Seat") {
+      //     result.push(item);
+      //   }
+      // });
 
       console.log(result);
       setseatOptions(seatOptions);
       setluggageOptions(LuggageOptions);
       setAlternativeFares(res.AlternativeFares);
-      setstructuredFeatures(result);
+      setstructuredFeatures(sf);
       setTickets(flightTickets);
       setIsPopupOpen(true);
     }

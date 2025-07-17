@@ -124,7 +124,7 @@ export default function PaymentPage() {
           alert("Invalid JSON received from server.");
           return;
         }
-
+        console.log(res)
         // process JSON as usual
         try {
           const priceList = res.data.Router[0].GroupList[0].Group[0].Price;
@@ -133,6 +133,7 @@ export default function PaymentPage() {
           return {
             price: originalPrice,
             currency: originalCurrency,
+            bookid:res.data.TFBookingReference[0]
           };
         } catch (error) {
           console.error("Error using JSON data:", error);
@@ -181,6 +182,7 @@ export default function PaymentPage() {
       setTfPrice(convertedPrice);
     }
   };
+  
   const handleBooking = async (e) => {
     e.preventDefault();
     const transactionApi = import.meta.env.VITE_TRANSACTION_URL;
@@ -188,14 +190,14 @@ export default function PaymentPage() {
     const date = new Date();
     const time = date.getTime();
     const totalPrice = Math.ceil(price);
-    const bookid = location.state?.TFBookingReference;
+    // const bookid = location.state?.TFBookingReference;
     const originalCurrencyPrice = location.state?.originalPrice;
     const originalCurrency = location.state?.originalCurrency;
-    console.log(bookid);
+    // console.log(bookid);
     console.log("oc", originalCurrency);
     console.log("ocp", originalCurrencyPrice);
     const result = await handleProcessTerm(location.state?.requestBody);
-
+const bookid=result.bookid
     if (result.price !== originalCurrencyPrice) {
       const { price, currency } = result;
       window.alert("Price CHanges !!");
@@ -245,8 +247,73 @@ export default function PaymentPage() {
       } else {
         console.log(bookid);
       }
-    }
-  };
+    } 
+  }; 
+
+  // const handleBooking = async (e) => {
+  //   e.preventDefault();
+  //   const flightApi = import.meta.env.VITE_BACKEND_URL;
+  //   const bookid = location.state?.TFBookingReference;
+  //   const originalCurrencyPrice = location.state?.originalPrice;
+  //   const originalCurrency = location.state?.originalCurrency;
+
+  //   try {
+  //     const startBookingResult = await fetch(
+  //       "https://dev.weefly.africa/api/flightapi/start-booking",
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({
+  //           expectedAmount: originalCurrencyPrice,
+  //           expectedCurrency: originalCurrency,
+  //           TFBookingReference: bookid,
+  //           fakeBooking: true,
+  //         }),
+  //       }
+  //     );
+  //     const contentType = startBookingResult.headers.get("content-type");
+
+  //     if (contentType && contentType.includes("application/json")) {
+  //       try {
+  //         const res = await startBookingResult.json();
+  //         console.log(res);
+  //       } catch (error) {
+  //         console.error("JSON parse error:", error);
+  //         alert("Invalid JSON received from server.");
+  //         return;
+  //       }
+  //     }
+  //     if (contentType && contentType.includes("text/xml")) {
+  //       // handle XML
+  //       const textResponse = await startBookingResult.text();
+  //       const parser = new DOMParser();
+  //       const xmlDoc = parser.parseFromString(textResponse, "text/xml");
+
+  //       // get the error details
+  //       const processTerms = xmlDoc.querySelector("ProcessTerms");
+  //       if (processTerms) {
+  //         const ecode = processTerms.getAttribute("ecode");
+  //         const etext = processTerms.getAttribute("etext");
+  //         const edetail = processTerms.getAttribute("edetail");
+  //         const edate = processTerms.getAttribute("edate");
+
+  //         console.error(
+  //           `XML error received: code=${ecode}, text=${etext}, details=${edetail}, date=${edate}`
+  //         );
+
+  //         alert(`Seat selection failed:\n${edetail}`);
+  //       } else {
+  //         const textResponse = await startBookingresult.text();
+  //         console.error("Unexpected content-type response:", textResponse);
+  //         alert("Server returned data in an unsupported format.");
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
 
   // '/ticketconfirm' ticketconfirm
   // '/ticketnotconfirm' ticketconfirm
