@@ -387,7 +387,6 @@ export default function SeatSelection() {
               state: {
                 flights: location.state.flights,
                 tripType: location.state.tripType,
-                TFBookingReference,
                 convertedPrice,
                 originalPrice,
                 originalCurrency,
