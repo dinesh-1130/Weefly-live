@@ -76,6 +76,96 @@ export default function ReviewYourBooking() {
   // }, [location])
   console.log(TicketData.outwordTicketId);
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+  /*function parseFeaturesToTable(featuresJson) {
+    const fareClasses = ["Standard", "Inclusive", "Inclusive Plus"];
+    const table = [
+      [
+        "Feature",
+        "Regular (Standard)",
+        "Flexi (Inclusive)",
+        "Super6E (Inclusive Plus)",
+      ],
+    ];
+
+    for (const feature of featuresJson) {
+      const featureType = feature?.["$"]?.Label || feature?.["$"]?.Type;
+      const row = [featureType];
+
+      const classMap = {
+        Standard: "-",
+        Inclusive: "-",
+        "Inclusive Plus": "-",
+      };
+
+      for (const option of feature.Option || []) {
+        const id = option.$.Id;
+        const value = option.$.Value || option.$.MinValue || "0.00";
+        const currency = option.$.Currency || "";
+        const provision =
+          (option.Condition || []).find((c) => c.$.Type === "Provision")?.$
+            .Value || "";
+        const supplierClass = (option.Condition || []).find(
+          (c) => c.$.Type === "SupplierClass"
+        )?.$.Value;
+        const weight = (option.Condition || []).find(
+          (c) => c.$.Type === "MaxWeight"
+        )?.$.Value;
+
+        if (!supplierClass) continue;
+
+        const classes = supplierClass.split(",").map((c) => c.trim());
+
+        for (const cls of classes) {
+          if (fareClasses.includes(cls)) {
+            let display = `ID ${id}`;
+            if (featureType.toLowerCase().includes("bag") && weight) {
+              display += ` (${weight}, ${value} ${currency})`;
+            } else if (value !== "0.00") {
+              display += ` (${value} ${currency})`;
+              if (provision.toLowerCase() === "bundled") {
+                display += ", Bundled";
+              } else {
+                display += ", Paid";
+              }
+            } else {
+              display +=
+                provision === "Bundled"
+                  ? " (0.00 " + currency + ", Bundled)"
+                  : " (Free)";
+            }
+            classMap[cls] = display;
+          }
+        }
+      }
+
+      row.push(
+        classMap["Standard"],
+        classMap["Inclusive"],
+        classMap["Inclusive Plus"]
+      );
+      table.push(row);
+      const [headers, ...rows] = inputArray;
+
+      const plans = {
+        Regular: [],
+        Flexi: [],
+        Super6E: [],
+      };
+
+      for (const row of rows) {
+        const [feature, regular, flexi, super6e] = row;
+
+        plans.Regular.push({ Feature: feature, Value: regular });
+        plans.Flexi.push({ Feature: feature, Value: flexi });
+        plans.Super6E.push({ Feature: feature, Value: super6e });
+      }
+
+      return plans;
+    }
+  }
+    */
+
   const handleProcessDetails = async () => {
     const flightTickets = [];
     const routeid = TicketData.routingId;
@@ -419,7 +509,8 @@ const FeaturesPlanPopup = ({
   luggage,
   tickets,
 }) => {
-    const transactionUrl = import.meta.env.VITE_TRANSACTION_URL;
+  const transactionUrl = import.meta.env.VITE_TRANSACTION_URL;
+
   const getCommissionDetail = async (tfPrice) => {
     try {
       const res = await fetch(`${transactionUrl}/getcommissiondetails`);
@@ -495,8 +586,93 @@ const FeaturesPlanPopup = ({
         }
       }
     }
-
     return features;
+  }
+  function parseFeaturesToPlans(featuresJson) {
+    const fareClasses = ["Standard", "Inclusive", "Inclusive Plus"];
+    const table = [
+      [
+        "Feature",
+        "Regular (Standard)",
+        "Flexi (Inclusive)",
+        "Super6E (Inclusive Plus)",
+      ],
+    ];
+
+    for (const feature of featuresJson) {
+      const featureType = feature?.["$"]?.Label || feature?.["$"]?.Type;
+      const row = [featureType];
+
+      const classMap = {
+        Standard: "-",
+        Inclusive: "-",
+        "Inclusive Plus": "-",
+      };
+
+      for (const option of feature.Option || []) {
+        const id = option.$.Id;
+        const value = option.$.Value || option.$.MinValue || "0.00";
+        const currency = option.$.Currency || "";
+        const provision =
+          (option.Condition || []).find((c) => c.$.Type === "Provision")?.$
+            .Value || "";
+        const supplierClass = (option.Condition || []).find(
+          (c) => c.$.Type === "SupplierClass"
+        )?.$.Value;
+        const weight = (option.Condition || []).find(
+          (c) => c.$.Type === "MaxWeight"
+        )?.$.Value;
+
+        if (!supplierClass) continue;
+
+        const classes = supplierClass.split(",").map((c) => c.trim());
+
+        for (const cls of classes) {
+          if (fareClasses.includes(cls)) {
+            let display = `ID ${id}`;
+            if (featureType.toLowerCase().includes("bag") && weight) {
+              display += ` (${weight}, ${value} ${currency})`;
+            } else if (value !== "0.00") {
+              display += ` (${value} ${currency})`;
+              display +=
+                provision.toLowerCase() === "bundled" ? ", Bundled" : ", Paid";
+            } else {
+              display +=
+                provision === "Bundled"
+                  ? ` (0.00 ${currency}, Bundled)`
+                  : " (Free)";
+            }
+            classMap[cls] = display;
+          }
+        }
+      }
+
+      row.push(
+        classMap["Standard"],
+        classMap["Inclusive"],
+        classMap["Inclusive Plus"]
+      );
+      table.push(row);
+    }
+
+    // Convert to 3-plan format
+    const [_, ...rows] = table;
+
+    const plans = {
+      Regular: [],
+      Flexi: [],
+      Super6E: [],
+    };
+
+    for (const row of rows) {
+      const [feature, regular, flexi, super6e] = row;
+
+      plans.Regular.push({ Feature: feature, Value: regular });
+      plans.Flexi.push({ Feature: feature, Value: flexi });
+      plans.Super6E.push({ Feature: feature, Value: super6e });
+    }
+
+    return plans;
   }
 
   const [selectedTab, setSelectedTab] = useState("outward");
@@ -507,8 +683,26 @@ const FeaturesPlanPopup = ({
   console.log("se" + seat);
   console.log("ti" + tickets);
 
-  const updatedFeatures = convertAllPricesToCVE(structuredFeatures);
-  console.log(updatedFeatures);
+  const [feature, setFeature] = useState([]);
+
+  useEffect(() => {
+    const processFeatures = async () => {
+      const updated = await convertAllPricesToCVE(structuredFeatures);
+      setFeature(updated);
+    };
+
+    processFeatures();
+  }, [structuredFeatures]);
+
+  useEffect(() => {
+    if (feature && feature.length > 0) {
+      const plans = parseFeaturesToPlans(feature);
+      console.log("plans:", plans);
+      // You can also set this to state if you want to use it in the UI
+      // setPlans(plans);
+    }
+  }, [feature]);
+
   const navigate = useNavigate();
   const handleNavigate = () => {
     navigate("/booking/TravelersDetails", {
