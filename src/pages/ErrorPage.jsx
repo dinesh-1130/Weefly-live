@@ -22,10 +22,29 @@ function ErrorPage() {
           <b>Please try again.</b>
         </p> */}
 
-        <p className="font-jakarta font-medium text-[16px] xl:text-[20px] text-[#555555] mt-6 max-w-3xl"> <span className="text-orange-600 text-2xl font-semibold mb-8">
-          Service Temporarily Unavailable
-          </span> <br />
-We're experiencing a service issue. Please do not retry, your request is being processed and you'll be updated once it's resolved.</p>
+        <p className="font-jakarta font-medium text-[16px] xl:text-[20px] text-[#555555] my-6 max-w-7xl">
+          {" "}
+          <span className="text-orange-600 text-2xl font-semibold mb-8">
+            Service Temporarily Unavailable
+          </span>{" "}
+          <br />
+          We're experiencing a service issue.Your request is currently being
+          processed. <b> Please do not retry or resubmit at this time.</b>
+          <br />
+          We are awaiting final confirmation, and you will be notified as soon
+          as the status is updated.
+          <br />
+          Thank you for your patience.
+        </p>
+        <p className="font-jakarta font-medium text-[12px] xl:text-[16px] text-[#555555]  mb-[10px] max-w-3xl mx-auto text-pretty">
+          The airline did not give a clear indication of the status of this
+          booking. If the booking succeeded, you should receive an email
+          confirmation from them shortly. If in doubt, please contact our help
+          desk:{" "}
+          <Link to={"/"} className="text-orange-600 underline">
+            Contact us
+          </Link>
+        </p>
       </div>
       <div className=" max-w-[430px] w-full mx-auto mt-[70px] flex flex-col gap-[37px]">
         <Link
