@@ -1961,7 +1961,6 @@ const HeroSection = () => {
   });
   const [travellers, setTravellers] = useState([30]);
   const [airposts, setAirposts] = useState([]);
-  const [searchNewData, setSearchNewData] = useState([]);
 
   const [fromDropdownOpen, setFromDropdownOpen] = useState(false);
   const [toDropdownOpen, setToDropdownOpen] = useState(false);
@@ -2205,6 +2204,7 @@ const HeroSection = () => {
 
   const handleTravelfusionSearch = async (e) => {
     e.preventDefault();
+    let PlainSearchData;
 
     const formattedFlightDepatureDate =
       handleTravelFusionDate(flightDepatureDate) + "-00:01";
@@ -2260,9 +2260,9 @@ const HeroSection = () => {
             handleTravelFusionDate(flightReturnDate) + "-23:59",
         }),
       };
-      setSearchNewData(requestBody);
-      console.log(requestBody);
 
+      // console.log(requestBody);
+      PlainSearchData = requestBody;
       const response = await fetch(`${travelFusionBackendUrl}/start-routing`, {
         method: "POST",
         headers: {
@@ -2616,7 +2616,7 @@ const HeroSection = () => {
           console.log("simplifiedflightgroup", simplifiedFlightsGroup);
           navigate("/list", {
             state: {
-              FightSearchData: searchNewData,
+              FightSearchData: PlainSearchData,
               oneWay: simplifiedFlights,
               roundTrip: simplifiedFlightsGroup,
               tripType: tripType,
