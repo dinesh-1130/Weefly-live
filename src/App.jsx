@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router";
-import { useEffect } from "react";
+import { useEffect,useState } from "react";
 import Aos from "aos";
 import "./hook/I18n";
 
@@ -55,6 +55,32 @@ const App = () => {
       // once: true,
     });
   }, []);
+  const [location, setLocation] = useState("Fetching location...");
+
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          console.log(position)
+          // Reverse geocoding API
+          const response = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+          );
+
+          const data = await response.json();
+          setLocation(data.countryCode);
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          setLocation("Unable to fetch location");
+        }
+      );
+    } else {
+      setLocation("Geolocation not supported");
+    }
+  }, []);
+
   return (
     <>
       <ScrollToHash />
@@ -66,8 +92,8 @@ const App = () => {
 
           {/* Website Route */}
           <Route path="" element={<WebsiteLayout />}>
-            <Route index element={<Home />} />
-            <Route path="/List" element={<FlightList />} />
+            <Route index element={<Home country={location} />} />
+            <Route path="/List" element={<FlightList country={location} />} />
             <Route path="/Booking" element={<FlightBooking />}>
               <Route path="ReviewYourBooking" element={<ReviewYourBooking />} />
               <Route path="TravelersDetails" element={<TravelersDetails />} />
@@ -80,7 +106,7 @@ const App = () => {
               path="ticketwaiting"
               element={<TicketPendingConfirmation />}
             />
-            <Route path="UnconfirmedSupplier" element={ <SupplierError/> }/>
+            <Route path="UnconfirmedSupplier" element={<SupplierError />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="/Contact" element={<ContactUsPage />} />
           </Route>

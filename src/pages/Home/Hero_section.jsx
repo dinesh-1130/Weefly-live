@@ -1929,7 +1929,7 @@ import {
 import airportsData from "../../constants/airports.json";
 import axios from "axios";
 
-const HeroSection = () => {
+const HeroSection = ({country}) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [from, setFrom] = useState("");
@@ -2241,7 +2241,7 @@ const HeroSection = () => {
     setSearchCount((prev) => prev + 1);
 
     // trigger the search start route api
-
+    console.log("country hero",country)
     try {
       const requestBody = {
         mode: "plane",
@@ -2259,6 +2259,7 @@ const HeroSection = () => {
           returnDateOfSearch:
             handleTravelFusionDate(flightReturnDate) + "-23:59",
         }),
+        countryCode:country
       };
 
       // console.log(requestBody);

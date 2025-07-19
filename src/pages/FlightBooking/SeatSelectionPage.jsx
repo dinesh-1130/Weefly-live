@@ -394,7 +394,8 @@ export default function SeatSelection() {
                 luggageSurcharge: luggageSurcharge,
                 Address: travellerDetails.BillingDetails.Address,
                 Email: travellerDetails.ContactDetails.Email,
-                requestBody: requestBody,
+                // requestBody: requestBody,
+                TFBookingReference
               },
             });
           } else {

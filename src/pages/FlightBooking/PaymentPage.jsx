@@ -102,6 +102,7 @@ export default function PaymentPage() {
   }
   const address = location.state.Address;
   console.log(address);
+  /*
   const handleProcessTerm = async (requestBody) => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
     const response = await fetch(`${backendUrl}/process-terms`, {
@@ -172,7 +173,7 @@ export default function PaymentPage() {
       alert("Could not fetch booking details.");
     }
   };
-
+ 
   const reCalculatePrice = async (price, currency) => {
     if (currency && price) {
       const rates = await fetchExchangeRates("CVE");
@@ -182,7 +183,8 @@ export default function PaymentPage() {
       setTfPrice(convertedPrice);
     }
   };
-  
+  */
+
   const handleBooking = async (e) => {
     e.preventDefault();
     const transactionApi = import.meta.env.VITE_TRANSACTION_URL;
@@ -196,59 +198,60 @@ export default function PaymentPage() {
     // console.log(bookid);
     console.log("oc", originalCurrency);
     console.log("ocp", originalCurrencyPrice);
-    const result = await handleProcessTerm(location.state?.requestBody);
-const bookid=result.bookid
-    if (result.price !== originalCurrencyPrice) {
-      const { price, currency } = result;
-      window.alert("Price CHanges !!");
-      console.log(result.price);
-      reCalculatePrice(price, currency);
-    } else if (result.price === originalCurrencyPrice) {
-      if (originalCurrencyPrice && originalCurrency && bookid) {
-        try {
-          const response = await fetch(`${transactionApi}/start-payment`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              amount: totalPrice,
-              email: location.state.Email,
-              billAddrCountry: "Portugal",
-              billAddrCity: address.City,
-              billAddrline1: `${address.Flat}, ${address.BuildingName}, ${address.BuildingNumber}`,
-              // billAddrline2: `${address.street}, ${address.locality}, ${address.province}`,
-              billAddrPostCode: address.Postcode,
-              Paymentdate,
-              time,
-              expectedAmount: originalCurrencyPrice,
-              expectedCurrency: originalCurrency,
-              TFBookingReference: bookid,
-              fakeBooking: true,
-            }),
-          });
+    // const result = await handleProcessTerm(location.state?.requestBody);
+    const bookid = location.state.TFBookingReference;
+    console.log ("bookid",bookid)
+    // if (result.price !== originalCurrencyPrice) {
+    //   const { price, currency } = result;
+    //   window.alert("Price CHanges !!");
+    //   console.log(result.price);
+    //   reCalculatePrice(price, currency);
+    // } else if (result.price === originalCurrencyPrice) {
 
-          const html = await response.text();
+    if (originalCurrencyPrice && originalCurrency && bookid) {
+      try {
+        const response = await fetch(`${transactionApi}/start-payment`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            amount: totalPrice,
+            email: location.state.Email,
+            billAddrCountry: "Portugal",
+            billAddrCity: address.City,
+            billAddrline1: `${address.Flat}, ${address.BuildingName}, ${address.BuildingNumber}`,
+            // billAddrline2: `${address.street}, ${address.locality}, ${address.province}`,
+            billAddrPostCode: address.Postcode,
+            Paymentdate,
+            time,
+            expectedAmount: originalCurrencyPrice,
+            expectedCurrency: originalCurrency,
+            TFBookingReference: bookid,
+            fakeBooking: true,
+          }),
+        });
 
-          const container = document.createElement("div");
-          container.innerHTML = html;
-          document.body.appendChild(container);
-          container.querySelector("form").submit();
-          if (!response.ok) {
-            const data = await response.json();
-            if (data.status === "UserCancelled") {
-              navigate("/booking/payment"); // react-router handles it smoothly
-              return;
-            }
+        const html = await response.text();
+
+        const container = document.createElement("div");
+        container.innerHTML = html;
+        document.body.appendChild(container);
+        container.querySelector("form").submit();
+        if (!response.ok) {
+          const data = await response.json();
+          if (data.status === "UserCancelled") {
+            navigate("/booking/payment"); // react-router handles it smoothly
+            return;
           }
-        } catch (error) {
-          console.error("Error starting payment:", error);
         }
-      } else {
-        console.log(bookid);
+      } catch (error) {
+        console.error("Error starting payment:", error);
       }
-    } 
-  }; 
+    } else {
+      console.log(bookid);
+    }
+  };
 
   // const handleBooking = async (e) => {
   //   e.preventDefault();
