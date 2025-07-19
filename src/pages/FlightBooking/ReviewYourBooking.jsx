@@ -744,15 +744,15 @@ const FeaturesPlanPopup = ({
               onClick={() => setSelectedTab("outward")}
             >
               <div className="flex flex-col gap-1 text-sm">
-                <img
+                {/* <img
                   src={TicketData.outwordTicketId.logo}
                   alt={TicketData.outwordTicketId.airline}
                   loading="lazy"
                   className="w-10 rounded"
-                />
-                <p className="tracking-tighter text-sm font-medium">
+                /> */}
+                {/* <p className="tracking-tighter text-sm font-medium">
                   {TicketData.outwordTicketId.airline}
-                </p>
+                </p> */}
               </div>
               <div className="flex flex-col text-sm">
                 <p className="flex font-medium justify-between">
@@ -783,15 +783,15 @@ const FeaturesPlanPopup = ({
               onClick={() => setSelectedTab("return")}
             >
               <div className="flex flex-col gap-1">
-                <img
+                {/* <img
                   src={TicketData.returnTicketId.logo}
                   alt={TicketData.returnTicketId.airline}
                   loading="lazy"
                   className=" w-10 rounded"
-                />
-                <p className="tracking-tighter text-sm font-medium">
+                /> */}
+                {/* <p className="tracking-tighter text-sm font-medium">
                   {TicketData.returnTicketId.airline}
-                </p>
+                </p> */}
               </div>
               <div className="flex flex-col text-sm">
                 <p className=" flex font-medium justify-between">
