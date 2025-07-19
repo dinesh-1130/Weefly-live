@@ -297,7 +297,7 @@ export default function SeatSelection() {
       bookingProfile: travellerDetails,
       seatOptions: formattedSeats,
       luggageOptions: formattedLuggageOption,
-      countryOfUser:travellerDetails.BillingDetails.Address.CountryCode
+      countryOfUser: travellerDetails.BillingDetails.Address.CountryCode,
     });
     const response = await fetch(`${backendUrl}/process-terms`, {
       method: "POST",
@@ -1180,13 +1180,13 @@ seat.seat
                     <span>{OutwardTicket.price}</span>
                   </span>
                 </div>
-                <div className="flex justify-between">
+                {/* <div className="flex justify-between">
                   <span>Return Flight Ticket</span>
                   <span className="font-semibold flex gap-1">
                     <span>CVE</span>
                     <span>{returnTicket.price}</span>
                   </span>
-                </div>
+                </div> */}
                 <div className="flex justify-between">
                   <span>Outward seat x {selectOutwardSeats.length}</span>
                   <span className="font-semibold flex gap-1">

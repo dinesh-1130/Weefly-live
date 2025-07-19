@@ -1977,17 +1977,21 @@ const HeroSection = () => {
   const [commissionDetails, setcommissionDetails] = useState([]);
   console.log(searchData);
   const transactionUrl = import.meta.env.VITE_TRANSACTION_URL;
-  const getcommission = async () => {
-    try {
-      const res = await fetch(`${transactionUrl}/getcommissiondetails`);
-      const result = await res.json();
-      console.log(result.commissionDetail);
-      const commission = result.commissionDetail;
-      setcommissionDetails(commission);
-    } catch (error) {
-      console.error("Failed to fetch supplier route:", error);
-    }
-  };
+
+  useEffect(() => {
+    const getcommission = async () => {
+      try {
+        const res = await fetch(`${transactionUrl}/getcommissiondetails`);
+        const result = await res.json();
+        console.log(result.commissionDetail);
+        const commission = result.commissionDetail;
+        setcommissionDetails(commission);
+      } catch (error) {
+        console.error("Failed to fetch supplier route:", error);
+      }
+    };
+    getcommission();
+  }, []);
   useEffect(() => {
     if (fromDropdownOpen) {
       if (fromDropdownSearchTerm.length > 0) {
@@ -2013,7 +2017,7 @@ const HeroSection = () => {
         setFilteredFromAirports(airposts.slice(0, 6));
       }
     }
-    getcommission();
+    // getcommission();
   }, [fromDropdownSearchTerm, airposts, fromDropdownOpen]);
 
   // Add this useEffect right after the existing FROM dropdown useEffect
@@ -2149,27 +2153,27 @@ const HeroSection = () => {
 
     setSearchCount((prev) => prev + 1);
   }; */
-  const listSupplierRoute = async () => {
-    try {
-      const response = await fetch(
-        `${travelFusionBackendUrl}/get-supplierroute`
-      );
+  // const listSupplierRoute = async () => {
+  //   try {
+  //     const response = await fetch(
+  //       `${travelFusionBackendUrl}/get-supplierroute`
+  //     );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! Status: ${response.status}`);
+  //     }
 
-      const data = await response.json(); // Convert the response body to JSON
-      const iata = data.suppliers[0].airportRoutes;
-      console.log("Supplier route data:", iata); // Log the parsed data
-    } catch (error) {
-      console.error("Failed to fetch supplier route:", error);
-    }
-  };
+  //     const data = await response.json(); // Convert the response body to JSON
+  //     const iata = data.suppliers[0].airportRoutes;
+  //     console.log("Supplier route data:", iata); // Log the parsed data
+  //   } catch (error) {
+  //     console.error("Failed to fetch supplier route:", error);
+  //   }
+  // };
 
-  useEffect(() => {
-    listSupplierRoute();
-  }, []);
+  // useEffect(() => {
+  //   listSupplierRoute();
+  // }, []);
   const handleTravelFusionDate = (newDate) => {
     if (!newDate) {
       return;
@@ -2187,7 +2191,19 @@ const HeroSection = () => {
     }
   };
 
-  const handleTravelfusionSearch = (e) => {
+  const travelFusionBackendUrl = import.meta.env.VITE_BACKEND_URL;
+  useEffect(() => {
+    // make an array of N adults
+    const adult = Array(adults).fill(30);
+    // make an array of N children
+    const child = Array(children).fill(7);
+    // combine them
+    setTravellers([...adult, ...child]);
+  }, [adults, children]);
+
+  // fix the travel fusion search
+
+  const handleTravelfusionSearch = async (e) => {
     e.preventDefault();
 
     const formattedFlightDepatureDate =
@@ -2223,405 +2239,793 @@ const HeroSection = () => {
     setOrigin(from);
     setDestination(to);
     setSearchCount((prev) => prev + 1);
-  };
 
-  const travelFusionBackendUrl = import.meta.env.VITE_BACKEND_URL;
-  useEffect(() => {
-    // make an array of N adults
-    const adult = Array(adults).fill(30);
-    // make an array of N children
-    const child = Array(children).fill(7);
-    // combine them
-    setTravellers([...adult, ...child]);
-  }, [adults, children]);
+    // trigger the search start route api
 
-  // Fetch flights based on the search parameters
-  useEffect(() => {
-    const fetchFlights = async () => {
-      console.log("Travelfusion routing API Call");
-      try {
-        const requestBody = {
-          mode: "plane",
-          origin: {
-            descriptor: from,
-          },
-          destination: {
-            descriptor: to,
-          },
-          dateOfSearch: handleTravelFusionDate(flightDepatureDate) + "-00:01",
-          travellers: travellers,
-          incrementalResults: true,
-          // this will **conditionally add** returnDateOfSearch if flightReturnDate exists
-          ...(flightReturnDate && {
-            returnDateOfSearch:
-              handleTravelFusionDate(flightReturnDate) + "-23:59",
-          }),
-        };
-        setSearchNewData(requestBody);
-        console.log(requestBody);
-
-        const response = await fetch(
-          `${travelFusionBackendUrl}/start-routing`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(requestBody),
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch flight data");
-        }
-
-        const data = await response.json();
-        console.log(data);
-        setRoutingId(data.routingId);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchFlights();
-  }, [searchCount]);
-  const getCommissionDetail = async (tfPrice) => {
     try {
-      if (!commissionDetails) {
-        return console.log("Error");
-      } else {
-        const Commission = commissionDetails.Commission;
-        if (Commission) {
-          console.log(Commission);
-          if (commissionDetails.CommissionType.toLowerCase() === "percentage") {
-            const commissionAmount = (tfPrice * Commission) / 100;
-            const totalAmount = tfPrice + commissionAmount;
-            return totalAmount.toFixed(2);
-          } else if (
-            commissionDetails.CommissionType.toLowerCase() === "amount"
-          ) {
-            const totalAmount = tfPrice + Commission;
-            return totalAmount.toFixed(2);
+      const requestBody = {
+        mode: "plane",
+        origin: {
+          descriptor: from,
+        },
+        destination: {
+          descriptor: to,
+        },
+        dateOfSearch: handleTravelFusionDate(flightDepatureDate) + "-00:01",
+        travellers: travellers,
+        incrementalResults: true,
+        // this will **conditionally add** returnDateOfSearch if flightReturnDate exists
+        ...(flightReturnDate && {
+          returnDateOfSearch:
+            handleTravelFusionDate(flightReturnDate) + "-23:59",
+        }),
+      };
+      setSearchNewData(requestBody);
+      console.log(requestBody);
+
+      const response = await fetch(`${travelFusionBackendUrl}/start-routing`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch flight data");
+      }
+
+      const data = await response.json();
+      console.log(data);
+      let routeID = data.routingId;
+      setRoutingId(data.routingId);
+
+      const getCommissionDetail = async (tfPrice) => {
+        console.log("tfPrice", tfPrice);
+
+        try {
+          if (!commissionDetails) {
+            return console.log("Error");
+          } else {
+            const Commission = commissionDetails.Commission;
+            if (Commission) {
+              console.log(Commission);
+              if (
+                commissionDetails.CommissionType.toLowerCase() === "percentage"
+              ) {
+                const commissionAmount = (tfPrice * Commission) / 100;
+                const totalAmount = tfPrice + commissionAmount;
+                console.log("if totalAmount", totalAmount);
+                return totalAmount.toFixed(2);
+              } else if (
+                commissionDetails.CommissionType.toLowerCase() === "amount"
+              ) {
+                const totalAmount = tfPrice + Commission;
+                console.log("else totalAmount", totalAmount);
+                return totalAmount.toFixed(2);
+              }
+            }
           }
+        } catch (error) {
+          console.error(error);
+        }
+      };
+
+      //  ////// checking route
+      if (routeID || routingId) {
+        console.log("Travelfusion Search API Call");
+        try {
+          const response = await fetch(
+            `${travelFusionBackendUrl}/check-routing`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                routingId: routeID || routingId,
+              }),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch flight data");
+          }
+
+          const data = await response.json();
+
+          const routerList = data.flightList[0].Router;
+          const rates = await fetchExchangeRates("CVE");
+
+          // Step 1: Collect all raw flight data
+          const allFlightPromises = [];
+
+          for (const supplier of routerList) {
+            if (!supplier?.GroupList || !Array.isArray(supplier.GroupList))
+              continue;
+
+            for (const groupContainer of supplier.GroupList) {
+              if (
+                !groupContainer?.Group ||
+                !Array.isArray(groupContainer.Group)
+              )
+                continue;
+
+              for (const group of groupContainer.Group) {
+                if (
+                  !group?.OutwardList ||
+                  !Array.isArray(group.OutwardList) ||
+                  group.OutwardList.length === 0
+                )
+                  continue;
+
+                const outwardList = group.OutwardList[0]?.Outward || [];
+
+                for (const flight of outwardList) {
+                  allFlightPromises.push(
+                    (async () => {
+                      try {
+                        if (!flight?.SegmentList?.[0]?.Segment?.[0])
+                          return null;
+
+                        const segment = flight.SegmentList[0].Segment[0];
+                        const origin = Array.isArray(segment.Origin)
+                          ? segment.Origin[0]
+                          : null;
+                        const destination = Array.isArray(segment.Destination)
+                          ? segment.Destination[0]
+                          : null;
+
+                        const operatorName =
+                          segment.Operator?.[0]?.Name?.[0] || "Unknown Airline";
+
+                        const logo = operatorName.toLowerCase();
+                        const flightId =
+                          segment.FlightId?.[0]?.Code?.[0] || "N/A";
+                        const travelClass =
+                          segment.TravelClass?.[0]?.TfClass?.[0] || "Economy";
+                        const departureTime =
+                          segment.DepartDate?.[0]?.split("-")[1] || "N/A";
+                        const arrivalTime =
+                          segment.ArriveDate?.[0]?.split("-")[1] || "N/A";
+                        const duration = segment.Duration?.[0]
+                          ? Math.round(Number(segment.Duration[0]) / 60) + "hr"
+                          : "N/A";
+
+                        const originalPrice = parseFloat(
+                          flight.Price?.[0]?.Amount?.[0] || "0"
+                        );
+                        const originalCurrency =
+                          flight.Price?.[0]?.Currency?.[0] || "N/A";
+
+                        return {
+                          id: flight.Id?.[0] || "N/A",
+                          airline: operatorName,
+                          logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
+                          flightNumber: flightId,
+                          class: travelClass,
+                          departureTime,
+                          departureCity: origin?.Code?.[0] || "N/A",
+                          arrivalTime,
+                          arrivalCity: destination?.Code?.[0] || "N/A",
+                          duration,
+                          originalPrice,
+                          originalCurrency,
+                        };
+                      } catch (e) {
+                        console.error("Flight parse error:", e);
+                        return null;
+                      }
+                    })()
+                  );
+                }
+              }
+            }
+          }
+
+          const rawFlights = (await Promise.all(allFlightPromises)).filter(
+            Boolean
+          );
+
+          // Step 2: Convert and cache unique prices
+          const currencyMap = {}; // key = currency, value = rate to CVE
+          const priceCommissionMap = {}; // key = original converted price, value = with commission
+
+          for (const flight of rawFlights) {
+            const key = `${flight.originalPrice}_${flight.originalCurrency}`;
+
+            if (!(key in priceCommissionMap)) {
+              try {
+                if (!(flight.originalCurrency in currencyMap)) {
+                  currencyMap[flight.originalCurrency] =
+                    convertToRequestedCurrency(
+                      1,
+                      flight.originalCurrency,
+                      "CVE",
+                      rates
+                    );
+                }
+
+                const rate = currencyMap[flight.originalCurrency];
+                const convertedPrice = parseFloat(
+                  (flight.originalPrice * rate).toFixed(2)
+                );
+                const finalPrice = await getCommissionDetail(convertedPrice);
+                priceCommissionMap[key] = {
+                  convertedPrice: finalPrice,
+                  convertedFrom: flight.originalPrice,
+                  fromCurrency: flight.originalCurrency,
+                };
+              } catch (e) {
+                console.error("Conversion/commission error:", e);
+              }
+            }
+          }
+
+          // Step 3: Build final simplified flights
+          const simplifiedFlights = rawFlights.map((flight) => {
+            const key = `${flight.originalPrice}_${flight.originalCurrency}`;
+            const priceInfo = priceCommissionMap[key];
+
+            return {
+              ...flight,
+              price: priceInfo?.convertedPrice || 0,
+              originalPrice: priceInfo?.convertedPrice || 0,
+              convertedcurrencyfrom: priceInfo?.fromCurrency || "N/A",
+              convertedPricefrom: priceInfo?.convertedFrom || 0,
+              currency: "CVE",
+            };
+          });
+
+          // Step 1: Collect all flight details (without conversion)
+          const rawFlightDataPromises = [];
+
+          for (const supplier of routerList) {
+            if (!Array.isArray(supplier?.GroupList)) continue;
+
+            for (const groupContainer of supplier.GroupList) {
+              if (!Array.isArray(groupContainer?.Group)) continue;
+
+              for (const group of groupContainer.Group) {
+                const outwardList = group?.OutwardList?.[0]?.Outward ?? [];
+                const returnList = group?.ReturnList?.[0]?.Return ?? [];
+
+                const extractFlightInfo = async (flight, type) => {
+                  try {
+                    const segment = flight?.SegmentList?.[0]?.Segment?.[0];
+                    if (!segment) return null;
+
+                    const origin = segment.Origin?.[0] ?? {};
+                    const destination = segment.Destination?.[0] ?? {};
+                    const operatorName =
+                      segment.Operator?.[0]?.Name?.[0] ?? "Unknown Airline";
+                    const logo = operatorName.toLowerCase();
+                    const flightId = segment.FlightId?.[0]?.Code?.[0] ?? "N/A";
+                    const travelClass =
+                      segment.TravelClass?.[0]?.SupplierClass?.[0] ?? "Economy";
+
+                    const departureTime =
+                      segment.DepartDate?.[0]?.split("-")[1] ?? "N/A";
+                    const arrivalTime =
+                      segment.ArriveDate?.[0]?.split("-")[1] ?? "N/A";
+                    const duration = segment.Duration?.[0]
+                      ? Math.round(Number(segment.Duration[0]) / 60) + "hr"
+                      : "N/A";
+
+                    const originalPrice = parseFloat(
+                      flight?.Price?.[0]?.Amount?.[0] ?? "0"
+                    );
+                    const originalCurrency =
+                      flight?.Price?.[0]?.Currency?.[0] ?? "N/A";
+
+                    return {
+                      id: flight.Id?.[0] ?? "N/A",
+                      airline: operatorName,
+                      logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
+                      flightNumber: flightId,
+                      class: travelClass,
+                      departureTime,
+                      departureCity: origin.Code?.[0] ?? "N/A",
+                      arrivalTime,
+                      arrivalCity: destination.Code?.[0] ?? "N/A",
+                      duration,
+                      originalPrice,
+                      originalCurrency,
+                      type,
+                    };
+                  } catch (err) {
+                    console.error(`Error parsing ${type} flight:`, err);
+                    return null;
+                  }
+                };
+
+                for (const flight of outwardList) {
+                  rawFlightDataPromises.push(
+                    extractFlightInfo(flight, "outward")
+                  );
+                }
+
+                for (const flight of returnList) {
+                  rawFlightDataPromises.push(
+                    extractFlightInfo(flight, "return")
+                  );
+                }
+              }
+            }
+          }
+
+          const rawFlightData = (
+            await Promise.all(rawFlightDataPromises)
+          ).filter(Boolean);
+
+          // Step 2: Convert/calculate commission only once per unique price+currency
+          const currencyRateCache = {};
+          const commissionCache = {};
+
+          for (const flight of rawFlightData) {
+            const key = `${flight.originalPrice}_${flight.originalCurrency}`;
+            if (!commissionCache[key]) {
+              try {
+                if (!currencyRateCache[flight.originalCurrency]) {
+                  currencyRateCache[flight.originalCurrency] =
+                    convertToRequestedCurrency(
+                      1,
+                      flight.originalCurrency,
+                      "CVE",
+                      rates
+                    );
+                }
+
+                const rate = currencyRateCache[flight.originalCurrency];
+                const converted = parseFloat(
+                  (flight.originalPrice * rate).toFixed(2)
+                );
+                const finalPrice = await getCommissionDetail(converted);
+
+                commissionCache[key] = {
+                  convertedPrice: finalPrice,
+                  convertedFrom: flight.originalPrice,
+                  fromCurrency: flight.originalCurrency,
+                };
+              } catch (e) {
+                console.error("Conversion or commission failed:", e);
+                commissionCache[key] = null;
+              }
+            }
+          }
+
+          // Step 3: Final flight object with price info attached
+          const simplifiedFlightsGroup = rawFlightData
+            .map((flight) => {
+              const key = `${flight.originalPrice}_${flight.originalCurrency}`;
+              const priceInfo = commissionCache[key];
+
+              if (!priceInfo) return null;
+
+              return {
+                ...flight,
+                price: priceInfo.convertedPrice,
+                originalPrice: priceInfo.convertedPrice,
+                convertedcurrencyfrom: priceInfo.fromCurrency,
+                convertedPricefrom: priceInfo.convertedFrom,
+                currency: "CVE",
+              };
+            })
+            .filter(Boolean);
+
+          console.log("simplifiedflightgroup", simplifiedFlightsGroup);
+          navigate("/list", {
+            state: {
+              FightSearchData: searchNewData,
+              oneWay: simplifiedFlights,
+              roundTrip: simplifiedFlightsGroup,
+              tripType: tripType,
+              routingId: routingId || routeID,
+            },
+          });
+        } catch (error) {
+          console.error(error);
         }
       }
     } catch (error) {
       console.error(error);
     }
   };
-  useEffect(() => {
-    const fetchFlights = async () => {
-      console.log("Travelfusion Search API Call");
-      try {
-        const response = await fetch(
-          `${travelFusionBackendUrl}/check-routing`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              routingId: routingId,
-            }),
-          }
-        );
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch flight data");
-        }
+  // Fetch flights based on the search parameters
+  // useEffect(
+  //   () => {
+  //     const fetchFlights = async () => {
+  //       console.log("Travelfusion routing API Call");
+  //       try {
+  //         const requestBody = {
+  //           mode: "plane",
+  //           origin: {
+  //             descriptor: from,
+  //           },
+  //           destination: {
+  //             descriptor: to,
+  //           },
+  //           dateOfSearch: handleTravelFusionDate(flightDepatureDate) + "-00:01",
+  //           travellers: travellers,
+  //           incrementalResults: true,
+  //           // this will **conditionally add** returnDateOfSearch if flightReturnDate exists
+  //           ...(flightReturnDate && {
+  //             returnDateOfSearch:
+  //               handleTravelFusionDate(flightReturnDate) + "-23:59",
+  //           }),
+  //         };
+  //         setSearchNewData(requestBody);
+  //         console.log(requestBody);
 
-        const data = await response.json();
+  //         const response = await fetch(
+  //           `${travelFusionBackendUrl}/start-routing`,
+  //           {
+  //             method: "POST",
+  //             headers: {
+  //               "Content-Type": "application/json",
+  //             },
+  //             body: JSON.stringify(requestBody),
+  //           }
+  //         );
 
-        const routerList = data.flightList[0].Router;
-        const rates = await fetchExchangeRates("CVE");
+  //         if (!response.ok) {
+  //           throw new Error("Failed to fetch flight data");
+  //         }
 
-        // Step 1: Collect all raw flight data
-        const allFlightPromises = [];
+  //         const data = await response.json();
+  //         console.log(data);
+  //         setRoutingId(data.routingId);
+  //       } catch (error) {
+  //         console.error(error);
+  //       }
+  //     };
 
-        for (const supplier of routerList) {
-          if (!supplier?.GroupList || !Array.isArray(supplier.GroupList))
-            continue;
+  //     fetchFlights();
+  //   },
+  //   [
+  //     // searchCount
+  //   ]
+  // );
 
-          for (const groupContainer of supplier.GroupList) {
-            if (!groupContainer?.Group || !Array.isArray(groupContainer.Group))
-              continue;
+  // const getCommissionDetail = async (tfPrice) => {
+  //   try {
+  //     if (!commissionDetails) {
+  //       return console.log("Error");
+  //     } else {
+  //       const Commission = commissionDetails.Commission;
+  //       if (Commission) {
+  //         console.log(Commission);
+  //         if (commissionDetails.CommissionType.toLowerCase() === "percentage") {
+  //           const commissionAmount = (tfPrice * Commission) / 100;
+  //           const totalAmount = tfPrice + commissionAmount;
+  //           return totalAmount.toFixed(2);
+  //         } else if (
+  //           commissionDetails.CommissionType.toLowerCase() === "amount"
+  //         ) {
+  //           const totalAmount = tfPrice + Commission;
+  //           return totalAmount.toFixed(2);
+  //         }
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
 
-            for (const group of groupContainer.Group) {
-              if (
-                !group?.OutwardList ||
-                !Array.isArray(group.OutwardList) ||
-                group.OutwardList.length === 0
-              )
-                continue;
+  // useEffect(() => {
+  //   const fetchFlights = async () => {
+  //     console.log("Travelfusion Search API Call");
+  //     try {
+  //       const response = await fetch(
+  //         `${travelFusionBackendUrl}/check-routing`,
+  //         {
+  //           method: "POST",
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //           },
+  //           body: JSON.stringify({
+  //             routingId: routingId,
+  //           }),
+  //         }
+  //       );
 
-              const outwardList = group.OutwardList[0]?.Outward || [];
+  //       if (!response.ok) {
+  //         throw new Error("Failed to fetch flight data");
+  //       }
 
-              for (const flight of outwardList) {
-                allFlightPromises.push(
-                  (async () => {
-                    try {
-                      if (!flight?.SegmentList?.[0]?.Segment?.[0]) return null;
+  //       const data = await response.json();
 
-                      const segment = flight.SegmentList[0].Segment[0];
-                      const origin = Array.isArray(segment.Origin)
-                        ? segment.Origin[0]
-                        : null;
-                      const destination = Array.isArray(segment.Destination)
-                        ? segment.Destination[0]
-                        : null;
+  //       const routerList = data.flightList[0].Router;
+  //       const rates = await fetchExchangeRates("CVE");
 
-                      const operatorName =
-                        segment.Operator?.[0]?.Name?.[0] || "Unknown Airline";
+  //       // Step 1: Collect all raw flight data
+  //       const allFlightPromises = [];
 
-                      const logo = operatorName.toLowerCase();
-                      const flightId =
-                        segment.FlightId?.[0]?.Code?.[0] || "N/A";
-                      const travelClass =
-                        segment.TravelClass?.[0]?.TfClass?.[0] || "Economy";
-                      const departureTime =
-                        segment.DepartDate?.[0]?.split("-")[1] || "N/A";
-                      const arrivalTime =
-                        segment.ArriveDate?.[0]?.split("-")[1] || "N/A";
-                      const duration = segment.Duration?.[0]
-                        ? Math.round(Number(segment.Duration[0]) / 60) + "hr"
-                        : "N/A";
+  //       for (const supplier of routerList) {
+  //         if (!supplier?.GroupList || !Array.isArray(supplier.GroupList))
+  //           continue;
 
-                      const originalPrice = parseFloat(
-                        flight.Price?.[0]?.Amount?.[0] || "0"
-                      );
-                      const originalCurrency =
-                        flight.Price?.[0]?.Currency?.[0] || "N/A";
+  //         for (const groupContainer of supplier.GroupList) {
+  //           if (!groupContainer?.Group || !Array.isArray(groupContainer.Group))
+  //             continue;
 
-                      return {
-                        id: flight.Id?.[0] || "N/A",
-                        airline: operatorName,
-                        logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
-                        flightNumber: flightId,
-                        class: travelClass,
-                        departureTime,
-                        departureCity: origin?.Code?.[0] || "N/A",
-                        arrivalTime,
-                        arrivalCity: destination?.Code?.[0] || "N/A",
-                        duration,
-                        originalPrice,
-                        originalCurrency,
-                      };
-                    } catch (e) {
-                      console.error("Flight parse error:", e);
-                      return null;
-                    }
-                  })()
-                );
-              }
-            }
-          }
-        }
+  //           for (const group of groupContainer.Group) {
+  //             if (
+  //               !group?.OutwardList ||
+  //               !Array.isArray(group.OutwardList) ||
+  //               group.OutwardList.length === 0
+  //             )
+  //               continue;
 
-        const rawFlights = (await Promise.all(allFlightPromises)).filter(
-          Boolean
-        );
+  //             const outwardList = group.OutwardList[0]?.Outward || [];
 
-        // Step 2: Convert and cache unique prices
-        const currencyMap = {}; // key = currency, value = rate to CVE
-        const priceCommissionMap = {}; // key = original converted price, value = with commission
+  //             for (const flight of outwardList) {
+  //               allFlightPromises.push(
+  //                 (async () => {
+  //                   try {
+  //                     if (!flight?.SegmentList?.[0]?.Segment?.[0]) return null;
 
-        for (const flight of rawFlights) {
-          const key = `${flight.originalPrice}_${flight.originalCurrency}`;
+  //                     const segment = flight.SegmentList[0].Segment[0];
+  //                     const origin = Array.isArray(segment.Origin)
+  //                       ? segment.Origin[0]
+  //                       : null;
+  //                     const destination = Array.isArray(segment.Destination)
+  //                       ? segment.Destination[0]
+  //                       : null;
 
-          if (!(key in priceCommissionMap)) {
-            try {
-              if (!(flight.originalCurrency in currencyMap)) {
-                currencyMap[flight.originalCurrency] =
-                  convertToRequestedCurrency(
-                    1,
-                    flight.originalCurrency,
-                    "CVE",
-                    rates
-                  );
-              }
+  //                     const operatorName =
+  //                       segment.Operator?.[0]?.Name?.[0] || "Unknown Airline";
 
-              const rate = currencyMap[flight.originalCurrency];
-              const convertedPrice = parseFloat(
-                (flight.originalPrice * rate).toFixed(2)
-              );
-              const finalPrice = await getCommissionDetail(convertedPrice);
-              priceCommissionMap[key] = {
-                convertedPrice: finalPrice,
-                convertedFrom: flight.originalPrice,
-                fromCurrency: flight.originalCurrency,
-              };
-            } catch (e) {
-              console.error("Conversion/commission error:", e);
-            }
-          }
-        }
+  //                     const logo = operatorName.toLowerCase();
+  //                     const flightId =
+  //                       segment.FlightId?.[0]?.Code?.[0] || "N/A";
+  //                     const travelClass =
+  //                       segment.TravelClass?.[0]?.TfClass?.[0] || "Economy";
+  //                     const departureTime =
+  //                       segment.DepartDate?.[0]?.split("-")[1] || "N/A";
+  //                     const arrivalTime =
+  //                       segment.ArriveDate?.[0]?.split("-")[1] || "N/A";
+  //                     const duration = segment.Duration?.[0]
+  //                       ? Math.round(Number(segment.Duration[0]) / 60) + "hr"
+  //                       : "N/A";
 
-        // Step 3: Build final simplified flights
-        const simplifiedFlights = rawFlights.map((flight) => {
-          const key = `${flight.originalPrice}_${flight.originalCurrency}`;
-          const priceInfo = priceCommissionMap[key];
+  //                     const originalPrice = parseFloat(
+  //                       flight.Price?.[0]?.Amount?.[0] || "0"
+  //                     );
+  //                     const originalCurrency =
+  //                       flight.Price?.[0]?.Currency?.[0] || "N/A";
 
-          return {
-            ...flight,
-            price: priceInfo?.convertedPrice || 0,
-            originalPrice: priceInfo?.convertedPrice || 0,
-            convertedcurrencyfrom: priceInfo?.fromCurrency || "N/A",
-            convertedPricefrom: priceInfo?.convertedFrom || 0,
-            currency: "CVE",
-          };
-        });
+  //                     return {
+  //                       id: flight.Id?.[0] || "N/A",
+  //                       airline: operatorName,
+  //                       logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
+  //                       flightNumber: flightId,
+  //                       class: travelClass,
+  //                       departureTime,
+  //                       departureCity: origin?.Code?.[0] || "N/A",
+  //                       arrivalTime,
+  //                       arrivalCity: destination?.Code?.[0] || "N/A",
+  //                       duration,
+  //                       originalPrice,
+  //                       originalCurrency,
+  //                     };
+  //                   } catch (e) {
+  //                     console.error("Flight parse error:", e);
+  //                     return null;
+  //                   }
+  //                 })()
+  //               );
+  //             }
+  //           }
+  //         }
+  //       }
 
-        // Step 1: Collect all flight details (without conversion)
-        const rawFlightDataPromises = [];
+  //       const rawFlights = (await Promise.all(allFlightPromises)).filter(
+  //         Boolean
+  //       );
 
-        for (const supplier of routerList) {
-          if (!Array.isArray(supplier?.GroupList)) continue;
+  //       // Step 2: Convert and cache unique prices
+  //       const currencyMap = {}; // key = currency, value = rate to CVE
+  //       const priceCommissionMap = {}; // key = original converted price, value = with commission
 
-          for (const groupContainer of supplier.GroupList) {
-            if (!Array.isArray(groupContainer?.Group)) continue;
+  //       for (const flight of rawFlights) {
+  //         const key = `${flight.originalPrice}_${flight.originalCurrency}`;
 
-            for (const group of groupContainer.Group) {
-              const outwardList = group?.OutwardList?.[0]?.Outward ?? [];
-              const returnList = group?.ReturnList?.[0]?.Return ?? [];
+  //         if (!(key in priceCommissionMap)) {
+  //           try {
+  //             if (!(flight.originalCurrency in currencyMap)) {
+  //               currencyMap[flight.originalCurrency] =
+  //                 convertToRequestedCurrency(
+  //                   1,
+  //                   flight.originalCurrency,
+  //                   "CVE",
+  //                   rates
+  //                 );
+  //             }
 
-              const extractFlightInfo = async (flight, type) => {
-                try {
-                  const segment = flight?.SegmentList?.[0]?.Segment?.[0];
-                  if (!segment) return null;
+  //             const rate = currencyMap[flight.originalCurrency];
+  //             const convertedPrice = parseFloat(
+  //               (flight.originalPrice * rate).toFixed(2)
+  //             );
+  //             const finalPrice = await getCommissionDetail(convertedPrice);
+  //             priceCommissionMap[key] = {
+  //               convertedPrice: finalPrice,
+  //               convertedFrom: flight.originalPrice,
+  //               fromCurrency: flight.originalCurrency,
+  //             };
+  //           } catch (e) {
+  //             console.error("Conversion/commission error:", e);
+  //           }
+  //         }
+  //       }
 
-                  const origin = segment.Origin?.[0] ?? {};
-                  const destination = segment.Destination?.[0] ?? {};
-                  const operatorName =
-                    segment.Operator?.[0]?.Name?.[0] ?? "Unknown Airline";
-                  const logo = operatorName.toLowerCase();
-                  const flightId = segment.FlightId?.[0]?.Code?.[0] ?? "N/A";
-                  const travelClass =
-                    segment.TravelClass?.[0]?.SupplierClass?.[0] ?? "Economy";
+  //       // Step 3: Build final simplified flights
+  //       const simplifiedFlights = rawFlights.map((flight) => {
+  //         const key = `${flight.originalPrice}_${flight.originalCurrency}`;
+  //         const priceInfo = priceCommissionMap[key];
 
-                  const departureTime =
-                    segment.DepartDate?.[0]?.split("-")[1] ?? "N/A";
-                  const arrivalTime =
-                    segment.ArriveDate?.[0]?.split("-")[1] ?? "N/A";
-                  const duration = segment.Duration?.[0]
-                    ? Math.round(Number(segment.Duration[0]) / 60) + "hr"
-                    : "N/A";
+  //         return {
+  //           ...flight,
+  //           price: priceInfo?.convertedPrice || 0,
+  //           originalPrice: priceInfo?.convertedPrice || 0,
+  //           convertedcurrencyfrom: priceInfo?.fromCurrency || "N/A",
+  //           convertedPricefrom: priceInfo?.convertedFrom || 0,
+  //           currency: "CVE",
+  //         };
+  //       });
 
-                  const originalPrice = parseFloat(
-                    flight?.Price?.[0]?.Amount?.[0] ?? "0"
-                  );
-                  const originalCurrency =
-                    flight?.Price?.[0]?.Currency?.[0] ?? "N/A";
+  //       // Step 1: Collect all flight details (without conversion)
+  //       const rawFlightDataPromises = [];
 
-                  return {
-                    id: flight.Id?.[0] ?? "N/A",
-                    airline: operatorName,
-                    logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
-                    flightNumber: flightId,
-                    class: travelClass,
-                    departureTime,
-                    departureCity: origin.Code?.[0] ?? "N/A",
-                    arrivalTime,
-                    arrivalCity: destination.Code?.[0] ?? "N/A",
-                    duration,
-                    originalPrice,
-                    originalCurrency,
-                    type,
-                  };
-                } catch (err) {
-                  console.error(`Error parsing ${type} flight:`, err);
-                  return null;
-                }
-              };
+  //       for (const supplier of routerList) {
+  //         if (!Array.isArray(supplier?.GroupList)) continue;
 
-              for (const flight of outwardList) {
-                rawFlightDataPromises.push(
-                  extractFlightInfo(flight, "outward")
-                );
-              }
+  //         for (const groupContainer of supplier.GroupList) {
+  //           if (!Array.isArray(groupContainer?.Group)) continue;
 
-              for (const flight of returnList) {
-                rawFlightDataPromises.push(extractFlightInfo(flight, "return"));
-              }
-            }
-          }
-        }
+  //           for (const group of groupContainer.Group) {
+  //             const outwardList = group?.OutwardList?.[0]?.Outward ?? [];
+  //             const returnList = group?.ReturnList?.[0]?.Return ?? [];
 
-        const rawFlightData = (await Promise.all(rawFlightDataPromises)).filter(
-          Boolean
-        );
+  //             const extractFlightInfo = async (flight, type) => {
+  //               try {
+  //                 const segment = flight?.SegmentList?.[0]?.Segment?.[0];
+  //                 if (!segment) return null;
 
-        // Step 2: Convert/calculate commission only once per unique price+currency
-        const currencyRateCache = {};
-        const commissionCache = {};
+  //                 const origin = segment.Origin?.[0] ?? {};
+  //                 const destination = segment.Destination?.[0] ?? {};
+  //                 const operatorName =
+  //                   segment.Operator?.[0]?.Name?.[0] ?? "Unknown Airline";
+  //                 const logo = operatorName.toLowerCase();
+  //                 const flightId = segment.FlightId?.[0]?.Code?.[0] ?? "N/A";
+  //                 const travelClass =
+  //                   segment.TravelClass?.[0]?.SupplierClass?.[0] ?? "Economy";
 
-        for (const flight of rawFlightData) {
-          const key = `${flight.originalPrice}_${flight.originalCurrency}`;
-          if (!commissionCache[key]) {
-            try {
-              if (!currencyRateCache[flight.originalCurrency]) {
-                currencyRateCache[flight.originalCurrency] =
-                  convertToRequestedCurrency(
-                    1,
-                    flight.originalCurrency,
-                    "CVE",
-                    rates
-                  );
-              }
+  //                 const departureTime =
+  //                   segment.DepartDate?.[0]?.split("-")[1] ?? "N/A";
+  //                 const arrivalTime =
+  //                   segment.ArriveDate?.[0]?.split("-")[1] ?? "N/A";
+  //                 const duration = segment.Duration?.[0]
+  //                   ? Math.round(Number(segment.Duration[0]) / 60) + "hr"
+  //                   : "N/A";
 
-              const rate = currencyRateCache[flight.originalCurrency];
-              const converted = parseFloat(
-                (flight.originalPrice * rate).toFixed(2)
-              );
-              const finalPrice = await getCommissionDetail(converted);
+  //                 const originalPrice = parseFloat(
+  //                   flight?.Price?.[0]?.Amount?.[0] ?? "0"
+  //                 );
+  //                 const originalCurrency =
+  //                   flight?.Price?.[0]?.Currency?.[0] ?? "N/A";
 
-              commissionCache[key] = {
-                convertedPrice: finalPrice,
-                convertedFrom: flight.originalPrice,
-                fromCurrency: flight.originalCurrency,
-              };
-            } catch (e) {
-              console.error("Conversion or commission failed:", e);
-              commissionCache[key] = null;
-            }
-          }
-        }
+  //                 return {
+  //                   id: flight.Id?.[0] ?? "N/A",
+  //                   airline: operatorName,
+  //                   logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
+  //                   flightNumber: flightId,
+  //                   class: travelClass,
+  //                   departureTime,
+  //                   departureCity: origin.Code?.[0] ?? "N/A",
+  //                   arrivalTime,
+  //                   arrivalCity: destination.Code?.[0] ?? "N/A",
+  //                   duration,
+  //                   originalPrice,
+  //                   originalCurrency,
+  //                   type,
+  //                 };
+  //               } catch (err) {
+  //                 console.error(`Error parsing ${type} flight:`, err);
+  //                 return null;
+  //               }
+  //             };
 
-        // Step 3: Final flight object with price info attached
-        const simplifiedFlightsGroup = rawFlightData
-          .map((flight) => {
-            const key = `${flight.originalPrice}_${flight.originalCurrency}`;
-            const priceInfo = commissionCache[key];
+  //             for (const flight of outwardList) {
+  //               rawFlightDataPromises.push(
+  //                 extractFlightInfo(flight, "outward")
+  //               );
+  //             }
 
-            if (!priceInfo) return null;
+  //             for (const flight of returnList) {
+  //               rawFlightDataPromises.push(extractFlightInfo(flight, "return"));
+  //             }
+  //           }
+  //         }
+  //       }
 
-            return {
-              ...flight,
-              price: priceInfo.convertedPrice,
-              originalPrice: priceInfo.convertedPrice,
-              convertedcurrencyfrom: priceInfo.fromCurrency,
-              convertedPricefrom: priceInfo.convertedFrom,
-              currency: "CVE",
-            };
-          })
-          .filter(Boolean);
+  //       const rawFlightData = (await Promise.all(rawFlightDataPromises)).filter(
+  //         Boolean
+  //       );
 
-        console.log("simplifiedflightgroup", simplifiedFlightsGroup);
-        navigate("/list", {
-          state: {
-            FightSearchData: searchNewData,
-            oneWay: simplifiedFlights,
-            roundTrip: simplifiedFlightsGroup,
-            tripType: tripType,
-            routingId: routingId,
-          },
-        });
-      } catch (error) {
-        console.error(error);
-      }
-    };
+  //       // Step 2: Convert/calculate commission only once per unique price+currency
+  //       const currencyRateCache = {};
+  //       const commissionCache = {};
 
-    fetchFlights();
-  }, [routingId]);
+  //       for (const flight of rawFlightData) {
+  //         const key = `${flight.originalPrice}_${flight.originalCurrency}`;
+  //         if (!commissionCache[key]) {
+  //           try {
+  //             if (!currencyRateCache[flight.originalCurrency]) {
+  //               currencyRateCache[flight.originalCurrency] =
+  //                 convertToRequestedCurrency(
+  //                   1,
+  //                   flight.originalCurrency,
+  //                   "CVE",
+  //                   rates
+  //                 );
+  //             }
+
+  //             const rate = currencyRateCache[flight.originalCurrency];
+  //             const converted = parseFloat(
+  //               (flight.originalPrice * rate).toFixed(2)
+  //             );
+  //             const finalPrice = await getCommissionDetail(converted);
+
+  //             commissionCache[key] = {
+  //               convertedPrice: finalPrice,
+  //               convertedFrom: flight.originalPrice,
+  //               fromCurrency: flight.originalCurrency,
+  //             };
+  //           } catch (e) {
+  //             console.error("Conversion or commission failed:", e);
+  //             commissionCache[key] = null;
+  //           }
+  //         }
+  //       }
+
+  //       // Step 3: Final flight object with price info attached
+  //       const simplifiedFlightsGroup = rawFlightData
+  //         .map((flight) => {
+  //           const key = `${flight.originalPrice}_${flight.originalCurrency}`;
+  //           const priceInfo = commissionCache[key];
+
+  //           if (!priceInfo) return null;
+
+  //           return {
+  //             ...flight,
+  //             price: priceInfo.convertedPrice,
+  //             originalPrice: priceInfo.convertedPrice,
+  //             convertedcurrencyfrom: priceInfo.fromCurrency,
+  //             convertedPricefrom: priceInfo.convertedFrom,
+  //             currency: "CVE",
+  //           };
+  //         })
+  //         .filter(Boolean);
+
+  //       console.log("simplifiedflightgroup", simplifiedFlightsGroup);
+  //       navigate("/list", {
+  //         state: {
+  //           FightSearchData: searchNewData,
+  //           oneWay: simplifiedFlights,
+  //           roundTrip: simplifiedFlightsGroup,
+  //           tripType: tripType,
+  //           routingId: routingId,
+  //         },
+  //       });
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   };
+
+  //   fetchFlights();
+  // }, [routingId]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -2634,15 +3038,18 @@ const HeroSection = () => {
   }, []);
 
   useEffect(() => {
+    let AirportList = [];
     const fetchAirport = async () => {
       try {
         const res = await axios.get(
           `${travelFusionBackendUrl}/get-airportlist`
         );
+        AirportList = res.data.Airportdata || [];
         setAirposts(res.data.Airportdata);
       } catch (error) {
         console.error(error);
       }
+      AirportList.length === 0 ? fetchAirport() : setAirposts(AirportList);
     };
     fetchAirport();
   }, []);

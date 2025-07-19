@@ -2849,837 +2849,6 @@
 // 	)
 // }
 
-const FlightResults = ({
-  flights,
-  origin,
-  destination,
-  t,
-  TripType,
-  routingId,
-  travalers,
-  searchData,
-  SearchProps,
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedFlightId, setSelectedFlightId] = useState(null);
-  const dropdownRef = useRef(null);
-  const navigate = useNavigate();
-
-  const flightsPerPage = 7;
-  const indexOfLastFlight = currentPage * flightsPerPage;
-  const indexOfFirstFlight = indexOfLastFlight - flightsPerPage;
-
-  console.log("flights", flights);
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const toggleDropdown = () => setIsOpen(!isOpen);
-  const selectOption = (option) => {
-    setSelectedOption(option);
-    setCurrentPage(1); // Reset to first page on sort
-    setIsOpen(false);
-  };
-
-  const sortedFlights = useMemo(() => {
-    if (!flights || flights.length === 0) return [];
-    const sorted = [...flights];
-    if (selectedOption === "Highest to Lowest") {
-      return sorted.sort((a, b) => b.price - a.price);
-    } else if (selectedOption === "Lowest to Highest") {
-      return sorted.sort((a, b) => a.price - b.price);
-    }
-    return sorted;
-  }, [flights, selectedOption]);
-
-  const currentFlights = useMemo(() => {
-    return sortedFlights.slice(indexOfFirstFlight, indexOfLastFlight);
-  }, [sortedFlights, indexOfFirstFlight, indexOfLastFlight]);
-
-  const totalPages = Math.ceil(sortedFlights.length / flightsPerPage);
-
-  const handleSelectFlight = (id) => {
-    setSelectedFlightId((prevId) => (prevId === id ? null : id));
-  };
-
-  return (
-    <>
-      <div className="flex flex-col items-center space-y-6 font-sans relative">
-        <div className="w-full flex items-center justify-between">
-          {/* Heading */}
-          <h1 className="text-[25.44px] font-[600] leading-[100%] font-jakarta">
-            Flights from {origin} to {destination}
-          </h1>
-
-          {/* Dropdown Sort */}
-          <div
-            className="relative font-jakarta text-[14px] font-semibold text-black cursor-pointer"
-            ref={dropdownRef}
-          >
-            <div
-              onClick={toggleDropdown}
-              className="flex items-center gap-2 px-3 py-2 rounded-md bg-white border border-gray-200 shadow-sm cursor-pointer hover:bg-gray-50 transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="w-4 h-4"
-              >
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="7" y1="12" x2="17" y2="12" />
-                <line x1="11" y1="18" x2="13" y2="18" />
-              </svg>
-              <span className="text-sm font-medium">
-                {selectedOption || "Sort"}
-              </span>
-              <ChevronDown
-                size={16}
-                className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
-              />
-            </div>
-
-            {isOpen && (
-              <div className="absolute mt-1 w-full bg-white rounded-md shadow-lg border border-gray-200 z-10">
-                <ul className="py-1">
-                  <li
-                    className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
-                      selectedOption === "Highest to Lowest"
-                        ? "bg-gray-50 font-medium"
-                        : ""
-                    }`}
-                    onClick={() => selectOption("Highest to Lowest")}
-                  >
-                    Highest to Lowest
-                  </li>
-                  <li
-                    className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
-                      selectedOption === "Lowest to Highest"
-                        ? "bg-gray-50 font-medium"
-                        : ""
-                    }`}
-                    onClick={() => selectOption("Lowest to Highest")}
-                  >
-                    Lowest to Highest
-                  </li>
-                </ul>
-              </div>
-            )}
-          </div>
-        </div>
-        {currentFlights.length === 0 ? (
-          <NoFlightsAvailable
-            origin={origin}
-            destination={destination}
-            searchDate={
-              searchData?.flightDepatureDate
-                ? new Date(searchData.flightDepatureDate).toLocaleDateString(
-                    "en-US",
-                    {
-                      weekday: "long",
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    }
-                  )
-                : null
-            }
-            onNewSearch={() => {
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            }}
-          />
-        ) : (
-          currentFlights.map((flight) => {
-            const isSelected = selectedFlightId === flight.id;
-            return (
-              <div
-                key={flight.id}
-                className={`w-full min-h-[150.13px] rounded-md cursor-pointer transition duration-300 flex flex-col justify-between ${
-                  isSelected
-                    ? "border border-[#EE5128] bg-white shadow-sm"
-                    : "border border-gray-200 bg-white"
-                }`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSelectFlight(flight.id);
-                }}
-              >
-                {/* Top Row */}
-                <div className="flex items-center flex-col md:flex-row justify-between px-4 min-h-[60px] pt-6 pb-6 xl:pb-0 gap-[30px]">
-                  <div className="flex flex-col justify-start items-center xl:items-start min-w-[170px] relative pb-10 lg:pb-0">
-                    <img
-                      src={flight.logo}
-                      alt={flight.airline}
-                      className="h-[40px] object-contain xl:mb-[45px] ml-2"
-                    />
-                    <div className="absolute top-[48px] left-[18px] flex items-center space-x-2">
-                      <span className="text-[13px] text-gray-500 leading-none">
-                        {flight.flightNumber}
-                      </span>
-                      <span className="text-[12px] bg-[#008905] text-white px-[10px] py-[2px] rounded font-semibold leading-[19px]">
-                        {flight.class}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-center gap-[40px] ml-4">
-                    <div className="text-center">
-                      <p className="text-[22px] font-bold text-black leading-tight">
-                        {flight.departureTime}
-                      </p>
-                      <p className="text-[13px] text-gray-500 leading-tight mt-[2px]">
-                        {flight.departureCity}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-col items-center">
-                      <div className="flex items-center">
-                        <span className="w-[6px] h-[6px] bg-gray-300 rounded-full" />
-                        <div className="border-t border-dashed w-8 border-gray-300 mx-2" />
-                        <span className="text-black text-sm">✈</span>
-                        <div className="border-t border-dashed w-8 border-gray-300 mx-2" />
-                        <span className="w-[6px] h-[6px] bg-gray-300 rounded-full" />
-                      </div>
-                      <span className="text-[12px] text-gray-400 mt-[4px]">
-                        {flight.duration}
-                      </span>
-                    </div>
-
-                    <div className="text-center">
-                      <p className="text-[22px] font-bold text-black leading-tight">
-                        {flight.arrivalTime}
-                      </p>
-                      <p className="text-[13px] text-gray-500 leading-tight mt-[2px]">
-                        {flight.arrivalCity}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="text-right flex flex-col gap-2 items-center lg:items-end space-y-[2px] w-[152px] h-[31px]">
-                    <p className="text-[#EE5128] text-[26px] font-black leading-none font-sans">
-                      <span className="text-[20px] pr-2">
-                        {flight.currency}
-                      </span>
-                      {flight.price}
-                      <span className="text-[12px] text-black font-normal">
-                        /pax
-                      </span>
-                    </p>
-                    <p className="text-[13px] text-gray-400 line-through font-normal leading-none font-sans">
-                      {flight.currency}
-                      {flight.originalPrice}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Bottom Row */}
-                <div
-                  className={`border-t px-4 py-[30px] xl:py-[20px] flex items-center justify-between text-sm font-medium ${
-                    isSelected ? "border-[#EE5128]" : "border-gray-200"
-                  }`}
-                >
-                  <div
-                    className={`flex space-x-14 ${
-                      isSelected ? "text-[#EE5128]" : "text-bold"
-                    } font-sans`}
-                  >
-                    <div className="flex items-center space-x-1 ml-2">
-                      <span>{t("booking-card.Flight-details")}</span>
-                      <ChevronDown size={14} />
-                    </div>
-                    <div className="hidden lg:flex items-center space-x-1">
-                      <span>{t("booking-card.price-details")}</span>
-                      <ChevronDown size={14} />
-                    </div>
-                    <span className="hidden lg:flex">
-                      {t("booking-card.policy")}
-                    </span>
-                    <span className="hidden lg:flex">
-                      {t("booking-card.refund")}
-                    </span>
-                    <span className="hidden lg:flex">
-                      {t("booking-card.reschedule")}
-                    </span>
-                  </div>
-
-                  {isSelected ? (
-                    <button
-                      onClick={() => {
-                        console.log("Navigating with data:", {
-                          flight: flight,
-                          routingId: routingId,
-                          TripType: TripType,
-                          origin: origin,
-                          destination: destination,
-                        });
-
-                        // navigate("/booking/ReviewYourBooking", {
-                        //   state: {
-                        //     outwordTicketId: flight,
-                        //     routingId: routingId,
-                        //     tripType: TripType,
-                        //     travalers: travalers,
-
-                        //     // Add back navigation data safely
-                        //     origin: origin,
-                        //     destination: destination,
-                        //     flightsData: flights,
-                        //     TripType: TripType,
-                        //   },
-                        // });
-
-                        navigate("/booking/ReviewYourBooking", {
-                          state: {
-                            outwordTicketId: flight,
-                            // returnTicketId: id || selectReturn,
-                            routingId: routingId,
-                            tripType: TripType,
-                            travalers: travalers,
-                            // Add back navigation data
-                            origin: origin,
-                            destination: destination,
-                            flightsData: flights,
-                            TripType: TripType,
-                            ...(SearchProps && {
-                              FightSearchData: SearchProps,
-                            }),
-                          },
-                        });
-                      }}
-                      className="bg-[#EE5128] text-white px-4 py-1.5 rounded font-jakarta font-semibold hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200"
-                    >
-                      {t("booking-card.book-now")}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={(e) => e.stopPropagation()}
-                      className="bg-gray-300 text-white px-4 py-1.5 rounded font-jakarta font-semibold cursor-not-allowed"
-                      disabled
-                    >
-                      {t("booking-card.book-now")}
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          })
-        )}
-      </div>
-
-      {/* Pagination Component */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        setCurrentPage={setCurrentPage}
-      />
-    </>
-  );
-};
-
-const Pagination = ({ currentPage, totalPages, setCurrentPage }) => {
-  const getPagination = () => {
-    const pages = [];
-
-    if (totalPages <= 6) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      if (currentPage <= 3) {
-        pages.push(1, 2, 3, 4, "...", totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(
-          1,
-          "...",
-          totalPages - 3,
-          totalPages - 2,
-          totalPages - 1,
-          totalPages
-        );
-      } else {
-        pages.push(
-          1,
-          "...",
-          currentPage - 1,
-          currentPage,
-          currentPage + 1,
-          "...",
-          totalPages
-        );
-      }
-    }
-
-    return pages;
-  };
-
-  return (
-    <div className="flex items-center justify-center gap-2 mt-6">
-      {/* Prev */}
-      <button
-        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-        disabled={currentPage === 1}
-        className="w-8 h-8 flex items-center justify-center rounded-full bg-[#EE5128] text-white disabled:opacity-50 hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200"
-      >
-        <ChevronLeft className="h-[24px] w-[14px]" />
-      </button>
-
-      {getPagination().map((page, index) =>
-        page === "..." ? (
-          <span key={`dots-${index}`} className="mx-1 text-gray-500">
-            ...
-          </span>
-        ) : (
-          <button
-            key={page}
-            onClick={() => setCurrentPage(page)}
-            className={`w-8 h-8 flex items-center justify-center rounded-full ${
-              currentPage === page
-                ? "bg-[#EE5128] text-white"
-                : "bg-transparent text-black"
-            }`}
-          >
-            {page}
-          </button>
-        )
-      )}
-
-      {/* Next */}
-      <button
-        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-        disabled={currentPage === totalPages}
-        className="w-8 h-8 flex items-center justify-center rounded-full bg-[#EE5128] text-white disabled:opacity-50 hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200"
-      >
-        <ChevronRight className="h-[24px] w-[14px]" />
-      </button>
-    </div>
-  );
-};
-
-const RoundTrip = ({
-  flights,
-  t,
-  routingId,
-  destination,
-  origin,
-  TripType,
-  travalers,
-  SearchProps, // ✅ Add this line
-}) => {
-  const navigate = useNavigate();
-
-  const [isOnWard, setOnWard] = useState(false);
-  const [selectOutWard, setselectOutWard] = useState({});
-  const [selectReturn, setselectReturn] = useState({});
-  const [selectedFlightId, setSelectedFlightId] = useState(null);
-
-  const OutWordFlights = flights?.filter((flight) => flight.type === "outward");
-  const ReturnFlights = flights?.filter((flight) => flight.type === "return");
-
-  console.log("selectOutWard", selectOutWard);
-  console.log("selectReturn", selectReturn);
-
-  const handleSelectFlight = (id) => {
-    setSelectedFlightId((prevId) => (prevId === id ? null : id));
-  };
-
-  const handleSelectOnward = ({ id }) => {
-    setselectOutWard(id);
-  };
-
-  const handleConfirmSelect = ({ id }) => {
-    navigate("/booking/ReviewYourBooking", {
-      state: {
-        outwordTicketId: selectOutWard,
-        returnTicketId: id || selectReturn,
-        routingId: routingId,
-        tripType: TripType,
-        travalers: travalers,
-
-        // Add back navigation data
-        origin: origin,
-        destination: destination,
-        flightsData: flights,
-        TripType: TripType,
-        ...(SearchProps && { FightSearchData: SearchProps }),
-      },
-    });
-  };
-
-  return (
-    <div className="">
-      {!isOnWard ? (
-        <div className="flex flex-col items-center space-y-6 font-sans relative">
-          <div className="w-full flex items-center justify-between">
-            {/* Heading */}
-            <h1 className="text-[25.44px] font-[600] leading-[100%] font-jakarta">
-              Departure Flights from {origin} to {destination}
-            </h1>
-          </div>
-
-          {/* Check if no outward flights available */}
-          {!OutWordFlights || OutWordFlights.length === 0 ? (
-            <NoFlightsAvailable
-              origin={origin}
-              destination={destination}
-              searchDate={null}
-              onNewSearch={() => {
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-            />
-          ) : (
-            OutWordFlights.map((flight) => {
-              const isSelected = selectedFlightId === flight.id;
-              console.log("outward flight", flight);
-
-              return (
-                <div
-                  key={flight.id}
-                  className={`w-full min-h-[150.13px] rounded-md cursor-pointer transition duration-300 flex flex-col justify-between ${
-                    isSelected
-                      ? "border border-[#EE5128] bg-white shadow-sm"
-                      : "border border-gray-200 bg-white"
-                  }`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSelectFlight(flight.id);
-                  }}
-                >
-                  <div className="flex items-center flex-col md:flex-row justify-between px-4 min-h-[60px] pt-6 pb-6 xl:pb-0 gap-[30px]">
-                    <div className="flex flex-col justify-start items-center xl:items-start min-w-[170px] relative pb-10 lg:pb-0">
-                      <img
-                        src={flight.logo}
-                        alt={flight.airline}
-                        className="h-[40px] object-contain xl:mb-[45px] ml-2"
-                      />
-                      <div className="absolute top-[48px] left-[18px] flex items-center space-x-2">
-                        <span className="text-[13px] text-gray-500 leading-none">
-                          {flight.flightNumber}
-                        </span>
-                        <span className="text-[12px] bg-[#008905] text-white px-[10px] py-[2px] rounded font-semibold leading-[19px]">
-                          {flight.class}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-center gap-[40px] ml-4">
-                      <div className="text-center">
-                        <p className="text-[22px] font-bold text-black leading-tight">
-                          {flight.departureTime}
-                        </p>
-                        <p className="text-[13px] text-gray-500 leading-tight mt-[2px]">
-                          {flight.departureCity}
-                        </p>
-                      </div>
-
-                      <div className="flex flex-col items-center">
-                        <div className="flex items-center">
-                          <span className="w-[6px] h-[6px] bg-gray-300 rounded-full" />
-                          <div className="border-t border-dashed w-8 border-gray-300 mx-2" />
-                          <span className="text-black text-sm">✈</span>
-                          <div className="border-t border-dashed w-8 border-gray-300 mx-2" />
-                          <span className="w-[6px] h-[6px] bg-gray-300 rounded-full" />
-                        </div>
-                        <span className="text-[12px] text-gray-400 mt-[4px]">
-                          {flight.duration}
-                        </span>
-                      </div>
-
-                      <div className="text-center">
-                        <p className="text-[22px] font-bold text-black leading-tight">
-                          {flight.arrivalTime}
-                        </p>
-                        <p className="text-[13px] text-gray-500 leading-tight mt-[2px]">
-                          {flight.arrivalCity}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="text-right flex flex-col gap-2 items-center lg:items-end space-y-[2px] w-[152px] h-[31px]">
-                      <p className="text-[#EE5128] text-[26px] font-black leading-none font-sans">
-                        <span className="text-[20px] pr-2">
-                          {flight.currency}
-                        </span>
-                        {flight.price}
-                        <span className="text-[12px] text-black font-normal">
-                          /pax
-                        </span>
-                      </p>
-                      <p className="text-[13px] text-gray-400 line-through font-normal leading-none font-sans">
-                        {flight.currency}
-                        {flight.originalPrice}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div
-                    className={`border-t px-4 py-[30px] xl:py-[20px] flex items-center justify-between text-sm font-medium ${
-                      isSelected ? "border-[#EE5128]" : "border-gray-200"
-                    }`}
-                  >
-                    <div
-                      className={`flex space-x-14 ${
-                        isSelected ? "text-[#EE5128]" : "text-bold"
-                      } font-sans`}
-                    >
-                      <div className="flex items-center space-x-1 ml-2">
-                        <span>{t("booking-card.Flight-details")}</span>
-                        <ChevronDown size={14} />
-                      </div>
-                      <div className="hidden lg:flex items-center space-x-1">
-                        <span>{t("booking-card.price-details")}</span>
-                        <ChevronDown size={14} />
-                      </div>
-                      <span className="hidden lg:flex">
-                        {t("booking-card.policy")}
-                      </span>
-                      <span className="hidden lg:flex">
-                        {t("booking-card.refund")}
-                      </span>
-                      <span className="hidden lg:flex">
-                        {t("booking-card.reschedule")}
-                      </span>
-                    </div>
-
-                    {isSelected ? (
-                      <button
-                        onClick={() => {
-                          handleSelectOnward({
-                            id: flight,
-                          });
-                          setOnWard(true);
-                        }}
-                        className="bg-[#EE5128] text-white px-4 py-1.5 rounded font-jakarta font-semibold hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200"
-                      >
-                        {t("booking-card.book-now")}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={(e) => e.stopPropagation()}
-                        className="bg-gray-300 text-white px-4 py-1.5 rounded font-jakarta font-semibold cursor-not-allowed"
-                        disabled
-                      >
-                        {t("booking-card.book-now")}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      ) : (
-        <div className="flex flex-col items-center space-y-6 font-sans relative">
-          <div className="w-full flex items-center justify-between">
-            {/* Heading */}
-            <h1 className="text-[25.44px] font-[600] leading-[100%] font-jakarta">
-              Return Flights from {destination} to {origin}
-            </h1>
-          </div>
-
-          {/* Check if no return flights available */}
-          {!ReturnFlights || ReturnFlights.length === 0 ? (
-            <NoFlightsAvailable
-              origin={destination}
-              destination={origin}
-              searchDate={null}
-              onNewSearch={() => {
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-            />
-          ) : (
-            ReturnFlights.map((flight) => {
-              const isSelected = selectedFlightId === flight.id;
-              console.log("return flight", flight);
-
-              return (
-                <div
-                  key={flight.id}
-                  className={`w-full min-h-[150.13px] rounded-md cursor-pointer transition duration-300 flex flex-col justify-between ${
-                    isSelected
-                      ? "border border-[#EE5128] bg-white shadow-sm"
-                      : "border border-gray-200 bg-white"
-                  }`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSelectFlight(flight.id);
-                  }}
-                >
-                  <div className="flex items-center flex-col md:flex-row justify-between px-4 min-h-[60px] pt-6 pb-6 xl:pb-0 gap-[30px]">
-                    <div className="flex flex-col justify-start items-center xl:items-start min-w-[170px] relative pb-10 lg:pb-0">
-                      <img
-                        src={flight.logo}
-                        alt={flight.airline}
-                        className="h-[40px] object-contain xl:mb-[45px] ml-2"
-                      />
-                      <div className="absolute top-[48px] left-[18px] flex items-center space-x-2">
-                        <span className="text-[13px] text-gray-500 leading-none">
-                          {flight.flightNumber}
-                        </span>
-                        <span className="text-[12px] bg-[#008905] text-white px-[10px] py-[2px] rounded font-semibold leading-[19px]">
-                          {flight.class}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-center gap-[40px] ml-4">
-                      <div className="text-center">
-                        <p className="text-[22px] font-bold text-black leading-tight">
-                          {flight.departureTime}
-                        </p>
-                        <p className="text-[13px] text-gray-500 leading-tight mt-[2px]">
-                          {flight.departureCity}
-                        </p>
-                      </div>
-
-                      <div className="flex flex-col items-center">
-                        <div className="flex items-center">
-                          <span className="w-[6px] h-[6px] bg-gray-300 rounded-full" />
-                          <div className="border-t border-dashed w-8 border-gray-300 mx-2" />
-                          <span className="text-black text-sm">✈</span>
-                          <div className="border-t border-dashed w-8 border-gray-300 mx-2" />
-                          <span className="w-[6px] h-[6px] bg-gray-300 rounded-full" />
-                        </div>
-                        <span className="text-[12px] text-gray-400 mt-[4px]">
-                          {flight.duration}
-                        </span>
-                      </div>
-
-                      <div className="text-center">
-                        <p className="text-[22px] font-bold text-black leading-tight">
-                          {flight.arrivalTime}
-                        </p>
-                        <p className="text-[13px] text-gray-500 leading-tight mt-[2px]">
-                          {flight.arrivalCity}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="text-right flex flex-col gap-2 items-center lg:items-end space-y-[2px] w-[152px] h-[31px]">
-                      <p className="text-[#EE5128] text-[26px] font-black leading-none font-sans">
-                        <span className="text-[20px] pr-2">
-                          {flight.currency}
-                        </span>
-                        {flight.price}
-                        <span className="text-[12px] text-black font-normal">
-                          /pax
-                        </span>
-                      </p>
-                      <p className="text-[13px] text-gray-400 line-through font-normal leading-none font-sans">
-                        {flight.currency}
-                        {flight.originalPrice}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div
-                    className={`border-t px-4 py-[30px] xl:py-[20px] flex items-center justify-between text-sm font-medium ${
-                      isSelected ? "border-[#EE5128]" : "border-gray-200"
-                    }`}
-                  >
-                    <div
-                      className={`flex space-x-14 ${
-                        isSelected ? "text-[#EE5128]" : "text-bold"
-                      } font-sans`}
-                    >
-                      <div className="flex items-center space-x-1 ml-2">
-                        <span>{t("booking-card.Flight-details")}</span>
-                        <ChevronDown size={14} />
-                      </div>
-                      <div className="hidden lg:flex items-center space-x-1">
-                        <span>{t("booking-card.price-details")}</span>
-                        <ChevronDown size={14} />
-                      </div>
-                      <span className="hidden lg:flex">
-                        {t("booking-card.policy")}
-                      </span>
-                      <span className="hidden lg:flex">
-                        {t("booking-card.refund")}
-                      </span>
-                      <span className="hidden lg:flex">
-                        {t("booking-card.reschedule")}
-                      </span>
-                    </div>
-
-                    {isSelected ? (
-                      <button
-                        onClick={() => {
-                          handleConfirmSelect({
-                            id: flight,
-                          });
-                        }}
-                        className="bg-[#EE5128] text-white px-4 py-1.5 rounded font-jakarta font-semibold hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200"
-                      >
-                        {t("booking-card.book-now")}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={(e) => e.stopPropagation()}
-                        className="bg-gray-300 text-white px-4 py-1.5 rounded font-jakarta font-semibold cursor-not-allowed"
-                        disabled
-                      >
-                        {t("booking-card.book-now")}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
-// Add this new component after your imports
-const NoFlightsAvailable = ({
-  origin,
-  destination,
-  searchDate,
-  onNewSearch,
-}) => {
-  return (
-    <div className="w-full flex flex-col items-center justify-center py-16 px-8 text-center bg-white rounded-lg">
-      {/* Local Image */}
-      <div className="mb-8">
-        <img
-          src={Noflight}
-          alt="No flights available"
-          className="w-64 h-64 object-contain mx-auto"
-        />
-      </div>
-
-      {/* Simple Message */}
-      <div className="space-y-6 max-w-md mx-auto">
-        <h2 className="text-3xl font-bold text-gray-900 leading-tight tracking-tight">
-          Flights not available for this date and Destinations.
-        </h2>
-
-        <div className="relative">
-          {/* <p className="text-xl text-gray-600 font-medium relative z-10 bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-100">
-			  Try different dates and Destinations.
-			</p> */}
-          <div className="absolute inset-0 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg transform rotate-1"></div>
-        </div>
-      </div>
-    </div>
-  );
-};
 /* eslint-disable no-unused-vars */
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -3870,7 +3039,7 @@ function FlightList() {
               travalers={travalers}
               searchData={searchData}
               SearchProps={SearchProps} // ✅ Make sure this line exists
-              selectOutWard={selectOutWard}
+              // selectOutWard={selectOutWard}
             />
           )}
 
@@ -4754,6 +3923,839 @@ const SearchBox = ({
           </div>
         </div>
       </form>
+    </div>
+  );
+};
+
+const FlightResults = ({
+  flights,
+  origin,
+  destination,
+  t,
+  TripType,
+  routingId,
+  travalers,
+  searchData,
+  SearchProps,
+  selectOutWard,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedOption, setSelectedOption] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedFlightId, setSelectedFlightId] = useState(null);
+  const dropdownRef = useRef(null);
+  const navigate = useNavigate();
+
+  const flightsPerPage = 7;
+  const indexOfLastFlight = currentPage * flightsPerPage;
+  const indexOfFirstFlight = indexOfLastFlight - flightsPerPage;
+
+  console.log("flights", flights);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const toggleDropdown = () => setIsOpen(!isOpen);
+  const selectOption = (option) => {
+    setSelectedOption(option);
+    setCurrentPage(1); // Reset to first page on sort
+    setIsOpen(false);
+  };
+
+  const sortedFlights = useMemo(() => {
+    if (!flights || flights.length === 0) return [];
+    const sorted = [...flights];
+    if (selectedOption === "Highest to Lowest") {
+      return sorted.sort((a, b) => b.price - a.price);
+    } else if (selectedOption === "Lowest to Highest") {
+      return sorted.sort((a, b) => a.price - b.price);
+    }
+    return sorted;
+  }, [flights, selectedOption]);
+
+  const currentFlights = useMemo(() => {
+    return sortedFlights.slice(indexOfFirstFlight, indexOfLastFlight);
+  }, [sortedFlights, indexOfFirstFlight, indexOfLastFlight]);
+
+  const totalPages = Math.ceil(sortedFlights.length / flightsPerPage);
+
+  const handleSelectFlight = (id) => {
+    setSelectedFlightId((prevId) => (prevId === id ? null : id));
+  };
+
+  return (
+    <>
+      <div className="flex flex-col items-center space-y-6 font-sans relative">
+        <div className="w-full flex items-center justify-between">
+          {/* Heading */}
+          <h1 className="text-[25.44px] font-[600] leading-[100%] font-jakarta">
+            Flights from {origin} to {destination}
+          </h1>
+
+          {/* Dropdown Sort */}
+          <div
+            className="relative font-jakarta text-[14px] font-semibold text-black cursor-pointer"
+            ref={dropdownRef}
+          >
+            <div
+              onClick={toggleDropdown}
+              className="flex items-center gap-2 px-3 py-2 rounded-md bg-white border border-gray-200 shadow-sm cursor-pointer hover:bg-gray-50 transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-4 h-4"
+              >
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="7" y1="12" x2="17" y2="12" />
+                <line x1="11" y1="18" x2="13" y2="18" />
+              </svg>
+              <span className="text-sm font-medium">
+                {selectedOption || "Sort"}
+              </span>
+              <ChevronDown
+                size={16}
+                className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
+              />
+            </div>
+
+            {isOpen && (
+              <div className="absolute mt-1 w-full bg-white rounded-md shadow-lg border border-gray-200 z-10">
+                <ul className="py-1">
+                  <li
+                    className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
+                      selectedOption === "Highest to Lowest"
+                        ? "bg-gray-50 font-medium"
+                        : ""
+                    }`}
+                    onClick={() => selectOption("Highest to Lowest")}
+                  >
+                    Highest to Lowest
+                  </li>
+                  <li
+                    className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
+                      selectedOption === "Lowest to Highest"
+                        ? "bg-gray-50 font-medium"
+                        : ""
+                    }`}
+                    onClick={() => selectOption("Lowest to Highest")}
+                  >
+                    Lowest to Highest
+                  </li>
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+        {currentFlights.length === 0 ? (
+          <NoFlightsAvailable
+            origin={origin}
+            destination={destination}
+            searchDate={
+              searchData?.flightDepatureDate
+                ? new Date(searchData.flightDepatureDate).toLocaleDateString(
+                    "en-US",
+                    {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    }
+                  )
+                : null
+            }
+            onNewSearch={() => {
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+          />
+        ) : (
+          currentFlights.map((flight) => {
+            const isSelected = selectedFlightId === flight.id;
+            return (
+              <div
+                key={flight.id}
+                className={`w-full min-h-[150.13px] rounded-md cursor-pointer transition duration-300 flex flex-col justify-between ${
+                  isSelected
+                    ? "border border-[#EE5128] bg-white shadow-sm"
+                    : "border border-gray-200 bg-white"
+                }`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSelectFlight(flight.id);
+                }}
+              >
+                {/* Top Row */}
+                <div className="flex items-center flex-col md:flex-row justify-between px-4 min-h-[60px] pt-6 pb-6 xl:pb-0 gap-[30px]">
+                  <div className="flex flex-col justify-start items-center xl:items-start min-w-[170px] relative pb-10 lg:pb-0">
+                    <img
+                      src={flight.logo}
+                      alt={flight.airline}
+                      className="h-[40px] object-contain xl:mb-[45px] ml-2"
+                    />
+                    <div className="absolute top-[48px] left-[18px] flex items-center space-x-2">
+                      <span className="text-[13px] text-gray-500 leading-none">
+                        {flight.flightNumber}
+                      </span>
+                      <span className="text-[12px] bg-[#008905] text-white px-[10px] py-[2px] rounded font-semibold leading-[19px]">
+                        {flight.class}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-center gap-[40px] ml-4">
+                    <div className="text-center">
+                      <p className="text-[22px] font-bold text-black leading-tight">
+                        {flight.departureTime}
+                      </p>
+                      <p className="text-[13px] text-gray-500 leading-tight mt-[2px]">
+                        {flight.departureCity}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col items-center">
+                      <div className="flex items-center">
+                        <span className="w-[6px] h-[6px] bg-gray-300 rounded-full" />
+                        <div className="border-t border-dashed w-8 border-gray-300 mx-2" />
+                        <span className="text-black text-sm">✈</span>
+                        <div className="border-t border-dashed w-8 border-gray-300 mx-2" />
+                        <span className="w-[6px] h-[6px] bg-gray-300 rounded-full" />
+                      </div>
+                      <span className="text-[12px] text-gray-400 mt-[4px]">
+                        {flight.duration}
+                      </span>
+                    </div>
+
+                    <div className="text-center">
+                      <p className="text-[22px] font-bold text-black leading-tight">
+                        {flight.arrivalTime}
+                      </p>
+                      <p className="text-[13px] text-gray-500 leading-tight mt-[2px]">
+                        {flight.arrivalCity}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-right flex flex-col gap-2 items-center lg:items-end space-y-[2px] w-[152px] h-[31px]">
+                    <p className="text-[#EE5128] text-[26px] font-black leading-none font-sans">
+                      <span className="text-[20px] pr-2">
+                        {flight.currency}
+                      </span>
+                      {flight.price}
+                      <span className="text-[12px] text-black font-normal">
+                        /pax
+                      </span>
+                    </p>
+                    <p className="text-[13px] text-gray-400 line-through font-normal leading-none font-sans">
+                      {flight.currency}
+                      {flight.originalPrice}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Bottom Row */}
+                <div
+                  className={`border-t px-4 py-[30px] xl:py-[20px] flex items-center justify-between text-sm font-medium ${
+                    isSelected ? "border-[#EE5128]" : "border-gray-200"
+                  }`}
+                >
+                  <div
+                    className={`flex space-x-14 ${
+                      isSelected ? "text-[#EE5128]" : "text-bold"
+                    } font-sans`}
+                  >
+                    <div className="flex items-center space-x-1 ml-2">
+                      <span>{t("booking-card.Flight-details")}</span>
+                      <ChevronDown size={14} />
+                    </div>
+                    <div className="hidden lg:flex items-center space-x-1">
+                      <span>{t("booking-card.price-details")}</span>
+                      <ChevronDown size={14} />
+                    </div>
+                    <span className="hidden lg:flex">
+                      {t("booking-card.policy")}
+                    </span>
+                    <span className="hidden lg:flex">
+                      {t("booking-card.refund")}
+                    </span>
+                    <span className="hidden lg:flex">
+                      {t("booking-card.reschedule")}
+                    </span>
+                  </div>
+
+                  {isSelected ? (
+                    <button
+                      onClick={() => {
+                        console.log("Navigating with data:", {
+                          flight: flight,
+                          routingId: routingId,
+                          TripType: TripType,
+                          origin: origin,
+                          destination: destination,
+                        });
+
+                        // navigate("/booking/ReviewYourBooking", {
+                        //   state: {
+                        //     outwordTicketId: flight,
+                        //     routingId: routingId,
+                        //     tripType: TripType,
+                        //     travalers: travalers,
+
+                        //     // Add back navigation data safely
+                        //     origin: origin,
+                        //     destination: destination,
+                        //     flightsData: flights,
+                        //     TripType: TripType,
+                        //   },
+                        // });
+
+                        navigate("/booking/ReviewYourBooking", {
+                          state: {
+                            outwordTicketId: flight,
+                            // returnTicketId: id || selectReturn,
+                            routingId: routingId,
+                            tripType: TripType,
+                            travalers: travalers,
+                            // Add back navigation data
+                            origin: origin,
+                            destination: destination,
+                            flightsData: flights,
+                            TripType: TripType,
+                            ...(SearchProps && {
+                              FightSearchData: SearchProps,
+                            }),
+                          },
+                        });
+                      }}
+                      className="bg-[#EE5128] text-white px-4 py-1.5 rounded font-jakarta font-semibold hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200"
+                    >
+                      {t("booking-card.book-now")}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={(e) => e.stopPropagation()}
+                      className="bg-gray-300 text-white px-4 py-1.5 rounded font-jakarta font-semibold cursor-not-allowed"
+                      disabled
+                    >
+                      {t("booking-card.book-now")}
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Pagination Component */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        setCurrentPage={setCurrentPage}
+      />
+    </>
+  );
+};
+
+const Pagination = ({ currentPage, totalPages, setCurrentPage }) => {
+  const getPagination = () => {
+    const pages = [];
+
+    if (totalPages <= 6) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, 4, "...", totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(
+          1,
+          "...",
+          totalPages - 3,
+          totalPages - 2,
+          totalPages - 1,
+          totalPages
+        );
+      } else {
+        pages.push(
+          1,
+          "...",
+          currentPage - 1,
+          currentPage,
+          currentPage + 1,
+          "...",
+          totalPages
+        );
+      }
+    }
+
+    return pages;
+  };
+
+  return (
+    <div className="flex items-center justify-center gap-2 mt-6">
+      {/* Prev */}
+      <button
+        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+        disabled={currentPage === 1}
+        className="w-8 h-8 flex items-center justify-center rounded-full bg-[#EE5128] text-white disabled:opacity-50 hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200"
+      >
+        <ChevronLeft className="h-[24px] w-[14px]" />
+      </button>
+
+      {getPagination().map((page, index) =>
+        page === "..." ? (
+          <span key={`dots-${index}`} className="mx-1 text-gray-500">
+            ...
+          </span>
+        ) : (
+          <button
+            key={page}
+            onClick={() => setCurrentPage(page)}
+            className={`w-8 h-8 flex items-center justify-center rounded-full ${
+              currentPage === page
+                ? "bg-[#EE5128] text-white"
+                : "bg-transparent text-black"
+            }`}
+          >
+            {page}
+          </button>
+        )
+      )}
+
+      {/* Next */}
+      <button
+        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+        disabled={currentPage === totalPages}
+        className="w-8 h-8 flex items-center justify-center rounded-full bg-[#EE5128] text-white disabled:opacity-50 hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200"
+      >
+        <ChevronRight className="h-[24px] w-[14px]" />
+      </button>
+    </div>
+  );
+};
+
+const RoundTrip = ({
+  flights,
+  t,
+  routingId,
+  destination,
+  origin,
+  TripType,
+  travalers,
+  SearchProps, // ✅ Add this line
+}) => {
+  const navigate = useNavigate();
+
+  const [isOnWard, setOnWard] = useState(false);
+  const [selectOutWard, setselectOutWard] = useState({});
+  const [selectReturn, setselectReturn] = useState({});
+  const [selectedFlightId, setSelectedFlightId] = useState(null);
+
+  const OutWordFlights = flights?.filter((flight) => flight.type === "outward");
+  const ReturnFlights = flights?.filter((flight) => flight.type === "return");
+
+  console.log("selectOutWard", selectOutWard);
+  console.log("selectReturn", selectReturn);
+
+  const handleSelectFlight = (id) => {
+    setSelectedFlightId((prevId) => (prevId === id ? null : id));
+  };
+
+  const handleSelectOnward = ({ id }) => {
+    setselectOutWard(id);
+  };
+
+  const handleConfirmSelect = ({ id }) => {
+    navigate("/booking/ReviewYourBooking", {
+      state: {
+        outwordTicketId: selectOutWard,
+        returnTicketId: id || selectReturn,
+        routingId: routingId,
+        tripType: TripType,
+        travalers: travalers,
+
+        // Add back navigation data
+        origin: origin,
+        destination: destination,
+        flightsData: flights,
+        TripType: TripType,
+        ...(SearchProps && { FightSearchData: SearchProps }),
+      },
+    });
+  };
+
+  return (
+    <div className="">
+      {!isOnWard ? (
+        <div className="flex flex-col items-center space-y-6 font-sans relative">
+          <div className="w-full flex items-center justify-between">
+            {/* Heading */}
+            <h1 className="text-[25.44px] font-[600] leading-[100%] font-jakarta">
+              Departure Flights from {origin} to {destination}
+            </h1>
+          </div>
+
+          {/* Check if no outward flights available */}
+          {!OutWordFlights || OutWordFlights.length === 0 ? (
+            <NoFlightsAvailable
+              origin={origin}
+              destination={destination}
+              searchDate={null}
+              onNewSearch={() => {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            />
+          ) : (
+            OutWordFlights.map((flight) => {
+              const isSelected = selectedFlightId === flight.id;
+              console.log("outward flight", flight);
+
+              return (
+                <div
+                  key={flight.id}
+                  className={`w-full min-h-[150.13px] rounded-md cursor-pointer transition duration-300 flex flex-col justify-between ${
+                    isSelected
+                      ? "border border-[#EE5128] bg-white shadow-sm"
+                      : "border border-gray-200 bg-white"
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSelectFlight(flight.id);
+                  }}
+                >
+                  <div className="flex items-center flex-col md:flex-row justify-between px-4 min-h-[60px] pt-6 pb-6 xl:pb-0 gap-[30px]">
+                    <div className="flex flex-col justify-start items-center xl:items-start min-w-[170px] relative pb-10 lg:pb-0">
+                      <img
+                        src={flight.logo}
+                        alt={flight.airline}
+                        className="h-[40px] object-contain xl:mb-[45px] ml-2"
+                      />
+                      <div className="absolute top-[48px] left-[18px] flex items-center space-x-2">
+                        <span className="text-[13px] text-gray-500 leading-none">
+                          {flight.flightNumber}
+                        </span>
+                        <span className="text-[12px] bg-[#008905] text-white px-[10px] py-[2px] rounded font-semibold leading-[19px]">
+                          {flight.class}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-center gap-[40px] ml-4">
+                      <div className="text-center">
+                        <p className="text-[22px] font-bold text-black leading-tight">
+                          {flight.departureTime}
+                        </p>
+                        <p className="text-[13px] text-gray-500 leading-tight mt-[2px]">
+                          {flight.departureCity}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <div className="flex items-center">
+                          <span className="w-[6px] h-[6px] bg-gray-300 rounded-full" />
+                          <div className="border-t border-dashed w-8 border-gray-300 mx-2" />
+                          <span className="text-black text-sm">✈</span>
+                          <div className="border-t border-dashed w-8 border-gray-300 mx-2" />
+                          <span className="w-[6px] h-[6px] bg-gray-300 rounded-full" />
+                        </div>
+                        <span className="text-[12px] text-gray-400 mt-[4px]">
+                          {flight.duration}
+                        </span>
+                      </div>
+
+                      <div className="text-center">
+                        <p className="text-[22px] font-bold text-black leading-tight">
+                          {flight.arrivalTime}
+                        </p>
+                        <p className="text-[13px] text-gray-500 leading-tight mt-[2px]">
+                          {flight.arrivalCity}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="text-right flex flex-col gap-2 items-center lg:items-end space-y-[2px] w-[152px] h-[31px]">
+                      <p className="text-[#EE5128] text-[26px] font-black leading-none font-sans">
+                        <span className="text-[20px] pr-2">
+                          {flight.currency}
+                        </span>
+                        {flight.price}
+                        <span className="text-[12px] text-black font-normal">
+                          /pax
+                        </span>
+                      </p>
+                      <p className="text-[13px] text-gray-400 line-through font-normal leading-none font-sans">
+                        {flight.currency}
+                        {flight.originalPrice}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`border-t px-4 py-[30px] xl:py-[20px] flex items-center justify-between text-sm font-medium ${
+                      isSelected ? "border-[#EE5128]" : "border-gray-200"
+                    }`}
+                  >
+                    <div
+                      className={`flex space-x-14 ${
+                        isSelected ? "text-[#EE5128]" : "text-bold"
+                      } font-sans`}
+                    >
+                      <div className="flex items-center space-x-1 ml-2">
+                        <span>{t("booking-card.Flight-details")}</span>
+                        <ChevronDown size={14} />
+                      </div>
+                      <div className="hidden lg:flex items-center space-x-1">
+                        <span>{t("booking-card.price-details")}</span>
+                        <ChevronDown size={14} />
+                      </div>
+                      <span className="hidden lg:flex">
+                        {t("booking-card.policy")}
+                      </span>
+                      <span className="hidden lg:flex">
+                        {t("booking-card.refund")}
+                      </span>
+                      <span className="hidden lg:flex">
+                        {t("booking-card.reschedule")}
+                      </span>
+                    </div>
+
+                    {isSelected ? (
+                      <button
+                        onClick={() => {
+                          handleSelectOnward({
+                            id: flight,
+                          });
+                          setOnWard(true);
+                        }}
+                        className="bg-[#EE5128] text-white px-4 py-1.5 rounded font-jakarta font-semibold hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200"
+                      >
+                        {t("booking-card.book-now")}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={(e) => e.stopPropagation()}
+                        className="bg-gray-300 text-white px-4 py-1.5 rounded font-jakarta font-semibold cursor-not-allowed"
+                        disabled
+                      >
+                        {t("booking-card.book-now")}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center space-y-6 font-sans relative">
+          <div className="w-full flex items-center justify-between">
+            {/* Heading */}
+            <h1 className="text-[25.44px] font-[600] leading-[100%] font-jakarta">
+              Return Flights from {destination} to {origin}
+            </h1>
+          </div>
+
+          {/* Check if no return flights available */}
+          {!ReturnFlights || ReturnFlights.length === 0 ? (
+            <NoFlightsAvailable
+              origin={destination}
+              destination={origin}
+              searchDate={null}
+              onNewSearch={() => {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            />
+          ) : (
+            ReturnFlights.map((flight) => {
+              const isSelected = selectedFlightId === flight.id;
+              console.log("return flight", flight);
+
+              return (
+                <div
+                  key={flight.id}
+                  className={`w-full min-h-[150.13px] rounded-md cursor-pointer transition duration-300 flex flex-col justify-between ${
+                    isSelected
+                      ? "border border-[#EE5128] bg-white shadow-sm"
+                      : "border border-gray-200 bg-white"
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSelectFlight(flight.id);
+                  }}
+                >
+                  <div className="flex items-center flex-col md:flex-row justify-between px-4 min-h-[60px] pt-6 pb-6 xl:pb-0 gap-[30px]">
+                    <div className="flex flex-col justify-start items-center xl:items-start min-w-[170px] relative pb-10 lg:pb-0">
+                      <img
+                        src={flight.logo}
+                        alt={flight.airline}
+                        className="h-[40px] object-contain xl:mb-[45px] ml-2"
+                      />
+                      <div className="absolute top-[48px] left-[18px] flex items-center space-x-2">
+                        <span className="text-[13px] text-gray-500 leading-none">
+                          {flight.flightNumber}
+                        </span>
+                        <span className="text-[12px] bg-[#008905] text-white px-[10px] py-[2px] rounded font-semibold leading-[19px]">
+                          {flight.class}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-center gap-[40px] ml-4">
+                      <div className="text-center">
+                        <p className="text-[22px] font-bold text-black leading-tight">
+                          {flight.departureTime}
+                        </p>
+                        <p className="text-[13px] text-gray-500 leading-tight mt-[2px]">
+                          {flight.departureCity}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <div className="flex items-center">
+                          <span className="w-[6px] h-[6px] bg-gray-300 rounded-full" />
+                          <div className="border-t border-dashed w-8 border-gray-300 mx-2" />
+                          <span className="text-black text-sm">✈</span>
+                          <div className="border-t border-dashed w-8 border-gray-300 mx-2" />
+                          <span className="w-[6px] h-[6px] bg-gray-300 rounded-full" />
+                        </div>
+                        <span className="text-[12px] text-gray-400 mt-[4px]">
+                          {flight.duration}
+                        </span>
+                      </div>
+
+                      <div className="text-center">
+                        <p className="text-[22px] font-bold text-black leading-tight">
+                          {flight.arrivalTime}
+                        </p>
+                        <p className="text-[13px] text-gray-500 leading-tight mt-[2px]">
+                          {flight.arrivalCity}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="text-right flex flex-col gap-2 items-center lg:items-end space-y-[2px] w-[152px] h-[31px]">
+                      <p className="text-[#EE5128] text-[26px] font-black leading-none font-sans">
+                        <span className="text-[20px] pr-2">
+                          {flight.currency}
+                        </span>
+                        {flight.price}
+                        <span className="text-[12px] text-black font-normal">
+                          /pax
+                        </span>
+                      </p>
+                      <p className="text-[13px] text-gray-400 line-through font-normal leading-none font-sans">
+                        {flight.currency}
+                        {flight.originalPrice}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`border-t px-4 py-[30px] xl:py-[20px] flex items-center justify-between text-sm font-medium ${
+                      isSelected ? "border-[#EE5128]" : "border-gray-200"
+                    }`}
+                  >
+                    <div
+                      className={`flex space-x-14 ${
+                        isSelected ? "text-[#EE5128]" : "text-bold"
+                      } font-sans`}
+                    >
+                      <div className="flex items-center space-x-1 ml-2">
+                        <span>{t("booking-card.Flight-details")}</span>
+                        <ChevronDown size={14} />
+                      </div>
+                      <div className="hidden lg:flex items-center space-x-1">
+                        <span>{t("booking-card.price-details")}</span>
+                        <ChevronDown size={14} />
+                      </div>
+                      <span className="hidden lg:flex">
+                        {t("booking-card.policy")}
+                      </span>
+                      <span className="hidden lg:flex">
+                        {t("booking-card.refund")}
+                      </span>
+                      <span className="hidden lg:flex">
+                        {t("booking-card.reschedule")}
+                      </span>
+                    </div>
+
+                    {isSelected ? (
+                      <button
+                        onClick={() => {
+                          handleConfirmSelect({
+                            id: flight,
+                          });
+                        }}
+                        className="bg-[#EE5128] text-white px-4 py-1.5 rounded font-jakarta font-semibold hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200"
+                      >
+                        {t("booking-card.book-now")}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={(e) => e.stopPropagation()}
+                        className="bg-gray-300 text-white px-4 py-1.5 rounded font-jakarta font-semibold cursor-not-allowed"
+                        disabled
+                      >
+                        {t("booking-card.book-now")}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+// Add this new component after your imports
+const NoFlightsAvailable = ({
+  origin,
+  destination,
+  searchDate,
+  onNewSearch,
+}) => {
+  return (
+    <div className="w-full flex flex-col items-center justify-center py-16 px-8 text-center bg-white rounded-lg">
+      {/* Local Image */}
+      <div className="mb-8">
+        <img
+          src={Noflight}
+          alt="No flights available"
+          className="w-64 h-64 object-contain mx-auto"
+        />
+      </div>
+
+      {/* Simple Message */}
+      <div className="space-y-6 max-w-md mx-auto">
+        <h2 className="text-3xl font-bold text-gray-900 leading-tight tracking-tight">
+          Flights not available for this date and Destinations.
+        </h2>
+
+        <div className="relative">
+          {/* <p className="text-xl text-gray-600 font-medium relative z-10 bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-100">
+			  Try different dates and Destinations.
+			</p> */}
+          <div className="absolute inset-0 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg transform rotate-1"></div>
+        </div>
+      </div>
     </div>
   );
 };
