@@ -2892,7 +2892,7 @@ import {
   convertToRequestedCurrency,
 } from "../../utils/Currencyconverter";
 
-function FlightList() {
+function FlightList({country}) {
   const { t } = useTranslation();
   const location = useLocation();
 
@@ -3006,6 +3006,7 @@ function FlightList() {
         From={origin}
         To={destination}
         SearchProps={FightSearchData} // Pass the complete search data
+        country={country}
       />
       <div
         className={`min-h-screen px-4 ${
@@ -3076,6 +3077,7 @@ const SearchBox = ({
   From,
   To,
   SearchProps,
+  country
 }) => {
   const { t } = useTranslation();
   const [isDirectFlight, setIsDirectFlight] = useState(false);
@@ -3093,7 +3095,7 @@ const SearchBox = ({
   const [searchCount, setSearchCount] = useState(0);
   const [commissionDetails, setcommissionDetails] = useState([]);
   const travelFusionBackendUrl = import.meta.env.VITE_BACKEND_URL;
-  const listSupplierRoute = async () => {
+  /*const listSupplierRoute = async () => {
     try {
       const response = await fetch(
         `${travelFusionBackendUrl}/get-supplierroute`
@@ -3109,7 +3111,7 @@ const SearchBox = ({
     } catch (error) {
       console.error("Failed to fetch supplier route:", error);
     }
-  };
+  };*/
   const transactionUrl = import.meta.env.VITE_TRANSACTION_URL;
   const getcommission = async () => {
     try {
@@ -3125,7 +3127,7 @@ const SearchBox = ({
 
   useEffect(() => {
     getcommission();
-    listSupplierRoute();
+    // listSupplierRoute();
   }, []);
   // Fix: Properly set initial values from previous search
   useEffect(() => {
@@ -3222,6 +3224,7 @@ const SearchBox = ({
   useEffect(() => {
     const fetchFlights = async () => {
       console.log("Travelfusion routing API Call");
+          console.log("country flightlist",country)
       try {
         const requestBody = {
           mode: "plane",
@@ -3239,6 +3242,7 @@ const SearchBox = ({
             returnDateOfSearch:
               handleTravelFusionDate(flightReturnDate) + "-23:59",
           }),
+          countryCode:country
         };
 
         console.log(requestBody);
