@@ -342,8 +342,9 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
-
-function TravelersDetails() {
+import cookies from "js-cookie";
+import { decryptPayload } from "../../utils/Payload";
+function TravelersDetails({country}) {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
@@ -638,393 +639,465 @@ function TravelersDetails() {
         <div className="flex flex-col lg:flex-row gap-10 items-start w-full">
           {/* Main Content */}
           <div className="max-w-[656px] w-full">
-            {currentStep <= totalTravellers ? (
-              // Traveller Details Steps
-              <div className="bg-white rounded-md">
-                <div className="bg-[#FFE4DB] p-3 rounded-t-md">
-                  <h2 className="font-semibold font-jakarta">
-                    Traveller {currentStep} Details
-                  </h2>
-                </div>
-                <div className="p-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Title
-                      </label>
-                      <select
-                        value={currentTraveller.Name?.Title || "Mr"}
-                        onChange={(e) =>
-                          handleTravellerChange("title", e.target.value)
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                      >
-                        <option value="Mr">Mr</option>
-                        <option value="Mrs">Mrs</option>
-                        <option value="Miss">Miss</option>
-                        <option value="Dr">Dr</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Age
-                      </label>
-                      <input
-                        type="number"
-                        value={currentTraveller.Age || ""}
-                        onChange={(e) =>
-                          handleTravellerChange("age", e.target.value)
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                        placeholder="Enter age"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Name
-                      </label>
-                      <input
-                        type="text"
-                        value={
-                          currentTraveller.Name?.NamePartList?.NamePart?.[0] ||
-                          ""
-                        }
-                        onChange={(e) =>
-                          handleTravellerChange("firstName", e.target.value)
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                        placeholder="Enter name"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Date of Birth
-                      </label>
-                      <input
-                        type="date"
-                        value={
-                          currentTraveller.CustomSupplierParameterList
-                            ?.CustomSupplierParameter?.[0]?.Value || ""
-                        }
-                        onChange={(e) =>
-                          handleTravellerChange("dateOfBirth", e.target.value)
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                      />
+            {/* All Travellers with Accordion */}
+            {travellerList.Traveller.map((traveller, index) => {
+              const isCompleted = completedTravellers.has(index);
+              const isCurrent =
+                index === currentTravellerIndex &&
+                currentStep <= totalTravellers;
+              const isClickable = isCompleted || isCurrent;
+
+              return (
+                <div key={index} className="bg-white rounded-md mb-4">
+                  <div
+                    className={`bg-[#FFE4DB] p-3 rounded-t-md flex justify-between items-center ${
+                      isClickable
+                        ? "cursor-pointer hover:bg-[#fdd5c7]"
+                        : "cursor-not-allowed opacity-60"
+                    }`}
+                    onClick={() =>
+                      isClickable && toggleTravellerExpansion(index)
+                    }
+                  >
+                    <h2 className="font-semibold font-jakarta">
+                      {`${index < 2 ? "Adult" : "Child"} ${index + 1}`}
+                      {isCompleted && (
+                        <span className="ml-2 text-green-600 text-sm">
+                          ✓ Completed
+                        </span>
+                      )}
+                      {isCurrent && (
+                        <span className="ml-2 text-blue-600 text-sm">
+                          • Current
+                        </span>
+                      )}
+                    </h2>
+                    <div className="flex items-center gap-2">
+                      {traveller.Name?.NamePartList?.NamePart?.[0] && (
+                        <span className="text-sm text-gray-600">
+                          {traveller.Name.NamePartList.NamePart[0]}{" "}
+                          {traveller.Name.NamePartList.NamePart[2]}
+                        </span>
+                      )}
+                      {isClickable && (
+                        <span
+                          className={`transform transition-transform duration-200 ${
+                            expandedTravellers.has(index) ? "rotate-180" : ""
+                          }`}
+                        >
+                          ▼
+                        </span>
+                      )}
                     </div>
                   </div>
+
+                  {expandedTravellers.has(index) && (
+                    <div className="p-6">
+                      <p className="text-gray-400 mb-4">
+                        *As per your passport
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Title
+                          </label>
+                          <select
+                            value={traveller.Name?.Title || "Mr"}
+                            onChange={(e) =>
+                              handleTravellerChange(
+                                "title",
+                                e.target.value,
+                                index
+                              )
+                            }
+                            className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                          >
+                            <option value="Mr">Mr</option>
+                            <option value="Mrs">Mrs</option>
+                            <option value="Miss">Miss</option>
+                            <option value="Dr">Dr</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Age
+                          </label>
+                          <input
+                            type="number"
+                            value={traveller.Age || ""}
+                            onChange={(e) =>
+                              handleTravellerChange(
+                                "age",
+                                e.target.value,
+                                index
+                              )
+                            }
+                            className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                            placeholder="Enter age"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            First Name
+                          </label>
+                          <input
+                            type="text"
+                            value={
+                              traveller.Name?.NamePartList?.NamePart?.[0] || ""
+                            }
+                            onChange={(e) =>
+                              handleTravellerChange(
+                                "firstName",
+                                e.target.value,
+                                index
+                              )
+                            }
+                            className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                            placeholder="Enter first name"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Middle Name
+                          </label>
+                          <input
+                            type="text"
+                            value={
+                              traveller.Name?.NamePartList?.NamePart?.[1] || ""
+                            }
+                            onChange={(e) =>
+                              handleTravellerChange(
+                                "middleName",
+                                e.target.value,
+                                index
+                              )
+                            }
+                            className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                            placeholder="Enter middle name"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Last Name
+                          </label>
+                          <input
+                            type="text"
+                            value={
+                              traveller.Name?.NamePartList?.NamePart?.[2] || ""
+                            }
+                            onChange={(e) =>
+                              handleTravellerChange(
+                                "lastName",
+                                e.target.value,
+                                index
+                              )
+                            }
+                            className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                            placeholder="Enter last name"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Date of Birth
+                          </label>
+                          <input
+                            type="date"
+                            value={
+                              traveller.CustomSupplierParameterList
+                                ?.CustomSupplierParameter?.[0]?.Value || ""
+                            }
+                            onChange={(e) =>
+                              handleTravellerChange(
+                                "dateOfBirth",
+                                e.target.value,
+                                index
+                              )
+                            }
+                            className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Company
+                          </label>
+                          <input
+                            type="text"
+                            value={traveller.Address?.Company || ""}
+                            onChange={(e) =>
+                              handleTravellerChange(
+                                "address.Company",
+                                e.target.value
+                              )
+                            }
+                            className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                            placeholder="Enter company"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Flat/Apartment
+                          </label>
+                          <input
+                            type="text"
+                            value={traveller.Address?.Flat || ""}
+                            onChange={(e) =>
+                              handleTravellerChange(
+                                "address.Flat",
+                                e.target.value,
+                                index
+                              )
+                            }
+                            className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                            placeholder="Enter flat/apartment"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Building Name
+                          </label>
+                          <input
+                            type="text"
+                            value={traveller.Address?.BuildingName || ""}
+                            onChange={(e) =>
+                              handleTravellerChange(
+                                "address.BuildingName",
+                                e.target.value,
+                                index
+                              )
+                            }
+                            className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                            placeholder="Enter building name"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Building Number
+                          </label>
+                          <input
+                            type="text"
+                            value={traveller.Address?.BuildingNumber || ""}
+                            onChange={(e) =>
+                              handleTravellerChange(
+                                "address.BuildingNumber",
+                                e.target.value,
+                                index
+                              )
+                            }
+                            className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                            placeholder="Enter building number"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Street
+                          </label>
+                          <input
+                            type="text"
+                            value={traveller.Address?.Street || ""}
+                            onChange={(e) =>
+                              handleTravellerChange(
+                                "address.Street",
+                                e.target.value,
+                                index
+                              )
+                            }
+                            className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                            placeholder="Enter street"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Locality
+                          </label>
+                          <input
+                            type="text"
+                            value={traveller.Address?.Locality || ""}
+                            onChange={(e) =>
+                              handleTravellerChange(
+                                "address.Locality",
+                                e.target.value,
+                                index
+                              )
+                            }
+                            className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                            placeholder="Enter locality"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            City
+                          </label>
+                          <input
+                            type="text"
+                            value={traveller.Address?.City || ""}
+                            onChange={(e) =>
+                              handleTravellerChange(
+                                "address.City",
+                                e.target.value,
+                                index
+                              )
+                            }
+                            className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                            placeholder="Enter city"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Province/State
+                          </label>
+                          <input
+                            type="text"
+                            value={traveller.Address?.Province || ""}
+                            onChange={(e) =>
+                              handleTravellerChange(
+                                "address.Province",
+                                e.target.value
+                              )
+                            }
+                            className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                            placeholder="Enter province/state"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Postcode
+                          </label>
+                          <input
+                            type="text"
+                            value={traveller.Address?.Postcode || ""}
+                            onChange={(e) =>
+                              handleTravellerChange(
+                                "address.Postcode",
+                                e.target.value,
+                                index
+                              )
+                            }
+                            className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                            placeholder="Enter postcode"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Country Code
+                          </label>
+                          <input
+                            type="text"
+                            value={country}
+                            onChange={(e) =>
+                              handleTravellerChange(
+                                "address.CountryCode",
+                                e.target.value,
+                                index
+                              )
+                            }
+                            className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                            placeholder="Enter country code"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            International Code
+                          </label>
+                          <input
+                            type="text"
+                            value={
+                              traveller.MobilePhone?.InternationalCode || ""
+                            }
+                            onChange={(e) =>
+                              handleTravellerChange(
+                                "phone.InternationalCode",
+                                e.target.value,
+                                index
+                              )
+                            }
+                            className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                            placeholder="Enter international code"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Phone Number
+                          </label>
+                          <input
+                            type="tel"
+                            value={traveller.MobilePhone?.Number || ""}
+                            onChange={(e) =>
+                              handleTravellerChange(
+                                "phone.Number",
+                                e.target.value,
+                                index
+                              )
+                            }
+                            className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                            placeholder="Enter phone number"
+                          />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className="block text-sm font-medium mb-1">
+                            Email
+                          </label>
+                          <input
+                            type="email"
+                            value={traveller.Email || ""}
+                            onChange={(e) =>
+                              handleTravellerChange(
+                                "email",
+                                e.target.value,
+                                index
+                              )
+                            }
+                            className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
+                            placeholder="Enter email"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ) : currentStep === totalTravellers + 1 ? (
-              // Contact Details Step
-              <div className="bg-white rounded-md">
-                <div className="bg-[#FFE4DB] p-3 rounded-t-md">
-                  <h2 className="font-semibold font-jakarta">
-                    Contact Details
-                  </h2>
-                </div>
-                <div className="p-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Title
-                      </label>
-                      <select
-                        value={contactDetails.Name.Title}
-                        onChange={(e) =>
-                          handleContactChange("title", e.target.value)
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                      >
-                        <option value="Mr">Mr</option>
-                        <option value="Mrs">Mrs</option>
-                        <option value="Miss">Miss</option>
-                        <option value="Dr">Dr</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        First Name
-                      </label>
-                      <input
-                        type="text"
-                        value={contactDetails.Name.NamePartList.NamePart[0]}
-                        onChange={(e) =>
-                          handleContactChange("firstName", e.target.value)
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                        placeholder="Enter first name"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Middle Name
-                      </label>
-                      <input
-                        type="text"
-                        value={contactDetails.Name.NamePartList.NamePart[1]}
-                        onChange={(e) =>
-                          handleContactChange("middleName", e.target.value)
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                        placeholder="Enter middle name"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Last Name
-                      </label>
-                      <input
-                        type="text"
-                        value={contactDetails.Name.NamePartList.NamePart[2]}
-                        onChange={(e) =>
-                          handleContactChange("lastName", e.target.value)
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                        placeholder="Enter last name"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Company
-                      </label>
-                      <input
-                        type="text"
-                        value={contactDetails.Address.Company}
-                        onChange={(e) =>
-                          handleContactChange("address.Company", e.target.value)
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                        placeholder="Enter company"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Flat/Apartment
-                      </label>
-                      <input
-                        type="text"
-                        value={contactDetails.Address.Flat}
-                        onChange={(e) =>
-                          handleContactChange("address.Flat", e.target.value)
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                        placeholder="Enter flat/apartment"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Building Name
-                      </label>
-                      <input
-                        type="text"
-                        value={contactDetails.Address.BuildingName}
-                        onChange={(e) =>
-                          handleContactChange(
-                            "address.BuildingName",
-                            e.target.value
-                          )
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                        placeholder="Enter building name"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Building Number
-                      </label>
-                      <input
-                        type="text"
-                        value={contactDetails.Address.BuildingNumber}
-                        onChange={(e) =>
-                          handleContactChange(
-                            "address.BuildingNumber",
-                            e.target.value
-                          )
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                        placeholder="Enter building number"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Street
-                      </label>
-                      <input
-                        type="text"
-                        value={contactDetails.Address.Street}
-                        onChange={(e) =>
-                          handleContactChange("address.Street", e.target.value)
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                        placeholder="Enter street"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Locality
-                      </label>
-                      <input
-                        type="text"
-                        value={contactDetails.Address.Locality}
-                        onChange={(e) =>
-                          handleContactChange(
-                            "address.Locality",
-                            e.target.value
-                          )
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                        placeholder="Enter locality"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        City
-                      </label>
-                      <input
-                        type="text"
-                        value={contactDetails.Address.City}
-                        onChange={(e) =>
-                          handleContactChange("address.City", e.target.value)
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                        placeholder="Enter city"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Province/State
-                      </label>
-                      <input
-                        type="text"
-                        value={contactDetails.Address.Province}
-                        onChange={(e) =>
-                          handleContactChange(
-                            "address.Province",
-                            e.target.value
-                          )
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                        placeholder="Enter province/state"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Postcode
-                      </label>
-                      <input
-                        type="text"
-                        value={contactDetails.Address.Postcode}
-                        onChange={(e) =>
-                          handleContactChange(
-                            "address.Postcode",
-                            e.target.value
-                          )
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                        placeholder="Enter postcode"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Country Code
-                      </label>
-                      <input
-                        type="text"
-                        value={contactDetails.Address.CountryCode}
-                        onChange={(e) =>
-                          handleContactChange(
-                            "address.CountryCode",
-                            e.target.value
-                          )
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                        placeholder="Enter country code"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        International Code
-                      </label>
-                      <input
-                        type="text"
-                        value={contactDetails.MobilePhone.InternationalCode}
-                        onChange={(e) =>
-                          handleContactChange(
-                            "phone.InternationalCode",
-                            e.target.value
-                          )
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                        placeholder="Enter international code"
-                      />
-                    </div>
-                    {/* <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Area Code
-                      </label>
-                      <input
-                        type="text"
-                        value={contactDetails.MobilePhone.AreaCode}
-                        onChange={(e) =>
-                          handleContactChange("phone.AreaCode", e.target.value)
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                        placeholder="Enter area code"
-                      />
-                    </div> */}
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Phone Number
-                      </label>
-                      <input
-                        type="tel"
-                        value={contactDetails.MobilePhone.Number}
-                        onChange={(e) =>
-                          handleContactChange("phone.Number", e.target.value)
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                        placeholder="Enter phone number"
-                      />
-                    </div>
-                    {/* <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Extension
-                      </label>
-                      <input
-                        type="text"
-                        value={contactDetails.MobilePhone.Extension}
-                        onChange={(e) =>
-                          handleContactChange("phone.Extension", e.target.value)
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                        placeholder="Enter extension"
-                      />
-                    </div> */}
-                    <div className="sm:col-span-2">
-                      <label className="block text-sm font-medium mb-1">
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        value={contactDetails.Email}
-                        onChange={(e) =>
-                          handleContactChange("email", e.target.value)
-                        }
-                        className="w-full border border-[#CCCCCC] rounded p-2 text-sm"
-                        placeholder="Enter email"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              // Billing Details Step
-              <div className="bg-white rounded-md">
-                <div className="bg-[#FFE4DB] p-3 rounded-t-md">
-                  <h2 className="font-semibold font-jakarta">
-                    Billing Details
-                  </h2>
+              );
+            })}
+
+            {/* Billing Details Section */}
+            <div className="bg-white rounded-md mb-4">
+              <div
+                className={`bg-[#FFE4DB] p-3 rounded-t-md flex justify-between items-center ${
+                  billingCompleted || currentStep === totalTravellers + 1
+                    ? "cursor-pointer hover:bg-[#fdd5c7]"
+                    : "cursor-not-allowed opacity-60"
+                }`}
+                onClick={toggleBillingExpansion}
+              >
+                <h2 className="font-semibold font-jakarta">
+                  Billing Details
+                  {billingCompleted && (
+                    <span className="ml-2 text-green-600 text-sm">
+                      ✓ Completed
+                    </span>
+                  )}
+                  {currentStep === totalTravellers + 1 && !billingCompleted && (
+                    <span className="ml-2 text-blue-600 text-sm">
+                      • Current
+                    </span>
+                  )}
+                </h2>
+                <div className="flex items-center gap-2">
+                  {billingDetails.Name?.NamePartList?.NamePart?.[0] && (
+                    <span className="text-sm text-gray-600">
+                      {billingDetails.Name.NamePartList.NamePart[0]}{" "}
+                      {billingDetails.Name.NamePartList.NamePart[2]}
+                    </span>
+                  )}
+                  {(billingCompleted ||
+                    currentStep === totalTravellers + 1) && (
+                    <span
+                      className={`transform transition-transform duration-200 ${
+                        billingExpanded ? "rotate-180" : ""
+                      }`}
+                    >
+                      ▼
+                    </span>
+                  )}
                 </div>
                 <div className="p-6">
                   <div className="mb-4">
