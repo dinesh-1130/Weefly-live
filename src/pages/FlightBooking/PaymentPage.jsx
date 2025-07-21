@@ -200,7 +200,7 @@ export default function PaymentPage() {
     console.log("ocp", originalCurrencyPrice);
     // const result = await handleProcessTerm(location.state?.requestBody);
     const bookid = location.state.TFBookingReference;
-    console.log ("bookid",bookid)
+    console.log("bookid", bookid);
     // if (result.price !== originalCurrencyPrice) {
     //   const { price, currency } = result;
     //   window.alert("Price CHanges !!");
@@ -837,7 +837,7 @@ export default function PaymentPage() {
                       {t("booking-details.departure")}
                     </p>
                     <p className="text-xs text-gray-500 mt-[2px]">
-                      Thu, 06 jul, 2025
+                      {OutwardTicket?.departureDate.split("-")[0]}
                     </p>
                   </div>
                   <div className="text-left w-1/2 pl-4">
@@ -845,7 +845,7 @@ export default function PaymentPage() {
                       {t("booking-details.landing")}
                     </p>
                     <p className="text-xs text-gray-500 mt-[2px] ml-5">
-                      Thu, 06 jul, 2025
+                      {OutwardTicket?.arrivalDate.split("-")[0]}
                     </p>
                   </div>
                 </div>
@@ -907,7 +907,7 @@ export default function PaymentPage() {
                         {t("booking-details.departure")}
                       </p>
                       <p className="text-xs text-gray-500 mt-[2px]">
-                        Thu, 06 jul, 2025
+                        {OutwardTicket?.departureDate.split("-")[0]}
                       </p>
                     </div>
                     <div className="text-left w-1/2 pl-4">
@@ -915,7 +915,7 @@ export default function PaymentPage() {
                         {t("booking-details.landing")}
                       </p>
                       <p className="text-xs text-gray-500 mt-[2px] ml-5">
-                        Thu, 06 jul, 2025
+                        {OutwardTicket?.arrivalDate.split("-")[0]}
                       </p>
                     </div>
                   </div>
@@ -975,7 +975,7 @@ export default function PaymentPage() {
                         {t("booking-details.departure")}
                       </p>
                       <p className="text-xs text-gray-500 mt-[2px]">
-                        Thu, 06 jul, 2025
+                        {returnTicket?.departureDate.split("-")[0]}
                       </p>
                     </div>
                     <div className="text-left w-1/2 pl-4">
@@ -983,7 +983,7 @@ export default function PaymentPage() {
                         {t("booking-details.landing")}
                       </p>
                       <p className="text-xs text-gray-500 mt-[2px] ml-5">
-                        Thu, 06 jul, 2025
+                        {returnTicket?.arrivalDate.split("-")[0]}
                       </p>
                     </div>
                   </div>

@@ -185,6 +185,12 @@ export default function ReviewYourBooking() {
       flightTickets.push(TicketData.outwordTicketId, TicketData.returnTicketId);
       returnid = TicketData.returnTicketId.id;
     }
+    console.log("Routing Id", routeid);
+
+    if (!routeid || !outwardid) {
+      console.warn("Missing routeid or outwardid");
+      return;
+    }
 
     const response = await fetch(`${backendUrl}/process-details`, {
       method: "POST",
@@ -192,6 +198,7 @@ export default function ReviewYourBooking() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        // routingId: TicketData.routingId || routeid,
         routingId: routeid,
         outwardId: outwardid,
         ...(returnid && { returnId: returnid }),
@@ -411,6 +418,16 @@ function FlightDetailCard({ title, flight }) {
             <p className="text-[32px] font-bold"> {flight?.arrivalTime}</p>
             <p className="text-sm text-gray-500">{flight?.arrivalCity}</p>
           </div>
+
+          <div className="">
+            <p className="text-[#EE5128] font-extrabold text-[32px]">
+              {flight.price}{" "}
+              <span className="text-lg font-medium">/ {flight.currency}</span>
+            </p>
+            <p className="text-lg text-gray-400 line-through">
+              {flight.originalPrice}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -419,13 +436,13 @@ function FlightDetailCard({ title, flight }) {
         <div className="w-10 h-10 bg-gray-100 rounded-full absolute -right-[60px] -top-[20px]"></div>
       </div>
 
-      <div className="flex gap-[42px] text-[18px]">
+      {/* <div className="flex gap-[42px] text-[18px]">
         <p>{t("booking-card.Flight-details")}</p>
         <p>{t("booking-card.price-details")}</p>
         <p>{t("booking-card.policy")}</p>
         <p>{t("booking-card.refund")}</p>
         <p>{t("booking-card.reschedule")}</p>
-      </div>
+      </div> */}
     </div>
   );
 }
@@ -486,9 +503,12 @@ function FlightPriceCard({ title, flight }) {
 
       <div className="mt-4">
         <p className="text-[#EE5128] font-extrabold text-lg">
-          $1,00,000 <span className="text-sm font-medium">/pax</span>
+          {flight.price}{" "}
+          <span className="text-sm font-medium">/ {flight.currency}</span>
         </p>
-        <p className="text-[13px] text-gray-400 line-through">$1,50,000</p>
+        <p className="text-[13px] text-gray-400 line-through">
+          {flight.originalPrice}
+        </p>
       </div>
 
       <div className="flex justify-between items-center mt-4 border-t pt-3 border-gray-100">

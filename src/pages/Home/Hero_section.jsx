@@ -2523,10 +2523,8 @@ const HeroSection = ({ country }) => {
                     );
                     const originalCurrency =
                       flight?.Price?.[0]?.Currency?.[0] ?? "N/A";
-                      const departureDate =
-                        segment.DepartDate?.[0];
-                      const arrivalDate =
-                        segment.ArriveDate?.[0];
+                    const departureDate = segment.DepartDate?.[0];
+                    const arrivalDate = segment.ArriveDate?.[0];
                     return {
                       id: flight.Id?.[0] ?? "N/A",
                       airline: operatorName,
