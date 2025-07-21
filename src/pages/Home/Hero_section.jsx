@@ -1929,7 +1929,7 @@ import {
 import airportsData from "../../constants/airports.json";
 import axios from "axios";
 
-const HeroSection = ({country}) => {
+const HeroSection = ({ country }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [from, setFrom] = useState("");
@@ -2241,7 +2241,7 @@ const HeroSection = ({country}) => {
     setSearchCount((prev) => prev + 1);
 
     // trigger the search start route api
-    console.log("country hero",country)
+    console.log("country hero", country);
     try {
       const requestBody = {
         mode: "plane",
@@ -2259,7 +2259,7 @@ const HeroSection = ({country}) => {
           returnDateOfSearch:
             handleTravelFusionDate(flightReturnDate) + "-23:59",
         }),
-        countryCode:country
+        countryCode: country,
       };
 
       // console.log(requestBody);
@@ -2389,6 +2389,8 @@ const HeroSection = ({country}) => {
                           segment.DepartDate?.[0]?.split("-")[1] || "N/A";
                         const arrivalTime =
                           segment.ArriveDate?.[0]?.split("-")[1] || "N/A";
+                        const departureDate = segment.DepartDate?.[0];
+                        const arrivalDate = segment.ArriveDate?.[0];
                         const duration = segment.Duration?.[0]
                           ? Math.round(Number(segment.Duration[0]) / 60) + "hr"
                           : "N/A";
@@ -2405,8 +2407,10 @@ const HeroSection = ({country}) => {
                           logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
                           flightNumber: flightId,
                           class: travelClass,
+                          departureDate,
                           departureTime,
                           departureCity: origin?.Code?.[0] || "N/A",
+                          arrivalDate,
                           arrivalTime,
                           arrivalCity: destination?.Code?.[0] || "N/A",
                           duration,
@@ -2518,15 +2522,20 @@ const HeroSection = ({country}) => {
                     );
                     const originalCurrency =
                       flight?.Price?.[0]?.Currency?.[0] ?? "N/A";
-
+                      const departureDate =
+                        segment.DepartDate?.[0];
+                      const arrivalDate =
+                        segment.ArriveDate?.[0];
                     return {
                       id: flight.Id?.[0] ?? "N/A",
                       airline: operatorName,
                       logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
                       flightNumber: flightId,
                       class: travelClass,
+                      departureDate,
                       departureTime,
                       departureCity: origin.Code?.[0] ?? "N/A",
+                      arrivalDate,
                       arrivalTime,
                       arrivalCity: destination.Code?.[0] ?? "N/A",
                       duration,

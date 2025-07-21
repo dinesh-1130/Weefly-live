@@ -3371,7 +3371,7 @@ const SearchBox = ({
                 continue;
 
               const outwardList = group.OutwardList[0]?.Outward || [];
-
+              console.log(outwardList)
               for (const flight of outwardList) {
                 allFlightPromises.push(
                   (async () => {
@@ -3398,6 +3398,10 @@ const SearchBox = ({
                         segment.DepartDate?.[0]?.split("-")[1] || "N/A";
                       const arrivalTime =
                         segment.ArriveDate?.[0]?.split("-")[1] || "N/A";
+                      const departureDate =
+                        segment.DepartDate?.[0];
+                      const arrivalDate =
+                        segment.ArriveDate?.[0];
                       const duration = segment.Duration?.[0]
                         ? Math.round(Number(segment.Duration[0]) / 60) + "hr"
                         : "N/A";
@@ -3414,8 +3418,10 @@ const SearchBox = ({
                         logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
                         flightNumber: flightId,
                         class: travelClass,
+                        departureDate,
                         departureTime,
                         departureCity: origin?.Code?.[0] || "N/A",
+                        arrivalDate,
                         arrivalTime,
                         arrivalCity: destination?.Code?.[0] || "N/A",
                         duration,
@@ -3527,15 +3533,20 @@ const SearchBox = ({
                   );
                   const originalCurrency =
                     flight?.Price?.[0]?.Currency?.[0] ?? "N/A";
-
+                      const departureDate =
+                        segment.DepartDate?.[0];
+                      const arrivalDate =
+                        segment.ArriveDate?.[0];
                   return {
                     id: flight.Id?.[0] ?? "N/A",
                     airline: operatorName,
                     logo: `http://www.travelfusion.com/images/logos/${logo}.gif`,
                     flightNumber: flightId,
                     class: travelClass,
+                    departureDate,
                     departureTime,
                     departureCity: origin.Code?.[0] ?? "N/A",
+                    arrivalDate,
                     arrivalTime,
                     arrivalCity: destination.Code?.[0] ?? "N/A",
                     duration,
