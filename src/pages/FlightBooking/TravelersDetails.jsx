@@ -344,7 +344,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
 import cookies from "js-cookie";
 import { decryptPayload } from "../../utils/Payload";
-function TravelersDetails({country}) {
+function TravelersDetails({ country }) {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
@@ -1349,50 +1349,48 @@ function TravelersDetails({country}) {
                   </div>
                 </div>
               </div>
-            )}
-
-            {/* Save Details Section (only for traveller steps) */}
-            {currentStep <= totalTravellers && (
-              <div className="w-full bg-white rounded-md p-6 mt-6 font-sans">
-                <h3 className="font-semibold text-black mb-1 font-jakarta">
-                  {t("traveller-details.save-details.title")}
-                </h3>
-                <p className="text-sm text-gray-500 mb-3">
-                  {t("traveller-details.save-details.description")}
-                </p>
-                <label className="flex items-start gap-2">
-                  <input
-                    type="checkbox"
-                    className="accent-[#EE5128] mt-[3px]"
-                  />
-                  <span className="text-sm">
-                    {t("traveller-details.save-details.term")}
-                  </span>
-                </label>
+              )}
+              {/* Save Details Section (only for traveller steps) */}
+              {currentStep <= totalTravellers && (
+                <div className="w-full bg-white rounded-md p-6 mt-6 font-sans">
+                  <h3 className="font-semibold text-black mb-1 font-jakarta">
+                    {t("traveller-details.save-details.title")}
+                  </h3>
+                  <p className="text-sm text-gray-500 mb-3">
+                    {t("traveller-details.save-details.description")}
+                  </p>
+                  <label className="flex items-start gap-2">
+                    <input
+                      type="checkbox"
+                      className="accent-[#EE5128] mt-[3px]"
+                    />
+                    <span className="text-sm">
+                      {t("traveller-details.save-details.term")}
+                    </span>
+                  </label>
+                </div>
+              )}
+              {/* Action Buttons */}
+              <div className="mt-6 flex gap-4">
+                <button
+                  onClick={handleBack}
+                  className="bg-gray-500 text-white px-6 py-2 rounded font-semibold font-jakarta hover:bg-gray-600 active:bg-gray-700 transition-colors duration-200"
+                >
+                  {currentStep === 1 ? "Cancel" : "Back"}
+                </button>
+                <button
+                  onClick={handleContinue}
+                  className="bg-[#EE5128] text-white px-6 py-2 rounded font-semibold font-jakarta hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200"
+                >
+                  {currentStep === totalTravellers + 2
+                    ? t("continue-booking")
+                    : "Continue"}
+                </button>
               </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="mt-6 flex gap-4">
-              <button
-                onClick={handleBack}
-                className="bg-gray-500 text-white px-6 py-2 rounded font-semibold font-jakarta hover:bg-gray-600 active:bg-gray-700 transition-colors duration-200"
-              >
-                {currentStep === 1 ? "Cancel" : "Back"}
-              </button>
-              <button
-                onClick={handleContinue}
-                className="bg-[#EE5128] text-white px-6 py-2 rounded font-semibold font-jakarta hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200"
-              >
-                {currentStep === totalTravellers + 2
-                  ? t("continue-booking")
-                  : "Continue"}
-              </button>
             </div>
-          </div>
 
-          {/* Booking Details Sidebar */}
-          {/* {location.state.tripType === "One way" ? (
+            {/* Booking Details Sidebar */}
+            {/* {location.state.tripType === "One way" ? (
             <div className="max-w-[377px] w-full h-[280px] bg-white rounded-[12px]">
               <div className="bg-[#FFE4DB] p-3 rounded-t-[12px]">
                 <h2 className="font-semibold text-[18px] font-jakarta">
@@ -1608,80 +1606,10 @@ function TravelersDetails({country}) {
             </div>
           )} */}
 
-          <div className="flex flex-col gap-6 w-full lg:max-w-[360px] order-1 lg:order-2">
-            {/* Booking Details - First on mobile */}
-            {location.state.tripType === "One Way" ? (
-              <div className="max-w-[377px] w-full h-[280px] bg-white rounded-[12px]">
-                <div className="bg-[#FFE4DB] p-3 rounded-t-[12px]">
-                  <h2 className="font-semibold text-[18px] font-jakarta">
-                    {t("booking-details.title")}
-                  </h2>
-                </div>
-
-                <div className="flex justify-between items-center px-6 mt-[20px]">
-                  <div className="text-center">
-                    <p className="text-[20px] font-bold font-jakarta">
-                      {/* {flight.departureTime} */}
-                      {OutwardTicket.departureTime}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {OutwardTicket.departureCity}
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-center relative">
-                    <p className="text-xs text-gray-500 mb-[2px]">
-                      {OutwardTicket.duration}
-                    </p>
-                    <div className="flex items-center justify-center">
-                      <span className="w-[6px] h-[6px] bg-gray-300 rounded-full" />
-                      <div className="border-t border-dashed w-8 border-gray-300 mx-2" />
-                      <span className="text-black text-sm">✈</span>
-                      <div className="border-t border-dashed w-8 border-gray-300 mx-2" />
-                      <span className="w-[6px] h-[6px] bg-gray-300 rounded-full" />
-                    </div>
-                    <div className="mt-[6px] bg-green-600 text-white text-xs px-2 py-[2px] rounded">
-                      {OutwardTicket.class}
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-[20px] font-bold font-jakarta">
-                      {/* {flight.arrivalTime} */}
-                      {OutwardTicket?.arrivalTime}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {OutwardTicket.arrivalCity}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex justify-between px-6 mt-6">
-                  <div className="text-left w-1/2 border-r pr-4">
-                    <p className="text-sm font-semibold text-black font-jakarta m">
-                      {t("booking-details.departure")}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-[2px]">
-                      {OutwardTicket?.departureDate.split("-")[0]}
-                    </p>
-                  </div>
-                  <div className="text-left w-1/2 pl-4">
-                    <p className="text-sm font-semibold text-black font-jakarta ml-5">
-                      {t("booking-details.landing")}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-[2px] ml-5">
-                      {OutwardTicket?.arrivalDate.split("-")[0]}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex justify-around mt-6 text-sm font-medium font-jakarta">
-                  <span>{t("booking-details.policy")}</span>
-                  <span className="ml-10">{t("booking-details.refund")}</span>
-                  <span>{t("booking-details.reschedule")}</span>
-                </div>
-              </div>
-            ) : location.state.tripType === "Round Trip" ? (
-              <div className="flex flex-col gap-6">
-                <div className="max-w-[377px] w-full min-h-[280px] bg-white rounded-[12px] pb-4">
+            <div className="flex flex-col gap-6 w-full lg:max-w-[360px] order-1 lg:order-2">
+              {/* Booking Details - First on mobile */}
+              {location.state.tripType === "One Way" ? (
+                <div className="max-w-[377px] w-full h-[280px] bg-white rounded-[12px]">
                   <div className="bg-[#FFE4DB] p-3 rounded-t-[12px]">
                     <h2 className="font-semibold text-[18px] font-jakarta">
                       {t("booking-details.title")}
@@ -1692,7 +1620,7 @@ function TravelersDetails({country}) {
                     <div className="text-center">
                       <p className="text-[20px] font-bold font-jakarta">
                         {/* {flight.departureTime} */}
-                        {OutwardTicket?.departureTime}
+                        {OutwardTicket.departureTime}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
                         {OutwardTicket.departureCity}
@@ -1743,77 +1671,148 @@ function TravelersDetails({country}) {
                     </div>
                   </div>
 
+                  <div className="flex justify-around mt-6 text-sm font-medium font-jakarta">
+                    <span>{t("booking-details.policy")}</span>
+                    <span className="ml-10">{t("booking-details.refund")}</span>
+                    <span>{t("booking-details.reschedule")}</span>
+                  </div>
+                </div>
+              ) : location.state.tripType === "Round Trip" ? (
+                <div className="flex flex-col gap-6">
+                  <div className="max-w-[377px] w-full min-h-[280px] bg-white rounded-[12px] pb-4">
+                    <div className="bg-[#FFE4DB] p-3 rounded-t-[12px]">
+                      <h2 className="font-semibold text-[18px] font-jakarta">
+                        {t("booking-details.title")}
+                      </h2>
+                    </div>
+
+                    <div className="flex justify-between items-center px-6 mt-[20px]">
+                      <div className="text-center">
+                        <p className="text-[20px] font-bold font-jakarta">
+                          {/* {flight.departureTime} */}
+                          {OutwardTicket?.departureTime}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {OutwardTicket.departureCity}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-center relative">
+                        <p className="text-xs text-gray-500 mb-[2px]">
+                          {OutwardTicket.duration}
+                        </p>
+                        <div className="flex items-center justify-center">
+                          <span className="w-[6px] h-[6px] bg-gray-300 rounded-full" />
+                          <div className="border-t border-dashed w-8 border-gray-300 mx-2" />
+                          <span className="text-black text-sm">✈</span>
+                          <div className="border-t border-dashed w-8 border-gray-300 mx-2" />
+                          <span className="w-[6px] h-[6px] bg-gray-300 rounded-full" />
+                        </div>
+                        <div className="mt-[6px] bg-green-600 text-white text-xs px-2 py-[2px] rounded">
+                          {OutwardTicket.class}
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[20px] font-bold font-jakarta">
+                          {/* {flight.arrivalTime} */}
+                          {OutwardTicket?.arrivalTime}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {OutwardTicket.arrivalCity}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between px-6 mt-6">
+                      <div className="text-left w-1/2 border-r pr-4">
+                        <p className="text-sm font-semibold text-black font-jakarta m">
+                          {t("booking-details.departure")}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-[2px]">
+                          {OutwardTicket?.departureDate.split("-")[0]}
+                        </p>
+                      </div>
+                      <div className="text-left w-1/2 pl-4">
+                        <p className="text-sm font-semibold text-black font-jakarta ml-5">
+                          {t("booking-details.landing")}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-[2px] ml-5">
+                          {OutwardTicket?.arrivalDate.split("-")[0]}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center px-6 mt-[20px]">
+                      <div className="text-center">
+                        <p className="text-[20px] font-bold font-jakarta">
+                          {/* {flight.departureTime} */}
+                          {returnTicket?.departureTime}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {returnTicket.departureCity}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-center relative">
+                        <p className="text-xs text-gray-500 mb-[2px]">
+                          {returnTicket.duration}
+                        </p>
+                        <div className="flex items-center justify-center">
+                          <span className="w-[6px] h-[6px] bg-gray-300 rounded-full" />
+                          <div className="border-t border-dashed w-8 border-gray-300 mx-2" />
+                          <span className="text-black text-sm">✈</span>
+                          <div className="border-t border-dashed w-8 border-gray-300 mx-2" />
+                          <span className="w-[6px] h-[6px] bg-gray-300 rounded-full" />
+                        </div>
+                        <div className="mt-[6px] bg-green-600 text-white text-xs px-2 py-[2px] rounded">
+                          {returnTicket.class}
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[20px] font-bold font-jakarta">
+                          {/* {flight.arrivalTime} */}
+                          {returnTicket?.arrivalTime}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {returnTicket.arrivalCity}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between px-6 mt-6">
+                      <div className="text-left w-1/2 border-r pr-4">
+                        <p className="text-sm font-semibold text-black font-jakarta m">
+                          {t("booking-details.departure")}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-[2px]">
+                          {returnTicket?.departureDate.split("-")[0]}
+                        </p>
+                      </div>
+                      <div className="text-left w-1/2 pl-4">
+                        <p className="text-sm font-semibold text-black font-jakarta ml-5">
+                          {t("booking-details.landing")}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-[2px] ml-5">
+                          {returnTicket?.arrivalDate.split("-")[0]}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="max-w-[377px] w-full h-[280px] bg-white rounded-[12px]">
+                  <div className="bg-[#FFE4DB] p-3 rounded-t-[12px]">
+                    <h2 className="font-semibold text-[18px] font-jakarta">
+                      {t("booking-details.title")}
+                    </h2>
+                  </div>
+
                   <div className="flex justify-between items-center px-6 mt-[20px]">
-                    <div className="text-center">
-                      <p className="text-[20px] font-bold font-jakarta">
-                        {/* {flight.departureTime} */}
-                        {returnTicket?.departureTime}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {returnTicket.departureCity}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-center relative">
-                      <p className="text-xs text-gray-500 mb-[2px]">
-                        {returnTicket.duration}
-                      </p>
-                      <div className="flex items-center justify-center">
-                        <span className="w-[6px] h-[6px] bg-gray-300 rounded-full" />
-                        <div className="border-t border-dashed w-8 border-gray-300 mx-2" />
-                        <span className="text-black text-sm">✈</span>
-                        <div className="border-t border-dashed w-8 border-gray-300 mx-2" />
-                        <span className="w-[6px] h-[6px] bg-gray-300 rounded-full" />
-                      </div>
-                      <div className="mt-[6px] bg-green-600 text-white text-xs px-2 py-[2px] rounded">
-                        {returnTicket.class}
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-[20px] font-bold font-jakarta">
-                        {/* {flight.arrivalTime} */}
-                        {returnTicket?.arrivalTime}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {returnTicket.arrivalCity}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between px-6 mt-6">
-                    <div className="text-left w-1/2 border-r pr-4">
-                      <p className="text-sm font-semibold text-black font-jakarta m">
-                        {t("booking-details.departure")}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-[2px]">
-                        {returnTicket?.departureDate.split("-")[0]}
-                      </p>
-                    </div>
-                    <div className="text-left w-1/2 pl-4">
-                      <p className="text-sm font-semibold text-black font-jakarta ml-5">
-                        {t("booking-details.landing")}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-[2px] ml-5">
-                        {returnTicket?.arrivalDate.split("-")[0]}
-                      </p>
-                    </div>
+                    Some thing error
                   </div>
                 </div>
-              </div>
-            ) : (
-              <div className="max-w-[377px] w-full h-[280px] bg-white rounded-[12px]">
-                <div className="bg-[#FFE4DB] p-3 rounded-t-[12px]">
-                  <h2 className="font-semibold text-[18px] font-jakarta">
-                    {t("booking-details.title")}
-                  </h2>
-                </div>
+              )}
 
-                <div className="flex justify-between items-center px-6 mt-[20px]">
-                  Some thing error
-                </div>
-              </div>
-            )}
-
-            {/* Price Summary - Second on mobile */}
+              {/* Price Summary - Second on mobile */}
+            </div>
           </div>
         </div>
       </div>
