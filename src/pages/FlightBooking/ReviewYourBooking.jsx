@@ -721,7 +721,6 @@ const FeaturesPlanPopup = ({
       // setPlans(plans);
     }
   }, [feature]);
-  console.log("plans:", listedplans);
 
   const navigate = useNavigate();
   const handleNavigate = () => {
