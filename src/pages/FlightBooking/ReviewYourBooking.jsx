@@ -75,6 +75,7 @@ export default function ReviewYourBooking() {
   // 		console.log(data)
   // 	}
   // }, [location])
+
   console.log(TicketData.outwordTicketId);
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -514,27 +515,33 @@ const FeaturesPlanPopup = ({
   tickets,
   supportedCardlist,
 }) => {
-  const transactionUrl = import.meta.env.VITE_TRANSACTION_URL;
+  // const transactionUrl = import.meta.env.VITE_TRANSACTION_URL;
   console.log("cards", supportedCardlist);
-
-  const [listedplans, setListedplans] = useState([]);
-  const [selectedPlan, setselectedPlan] = useState({});
-
-  console.log(listedplans.map);
-
-  const getCommissionDetail = async (tfPrice) => {
+  const [commissionDetails, setcommissionDetails] = useState([]);
+  const transactionUrl = import.meta.env.VITE_TRANSACTION_URL;
+  const getcommission = async () => {
     try {
       const res = await fetch(`${transactionUrl}/getcommissiondetails`);
       const result = await res.json();
       console.log(result.commissionDetail);
-      const commissionDetails = result.commissionDetail;
+      const commission = result.commissionDetail;
+      setcommissionDetails(commission);
+    } catch (error) {
+      console.error("Failed to fetch supplier route:", error);
+    }
+  };
+
+  useEffect(() => {
+    getcommission();
+  }, []);
+  const getCommissionDetail = async (tfPrice) => {
+    try {
       if (!commissionDetails) {
         return console.log("Error");
       } else {
-        const Tax = commissionDetails.Tax;
         const Commission = commissionDetails.Commission;
-        if (Tax && Commission) {
-          console.log(Tax, Commission);
+        if (Commission) {
+          console.log(Commission);
           if (commissionDetails.CommissionType.toLowerCase() === "percentage") {
             const commissionAmount = (tfPrice * Commission) / 100;
             const totalAmount = tfPrice + commissionAmount;
