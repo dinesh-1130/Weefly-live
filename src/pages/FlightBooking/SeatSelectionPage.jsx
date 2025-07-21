@@ -97,6 +97,9 @@ export default function SeatSelection() {
     returnId = returnTicket.id;
   }
 
+  // const handleSelectOutwardLuggage = () => {}
+  // const handleRemoveOutwardLuggage = () => {}
+
   const handleSelectLuggage = (luggageId) => {
     if (selectedLuggage.includes(luggageId)) {
       setSelectedLuggage(selectedLuggage.filter((s) => s !== luggageId));
@@ -1015,7 +1018,7 @@ seat.seat
                       {t("booking-details.departure")}
                     </p>
                     <p className="text-xs text-gray-500 mt-[2px]">
-                      Thu, 06 jul, 2025
+                      {OutwardTicket?.departureDate.split("-")[0]}
                     </p>
                   </div>
                   <div className="text-left w-1/2 pl-4">
@@ -1023,7 +1026,7 @@ seat.seat
                       {t("booking-details.landing")}
                     </p>
                     <p className="text-xs text-gray-500 mt-[2px] ml-5">
-                      Thu, 06 jul, 2025
+                      {OutwardTicket?.arrivalDate.split("-")[0]}
                     </p>
                   </div>
                 </div>
@@ -1085,7 +1088,7 @@ seat.seat
                         {t("booking-details.departure")}
                       </p>
                       <p className="text-xs text-gray-500 mt-[2px]">
-                        Thu, 06 jul, 2025
+                        {OutwardTicket?.departureDate.split("-")[0]}
                       </p>
                     </div>
                     <div className="text-left w-1/2 pl-4">
@@ -1093,7 +1096,7 @@ seat.seat
                         {t("booking-details.landing")}
                       </p>
                       <p className="text-xs text-gray-500 mt-[2px] ml-5">
-                        Thu, 06 jul, 2025
+                        {OutwardTicket?.arrivalDate.split("-")[0]}
                       </p>
                     </div>
                   </div>
@@ -1140,7 +1143,7 @@ seat.seat
                         {t("booking-details.departure")}
                       </p>
                       <p className="text-xs text-gray-500 mt-[2px]">
-                        Thu, 06 jul, 2025
+                        {returnTicket?.departureDate.split("-")[0]}
                       </p>
                     </div>
                     <div className="text-left w-1/2 pl-4">
@@ -1148,7 +1151,7 @@ seat.seat
                         {t("booking-details.landing")}
                       </p>
                       <p className="text-xs text-gray-500 mt-[2px] ml-5">
-                        Thu, 06 jul, 2025
+                        {returnTicket?.arrivalDate.split("-")[0]}
                       </p>
                     </div>
                   </div>
