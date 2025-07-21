@@ -2375,7 +2375,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
 import cookies from "js-cookie";
 import { decryptPayload } from "../../utils/Payload";
-function TravelersDetails() {
+function TravelersDetails({country}) {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
@@ -3137,7 +3137,7 @@ function TravelersDetails() {
                           </label>
                           <input
                             type="text"
-                            value={traveller.Address?.CountryCode || ""}
+                            value={country}
                             onChange={(e) =>
                               handleTravellerChange(
                                 "address.CountryCode",
