@@ -2892,7 +2892,7 @@ import {
   convertToRequestedCurrency,
 } from "../../utils/Currencyconverter";
 
-function FlightList({country}) {
+function FlightList({ country }) {
   const { t } = useTranslation();
   const location = useLocation();
 
@@ -3077,7 +3077,7 @@ const SearchBox = ({
   From,
   To,
   SearchProps,
-  country
+  country,
 }) => {
   const { t } = useTranslation();
   const [isDirectFlight, setIsDirectFlight] = useState(false);
@@ -3224,7 +3224,7 @@ const SearchBox = ({
   useEffect(() => {
     const fetchFlights = async () => {
       console.log("Travelfusion routing API Call");
-          console.log("country flightlist",country)
+      console.log("country flightlist", country);
       try {
         const requestBody = {
           mode: "plane",
@@ -3242,7 +3242,7 @@ const SearchBox = ({
             returnDateOfSearch:
               handleTravelFusionDate(flightReturnDate) + "-23:59",
           }),
-          countryCode:country
+          countryCode: country,
         };
 
         console.log(requestBody);
@@ -4093,7 +4093,7 @@ const FlightResults = ({
             return (
               <div
                 key={flight.id}
-                className={`w-full min-h-[150.13px] rounded-md cursor-pointer transition duration-300 flex flex-col justify-between ${
+                className={`w-full min-h-[150.13px] rounded-md cursor-pointer transition duration-300 flex flex-col justify-between  ${
                   isSelected
                     ? "border border-[#EE5128] bg-white shadow-sm"
                     : "border border-gray-200 bg-white"
@@ -4115,7 +4115,7 @@ const FlightResults = ({
                       <span className="text-[13px] text-gray-500 leading-none">
                         {flight.flightNumber}
                       </span>
-                      <span className="text-[12px] bg-[#008905] text-white px-[10px] py-[2px] rounded font-semibold leading-[19px]">
+                      <span className="text-[12px] text-nowrap bg-[#008905] text-white px-[10px] py-[2px] rounded font-semibold leading-[19px]">
                         {flight.class}
                       </span>
                     </div>
@@ -4154,7 +4154,7 @@ const FlightResults = ({
                     </div>
                   </div>
 
-                  <div className="text-right flex flex-col gap-2 items-center lg:items-end space-y-[2px] w-[152px] h-[31px]">
+                  <div className="text-right flex flex-col gap-2 items-center lg:items-end space-y-[2px] w-[152px] min-h-[31px]">
                     <p className="text-[#EE5128] text-[26px] font-black leading-none font-sans">
                       <span className="text-[20px] pr-2">
                         {flight.currency}
@@ -4168,11 +4168,70 @@ const FlightResults = ({
                       {flight.currency}
                       {flight.originalPrice}
                     </p>
+                    <div className="mb-4">
+                      {isSelected ? (
+                        <button
+                          onClick={() => {
+                            console.log("Navigating with data:", {
+                              flight: flight,
+                              routingId: routingId,
+                              TripType: TripType,
+                              origin: origin,
+                              destination: destination,
+                            });
+
+                            // navigate("/booking/ReviewYourBooking", {
+                            //   state: {
+                            //     outwordTicketId: flight,
+                            //     routingId: routingId,
+                            //     tripType: TripType,
+                            //     travalers: travalers,
+
+                            //     // Add back navigation data safely
+                            //     origin: origin,
+                            //     destination: destination,
+                            //     flightsData: flights,
+                            //     TripType: TripType,
+                            //   },
+                            // });
+
+                            navigate("/booking/ReviewYourBooking", {
+                              state: {
+                                outwordTicketId: flight,
+                                // returnTicketId: id || selectReturn,
+                                routingId: routingId,
+                                tripType: TripType,
+                                travalers: travalers,
+                                // Add back navigation data
+                                origin: origin,
+                                destination: destination,
+                                flightsData: flights,
+                                TripType: TripType,
+                                ...(SearchProps && {
+                                  FightSearchData: SearchProps,
+                                }),
+                              },
+                            });
+                          }}
+                          className="bg-[#EE5128] text-white px-4 py-1.5 rounded font-jakarta font-semibold hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200 "
+                        >
+                          {t("booking-card.book-now")}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={(e) => e.stopPropagation()}
+                          className="bg-gray-300 text-white px-4 py-1.5 rounded font-jakarta font-semibold cursor-not-allowed"
+                          disabled
+                        >
+                          {t("booking-card.book-now")}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
 
                 {/* Bottom Row */}
-                <div
+                {/* <div
                   className={`border-t px-4 py-[30px] xl:py-[20px] flex items-center justify-between text-sm font-medium ${
                     isSelected ? "border-[#EE5128]" : "border-gray-200"
                   }`}
@@ -4200,65 +4259,7 @@ const FlightResults = ({
                       {t("booking-card.reschedule")}
                     </span>
                   </div>
-
-                  {isSelected ? (
-                    <button
-                      onClick={() => {
-                        console.log("Navigating with data:", {
-                          flight: flight,
-                          routingId: routingId,
-                          TripType: TripType,
-                          origin: origin,
-                          destination: destination,
-                        });
-
-                        // navigate("/booking/ReviewYourBooking", {
-                        //   state: {
-                        //     outwordTicketId: flight,
-                        //     routingId: routingId,
-                        //     tripType: TripType,
-                        //     travalers: travalers,
-
-                        //     // Add back navigation data safely
-                        //     origin: origin,
-                        //     destination: destination,
-                        //     flightsData: flights,
-                        //     TripType: TripType,
-                        //   },
-                        // });
-
-                        navigate("/booking/ReviewYourBooking", {
-                          state: {
-                            outwordTicketId: flight,
-                            // returnTicketId: id || selectReturn,
-                            routingId: routingId,
-                            tripType: TripType,
-                            travalers: travalers,
-                            // Add back navigation data
-                            origin: origin,
-                            destination: destination,
-                            flightsData: flights,
-                            TripType: TripType,
-                            ...(SearchProps && {
-                              FightSearchData: SearchProps,
-                            }),
-                          },
-                        });
-                      }}
-                      className="bg-[#EE5128] text-white px-4 py-1.5 rounded font-jakarta font-semibold hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200"
-                    >
-                      {t("booking-card.book-now")}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={(e) => e.stopPropagation()}
-                      className="bg-gray-300 text-white px-4 py-1.5 rounded font-jakarta font-semibold cursor-not-allowed"
-                      disabled
-                    >
-                      {t("booking-card.book-now")}
-                    </button>
-                  )}
-                </div>
+                </div> */}
               </div>
             );
           })
@@ -4492,8 +4493,7 @@ const RoundTrip = ({
                         </p>
                       </div>
                     </div>
-
-                    <div className="text-right flex flex-col gap-2 items-center lg:items-end space-y-[2px] w-[152px] h-[31px]">
+                    <div className="text-right flex flex-col gap-2 items-center lg:items-end space-y-[2px] w-[152px] min-h-[31px]">
                       <p className="text-[#EE5128] text-[26px] font-black leading-none font-sans">
                         <span className="text-[20px] pr-2">
                           {flight.currency}
@@ -4507,10 +4507,34 @@ const RoundTrip = ({
                         {flight.currency}
                         {flight.originalPrice}
                       </p>
+
+                      <div className="mb-4">
+                        {isSelected ? (
+                          <button
+                            onClick={() => {
+                              handleSelectOnward({
+                                id: flight,
+                              });
+                              setOnWard(true);
+                            }}
+                            className="bg-[#EE5128] text-white px-4 py-1.5 rounded font-jakarta font-semibold hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200"
+                          >
+                            {t("booking-card.book-now")}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-gray-300 text-white px-4 py-1.5 rounded font-jakarta font-semibold cursor-not-allowed"
+                            disabled
+                          >
+                            {t("booking-card.book-now")}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  <div
+                  {/* <div
                     className={`border-t px-4 py-[30px] xl:py-[20px] flex items-center justify-between text-sm font-medium ${
                       isSelected ? "border-[#EE5128]" : "border-gray-200"
                     }`}
@@ -4537,30 +4561,8 @@ const RoundTrip = ({
                       <span className="hidden lg:flex">
                         {t("booking-card.reschedule")}
                       </span>
-                    </div>
-
-                    {isSelected ? (
-                      <button
-                        onClick={() => {
-                          handleSelectOnward({
-                            id: flight,
-                          });
-                          setOnWard(true);
-                        }}
-                        className="bg-[#EE5128] text-white px-4 py-1.5 rounded font-jakarta font-semibold hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200"
-                      >
-                        {t("booking-card.book-now")}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={(e) => e.stopPropagation()}
-                        className="bg-gray-300 text-white px-4 py-1.5 rounded font-jakarta font-semibold cursor-not-allowed"
-                        disabled
-                      >
-                        {t("booking-card.book-now")}
-                      </button>
-                    )}
-                  </div>
+                    </div>                   
+                  </div> */}
                 </div>
               );
             })
@@ -4653,7 +4655,7 @@ const RoundTrip = ({
                       </div>
                     </div>
 
-                    <div className="text-right flex flex-col gap-2 items-center lg:items-end space-y-[2px] w-[152px] h-[31px]">
+                    <div className="text-right flex flex-col gap-2 items-center lg:items-end space-y-[2px] w-[152px] min-h-[31px]">
                       <p className="text-[#EE5128] text-[26px] font-black leading-none font-sans">
                         <span className="text-[20px] pr-2">
                           {flight.currency}
@@ -4667,10 +4669,32 @@ const RoundTrip = ({
                         {flight.currency}
                         {flight.originalPrice}
                       </p>
+                      <p className="mb-4">
+                        {isSelected ? (
+                          <button
+                            onClick={() => {
+                              handleConfirmSelect({
+                                id: flight,
+                              });
+                            }}
+                            className="bg-[#EE5128] text-white px-4 py-1.5 rounded font-jakarta font-semibold hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200"
+                          >
+                            {t("booking-card.book-now")}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-gray-300 text-white px-4 py-1.5 rounded font-jakarta font-semibold cursor-not-allowed"
+                            disabled
+                          >
+                            {t("booking-card.book-now")}
+                          </button>
+                        )}
+                      </p>
                     </div>
                   </div>
 
-                  <div
+                  {/* <div
                     className={`border-t px-4 py-[30px] xl:py-[20px] flex items-center justify-between text-sm font-medium ${
                       isSelected ? "border-[#EE5128]" : "border-gray-200"
                     }`}
@@ -4699,27 +4723,8 @@ const RoundTrip = ({
                       </span>
                     </div>
 
-                    {isSelected ? (
-                      <button
-                        onClick={() => {
-                          handleConfirmSelect({
-                            id: flight,
-                          });
-                        }}
-                        className="bg-[#EE5128] text-white px-4 py-1.5 rounded font-jakarta font-semibold hover:bg-[#d64520] active:bg-[#b83b1c] transition-colors duration-200"
-                      >
-                        {t("booking-card.book-now")}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={(e) => e.stopPropagation()}
-                        className="bg-gray-300 text-white px-4 py-1.5 rounded font-jakarta font-semibold cursor-not-allowed"
-                        disabled
-                      >
-                        {t("booking-card.book-now")}
-                      </button>
-                    )}
-                  </div>
+                    
+                  </div> */}
                 </div>
               );
             })
@@ -5349,7 +5354,6 @@ const FlightDatePicker = ({ flights }) => {
                   )}
                 </div>
               </div>
-
               {/* Selected indicator dot */}
               {isSelected && (
                 <div className="absolute w-2 h-2 bg-[#EE5128] rounded-full left-1/2 -translate-x-1/2 bottom-2"></div>

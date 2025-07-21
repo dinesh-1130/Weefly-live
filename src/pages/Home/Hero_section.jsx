@@ -1929,7 +1929,7 @@ import {
 import airportsData from "../../constants/airports.json";
 import axios from "axios";
 
-const HeroSection = ({country}) => {
+const HeroSection = ({ country }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [from, setFrom] = useState("");
@@ -2241,7 +2241,7 @@ const HeroSection = ({country}) => {
     setSearchCount((prev) => prev + 1);
 
     // trigger the search start route api
-    console.log("country hero",country)
+    console.log("country hero", country);
     try {
       const requestBody = {
         mode: "plane",
@@ -2259,7 +2259,7 @@ const HeroSection = ({country}) => {
           returnDateOfSearch:
             handleTravelFusionDate(flightReturnDate) + "-23:59",
         }),
-        countryCode:country
+        countryCode: country,
       };
 
       // console.log(requestBody);
@@ -2490,6 +2490,7 @@ const HeroSection = ({country}) => {
               for (const group of groupContainer.Group) {
                 const outwardList = group?.OutwardList?.[0]?.Outward ?? [];
                 const returnList = group?.ReturnList?.[0]?.Return ?? [];
+                console.log("outwardList", outwardList);
 
                 const extractFlightInfo = async (flight, type) => {
                   try {

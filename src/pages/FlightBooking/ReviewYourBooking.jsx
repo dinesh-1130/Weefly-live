@@ -50,7 +50,7 @@ export default function ReviewYourBooking() {
   console.log(TicketData.returnTicketId);
   console.log("tripType", TicketData.tripType);
   console.log("travalers", TicketData.travalers);
-  const[supportedCards,setsupportedCards]=useState([])
+  const [supportedCards, setsupportedCards] = useState([]);
 
   // useEffect(() => {
   //   if (location.state && location.state.tripType) {
@@ -231,7 +231,6 @@ export default function ReviewYourBooking() {
       //   }
       // });
 
-
       console.log(result);
       setseatOptions(seatOptions);
       setluggageOptions(LuggageOptions);
@@ -239,9 +238,8 @@ export default function ReviewYourBooking() {
       setstructuredFeatures(sf);
       setTickets(flightTickets);
       setIsPopupOpen(true);
-   
-      
-      setsupportedCards(res.supportedCardlist)
+
+      setsupportedCards(res.supportedCardlist);
     }
   };
 
@@ -514,10 +512,16 @@ const FeaturesPlanPopup = ({
   seat,
   luggage,
   tickets,
-  supportedCardlist
+  supportedCardlist,
 }) => {
   const transactionUrl = import.meta.env.VITE_TRANSACTION_URL;
-   console.log("cards", supportedCardlist);
+  console.log("cards", supportedCardlist);
+
+  const [listedplans, setListedplans] = useState([]);
+  const [selectedPlan, setselectedPlan] = useState({});
+
+  console.log(listedplans.map);
+
   const getCommissionDetail = async (tfPrice) => {
     try {
       const res = await fetch(`${transactionUrl}/getcommissiondetails`);
@@ -705,10 +709,12 @@ const FeaturesPlanPopup = ({
     if (feature && feature.length > 0) {
       const plans = parseFeaturesToPlans(feature);
       console.log("plans:", plans);
+      setListedplans(plans);
       // You can also set this to state if you want to use it in the UI
       // setPlans(plans);
     }
   }, [feature]);
+  console.log("plans:", listedplans);
 
   const navigate = useNavigate();
   const handleNavigate = () => {
@@ -724,7 +730,7 @@ const FeaturesPlanPopup = ({
         outwordPrice: TicketData.outwordTicketId.price,
         returnPrice: TicketData.returnTicketId?.price || 0,
         currency: TicketData.outwordTicketId.currency || "CVE",
-        cardlist:supportedCardlist
+        cardlist: supportedCardlist,
       },
     });
   };
@@ -850,7 +856,7 @@ const FeaturesPlanPopup = ({
             {selectedTab.includes("outward") ? (
               <div className="w-full inline-flex gap-4 overflow-x-scroll text-nowrap">
                 <div className="border-2 border-gray-600 hover:border-orange-600 p-8 w-[300px] rounded-xl flex flex-col gap-2 group">
-                  <p className=" font-semibold">Value</p>
+                  <p className=" font-semibold">Regular</p>
                   <p className=" font-semibold text-xl">CVE 2000</p>
                   <button className="border-2 border-[#EE5128] text-[#EE5128] group-hover:border-0 group-hover:bg-[#EE5128] group-hover:text-white text-sm font-semibold px-4 py-2 rounded w-full mb-4 flex justify-center items-center">
                     <span className="group-hover:block hidden">
@@ -858,6 +864,15 @@ const FeaturesPlanPopup = ({
                     </span>{" "}
                     Select
                   </button>
+
+                  {/* {listedplans.Regular.map((r) => (
+                    <p className="flex items-center gap-2 text-sm py-2 border-b-2 border-gray-300 border-dashed">
+                      {r.Value}
+                      <span>
+                        <Info className="h-4 w-4" />
+                      </span>{" "}
+                    </p>
+                  ))} */}
 
                   <p className="flex items-center gap-2 text-sm py-2 border-b-2 border-gray-300 border-dashed">
                     Cancellation fee from CVE 500{" "}
@@ -885,13 +900,9 @@ const FeaturesPlanPopup = ({
                     15 kg Check-in{" "}
                     <span className="text-black/50">( 1 Pc x 15 kg )</span>
                   </p>
-                  {/* <div className="bg-green-100 text-green-600 flex items-center gap-2 p-4 mt-4 font-bold text-xs">
-                    <PercentCircleIcon />{" "}
-                    <p>Additional Benefits worth CVE 1000</p>
-                  </div> */}
                 </div>
                 <div className="border-2 border-gray-600 hover:border-orange-600 p-8 w-[300px] rounded-xl flex flex-col gap-2 group">
-                  <p className=" font-semibold">Value</p>
+                  <p className=" font-semibold">Regular</p>
                   <p className=" font-semibold text-xl">CVE 2000</p>
                   <button className="border-2 border-[#EE5128] text-[#EE5128] group-hover:border-0 group-hover:bg-[#EE5128] group-hover:text-white text-sm font-semibold px-4 py-2 rounded w-full mb-4 flex justify-center items-center">
                     <span className="group-hover:block hidden">
@@ -899,6 +910,15 @@ const FeaturesPlanPopup = ({
                     </span>{" "}
                     Select
                   </button>
+
+                  {/* {listedplans.Regular.map((r) => (
+                    <p className="flex items-center gap-2 text-sm py-2 border-b-2 border-gray-300 border-dashed">
+                      {r.Value}
+                      <span>
+                        <Info className="h-4 w-4" />
+                      </span>{" "}
+                    </p>
+                  ))} */}
 
                   <p className="flex items-center gap-2 text-sm py-2 border-b-2 border-gray-300 border-dashed">
                     Cancellation fee from CVE 500{" "}
@@ -926,13 +946,9 @@ const FeaturesPlanPopup = ({
                     15 kg Check-in{" "}
                     <span className="text-black/50">( 1 Pc x 15 kg )</span>
                   </p>
-                  {/* <div className="bg-green-100 text-green-600 flex items-center gap-2 p-4 mt-4 font-bold text-xs">
-                    <PercentCircleIcon />{" "}
-                    <p>Additional Benefits worth CVE 1000</p>
-                  </div> */}
                 </div>
                 <div className="border-2 border-gray-600 hover:border-orange-600 p-8 w-[300px] rounded-xl flex flex-col gap-2 group">
-                  <p className=" font-semibold">Value</p>
+                  <p className=" font-semibold">Regular</p>
                   <p className=" font-semibold text-xl">CVE 2000</p>
                   <button className="border-2 border-[#EE5128] text-[#EE5128] group-hover:border-0 group-hover:bg-[#EE5128] group-hover:text-white text-sm font-semibold px-4 py-2 rounded w-full mb-4 flex justify-center items-center">
                     <span className="group-hover:block hidden">
@@ -940,6 +956,15 @@ const FeaturesPlanPopup = ({
                     </span>{" "}
                     Select
                   </button>
+
+                  {/* {listedplans.Regular.map((r) => (
+                    <p className="flex items-center gap-2 text-sm py-2 border-b-2 border-gray-300 border-dashed">
+                      {r.Value}
+                      <span>
+                        <Info className="h-4 w-4" />
+                      </span>{" "}
+                    </p>
+                  ))} */}
 
                   <p className="flex items-center gap-2 text-sm py-2 border-b-2 border-gray-300 border-dashed">
                     Cancellation fee from CVE 500{" "}
@@ -967,10 +992,6 @@ const FeaturesPlanPopup = ({
                     15 kg Check-in{" "}
                     <span className="text-black/50">( 1 Pc x 15 kg )</span>
                   </p>
-                  {/* <div className="bg-green-100 text-green-600 flex items-center gap-2 p-4 mt-4 font-bold text-xs">
-                    <PercentCircleIcon />{" "}
-                    <p>Additional Benefits worth CVE 1000</p>
-                  </div> */}
                 </div>
               </div>
             ) : (

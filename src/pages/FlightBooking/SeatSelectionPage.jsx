@@ -395,7 +395,7 @@ export default function SeatSelection() {
                 Address: travellerDetails.BillingDetails.Address,
                 Email: travellerDetails.ContactDetails.Email,
                 // requestBody: requestBody,
-                TFBookingReference
+                TFBookingReference,
               },
             });
           } else {

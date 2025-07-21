@@ -57,7 +57,7 @@ const App = () => {
     });
   }, []);
   const [location, setLocation] = useState("Fetching location...");
- /* const cardApiUrl = import.meta.env.VITE_CARD_API_URL;
+  /* const cardApiUrl = import.meta.env.VITE_CARD_API_URL;
   const setToken = async () => {
     try {
       const res = await fetch(`${cardApiUrl}/injecttoken`, {
@@ -115,7 +115,10 @@ const App = () => {
             <Route path="/List" element={<FlightList country={location} />} />
             <Route path="/Booking" element={<FlightBooking />}>
               <Route path="ReviewYourBooking" element={<ReviewYourBooking />} />
-              <Route path="TravelersDetails" element={<TravelersDetails />} />
+              <Route
+                path="TravelersDetails"
+                element={<TravelersDetails country={location} />}
+              />
               <Route path="SeatSelection" element={<SeatSelectionPage />} />
               <Route path="Payment" element={<PaymentPage />} />
             </Route>
