@@ -46,7 +46,7 @@ export default function SeatSelection() {
   console.log(location.state.flights);
   console.log(returnTicket);
   console.log("luggageOptions", location.state.luggageOptions);
-
+console.log(location.state.travellerDetails)
   const LuggageOptions = parseLuggageOptions(location.state.luggageOptions);
   const [convertedLuggageOptions, setconvertedLuggageOptions] = useState({});
   const convertLuggageOption = async () => {

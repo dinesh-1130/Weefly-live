@@ -466,7 +466,7 @@ const countries = [
   { name: "Zimbabwe", flagCode: "zw" },
 ];
 
-function TravelersDetails() {
+function TravelersDetails({country}) {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
@@ -482,9 +482,7 @@ function TravelersDetails() {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [formData, setFormData] = useState({
-    country: "",
-  });
+
   const [billingDetails, setBillingDetails] = useState({
     name: {
       title: "",
@@ -537,7 +535,6 @@ function TravelersDetails() {
   // Calculate age based on departure date or return date
   const calculateAge = (dateOfBirth) => {
     if (!dateOfBirth) return "";
-
     const dob = new Date(dateOfBirth);
     let referenceDate;
 
@@ -629,9 +626,7 @@ function TravelersDetails() {
           },
           MobilePhone: {
             InternationalCode: "",
-            AreaCode: "",
             Number: "",
-            Extension: "",
           },
           Email: "",
           CustomSupplierParameterList: {
@@ -648,22 +643,22 @@ function TravelersDetails() {
     }
   }, []); // Remove location dependency to prevent re-initialization
 
-  useEffect(() => {
-    const fetchCountry = async () => {
-      try {
-        const res = await fetch("https://ipapi.co/json/");
-        const data = await res.json();
-        setFormData((prev) => ({
-          ...prev,
-          country: data.country_name || "",
-        }));
-      } catch (error) {
-        console.error("Country auto-detect failed:", error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchCountry = async () => {
+  //     try {
+  //       const res = await fetch("https://ipapi.co/json/");
+  //       const data = await res.json();
+  //       setFormData((prev) => ({
+  //         ...prev,
+  //         country: data.country_name || "",
+  //       }));
+  //     } catch (error) {
+  //       console.error("Country auto-detect failed:", error);
+  //     }
+  //   };
 
-    fetchCountry();
-  }, []);
+  //   fetchCountry();
+  // }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -1219,17 +1214,17 @@ function TravelersDetails() {
 
   const handleContinue = () => {
     const filteredData = {};
-    for (const key in formData) {
-      const value = formData[key];
-      if (
-        value !== "" &&
-        value !== null &&
-        value !== undefined &&
-        !(typeof value === "object" && Object.keys(value).length === 0)
-      ) {
-        filteredData[key] = value;
-      }
-    }
+    // for (const key in formData) {
+    //   const value = formData[key];
+    //   if (
+    //     value !== "" &&
+    //     value !== null &&
+    //     value !== undefined &&
+    //     !(typeof value === "object" && Object.keys(value).length === 0)
+    //   ) {
+    //     filteredData[key] = value;
+    //   }
+    // }
 
     // Validate all travellers and billing
     let allErrors = {};
@@ -1723,7 +1718,7 @@ function TravelersDetails() {
                           <input
                             type="text"
                             className="w-full border rounded px-3 py-2 bg-gray-100"
-                            value={formData.country}
+                            value={country}
                             readOnly
                           />
                         </div>
@@ -2179,7 +2174,7 @@ function TravelersDetails() {
                         className={`w-full border rounded px-3 py-2 ${
                           sameAsAdult1 ? "bg-gray-100" : "bg-gray-100"
                         }`}
-                        value={formData.country}
+                        value={country}
                         readOnly
                       />
                     </div>
