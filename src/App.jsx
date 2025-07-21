@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router";
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 import Aos from "aos";
 import "./hook/I18n";
 
@@ -49,6 +49,7 @@ import TicketNotConfirm from "./pages/FlightBooking/TicketNotConfirm";
 import ErrorPage from "./pages/ErrorPage";
 import TicketPendingConfirmation from "./pages/FlightBooking/TicketPendingConfirmation";
 import SupplierError from "./pages/FlightBooking/SupplierError";
+import cookies from "js-cookie";
 const App = () => {
   useEffect(() => {
     Aos.init({
@@ -56,13 +57,31 @@ const App = () => {
     });
   }, []);
   const [location, setLocation] = useState("Fetching location...");
+ /* const cardApiUrl = import.meta.env.VITE_CARD_API_URL;
+  const setToken = async () => {
+    try {
+      const res = await fetch(`${cardApiUrl}/injecttoken`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (res.ok) {
+        console.log("Token Set!!");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  if (!cookies.get("token")) {
+    setToken();
+  } */
 
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
-          console.log(position)
+          console.log(position);
           // Reverse geocoding API
           const response = await fetch(
             `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
@@ -77,7 +96,7 @@ const App = () => {
         }
       );
     } else {
-      setLocation("Geolocation not supported");
+      setLocation("");
     }
   }, []);
 

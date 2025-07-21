@@ -2369,14 +2369,21 @@
 // }
 
 // export default TravelersDetails;
+
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
-
+import cookies from "js-cookie";
+import { decryptPayload } from "../../utils/Payload";
 function TravelersDetails() {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
+  const cardTypes = location.state.cardlist.CardType;
+  const cardApiUrl = import.meta.env.VITE_CARD_API_URL;
+  const cardtoken = cookies.get("token");
+  const [creditCard, setCreditcard] = useState();
+
   const [flight, setFlight] = useState(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [currentTravellerIndex, setCurrentTravellerIndex] = useState(0);
@@ -2387,7 +2394,6 @@ function TravelersDetails() {
   const [billingCompleted, setBillingCompleted] = useState(false);
   const [billingExpanded, setBillingExpanded] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
-
   const [billingDetails, setBillingDetails] = useState({
     Name: {
       Title: "Mr",
@@ -2415,9 +2421,71 @@ function TravelersDetails() {
       CardType: import.meta.env.VITE_CARD_CARDTYPE,
       IssueNumber: "0",
     },
+    // Creditcard: {
+    //   Number: "",
+    //   SecurityCode: "",
+    //   ExpiryDate: "",
+    //   StartDate: "",
+    //   CardType: "",
+    //   IssueNumber: "0",
+    // },
   });
   const [sameAsAdult1, setSameAsAdult1] = useState(false);
 
+  /*const getCard = async (cardtype) => {
+    try {
+      const res = await fetch(`${cardApiUrl}/getcard/${cardtype}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${cardtoken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      const data = await res.json();
+      console.log(`Data for ${cardtype}:`, data);
+      const decrypteddata = decryptPayload(data.payload);
+      setBillingDetails((prev) => ({
+        ...prev,
+        Creditcard: {
+          ...prev.Creditcard,
+          Number: decrypteddata.Cardnumber,
+          SecurityCode: decrypteddata.securityCode,
+          ExpiryDate: decrypteddata.Cardexpirydate,
+          StartDate: decrypteddata.Cardsecuritycode,
+          CardType: decrypteddata.Cardtype,
+          IssueNumber: decrypteddata.IssueNumber || "0",
+        },
+      }));
+
+      console.log(decrypteddata);
+    } catch (error) {
+      console.error(`Failed to fetch card for ${cardtype}:`, error);
+    }
+  };
+
+  useEffect(() => {
+    cardTypes.forEach((type) => {
+      switch (type) {
+        case "American Express":
+          getCard("American Express");
+          break;
+        case "Visa":
+          getCard("Visa");
+          break;
+        case "MasterCard":
+          getCard("MasterCard");
+          break;
+        default:
+          console.warn(`Unknown card type: ${type}`);
+      }
+    });
+  }, []); */
+  
   useEffect(() => {
     if (location.state && location.state.flights) {
       setFlight(location.state.flights);

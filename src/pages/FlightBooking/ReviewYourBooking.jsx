@@ -50,6 +50,7 @@ export default function ReviewYourBooking() {
   console.log(TicketData.returnTicketId);
   console.log("tripType", TicketData.tripType);
   console.log("travalers", TicketData.travalers);
+  const[supportedCards,setsupportedCards]=useState([])
 
   // useEffect(() => {
   //   if (location.state && location.state.tripType) {
@@ -230,6 +231,7 @@ export default function ReviewYourBooking() {
       //   }
       // });
 
+
       console.log(result);
       setseatOptions(seatOptions);
       setluggageOptions(LuggageOptions);
@@ -237,6 +239,9 @@ export default function ReviewYourBooking() {
       setstructuredFeatures(sf);
       setTickets(flightTickets);
       setIsPopupOpen(true);
+   
+      
+      setsupportedCards(res.supportedCardlist)
     }
   };
 
@@ -341,6 +346,7 @@ export default function ReviewYourBooking() {
             seat={seatOptions}
             luggage={luggageOptions}
             tickets={tickets}
+            supportedCardlist={supportedCards}
           />
         )}
     </>
@@ -508,9 +514,10 @@ const FeaturesPlanPopup = ({
   seat,
   luggage,
   tickets,
+  supportedCardlist
 }) => {
   const transactionUrl = import.meta.env.VITE_TRANSACTION_URL;
-
+   console.log("cards", supportedCardlist);
   const getCommissionDetail = async (tfPrice) => {
     try {
       const res = await fetch(`${transactionUrl}/getcommissiondetails`);
@@ -717,6 +724,7 @@ const FeaturesPlanPopup = ({
         outwordPrice: TicketData.outwordTicketId.price,
         returnPrice: TicketData.returnTicketId?.price || 0,
         currency: TicketData.outwordTicketId.currency || "CVE",
+        cardlist:supportedCardlist
       },
     });
   };
