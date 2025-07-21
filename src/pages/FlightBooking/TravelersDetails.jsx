@@ -629,9 +629,7 @@ function TravelersDetails() {
           },
           MobilePhone: {
             InternationalCode: "",
-            AreaCode: "",
             Number: "",
-            Extension: "",
           },
           Email: "",
           CustomSupplierParameterList: {
