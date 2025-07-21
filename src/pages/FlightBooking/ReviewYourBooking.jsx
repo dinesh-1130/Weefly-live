@@ -46,10 +46,10 @@ export default function ReviewYourBooking() {
   const [seatOptions, setseatOptions] = useState([]);
   const [luggageOptions, setluggageOptions] = useState([]);
   const [tickets, setTickets] = useState([]);
-  console.log(TicketData.outwordTicketId);
+  /*console.log(TicketData.outwordTicketId);
   console.log(TicketData.returnTicketId);
   console.log("tripType", TicketData.tripType);
-  console.log("travalers", TicketData.travalers);
+  console.log("travalers", TicketData.travalers); */
   const [supportedCards, setsupportedCards] = useState([]);
 
   // useEffect(() => {
@@ -76,7 +76,7 @@ export default function ReviewYourBooking() {
   // 	}
   // }, [location])
 
-  console.log(TicketData.outwordTicketId);
+ // console.log(TicketData.outwordTicketId);
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   /*function parseFeaturesToTable(featuresJson) {
@@ -200,7 +200,7 @@ export default function ReviewYourBooking() {
 
     if (response.ok) {
       const res = await response.json();
-      console.log(res);
+      // console.log(res);
       const seatOptions =
         res.requiredParameterList[0].RequiredParameter[15].DisplayText[0];
       const LuggageOptions =
@@ -208,7 +208,7 @@ export default function ReviewYourBooking() {
       let sf = res.Features.Feature;
 
       console.log(sf);
-      console.log(sf);
+      // console.log(sf);
       let result = [];
 
       // sf.forEach((item) => {
@@ -232,7 +232,7 @@ export default function ReviewYourBooking() {
       //   }
       // });
 
-      console.log(result);
+      // console.log(result);
       setseatOptions(seatOptions);
       setluggageOptions(LuggageOptions);
       setAlternativeFares(res.AlternativeFares);
@@ -516,16 +516,17 @@ const FeaturesPlanPopup = ({
   supportedCardlist,
 }) => {
   // const transactionUrl = import.meta.env.VITE_TRANSACTION_URL;
-  console.log("cards", supportedCardlist);
-  const [commissionDetails, setcommissionDetails] = useState([]);
+  //console.log("cards", supportedCardlist);
+  let commissionDetails=[];
   const transactionUrl = import.meta.env.VITE_TRANSACTION_URL;
   const getcommission = async () => {
     try {
       const res = await fetch(`${transactionUrl}/getcommissiondetails`);
       const result = await res.json();
-      console.log(result.commissionDetail);
+      // console.log("co", result.commissionDetail);
       const commission = result.commissionDetail;
-      setcommissionDetails(commission);
+      // console.log(commission)
+     commissionDetails=commission;
     } catch (error) {
       console.error("Failed to fetch supplier route:", error);
     }
@@ -541,7 +542,6 @@ const FeaturesPlanPopup = ({
       } else {
         const Commission = commissionDetails.Commission;
         if (Commission) {
-          console.log(Commission);
           if (commissionDetails.CommissionType.toLowerCase() === "percentage") {
             const commissionAmount = (tfPrice * Commission) / 100;
             const totalAmount = tfPrice + commissionAmount;
@@ -694,12 +694,12 @@ const FeaturesPlanPopup = ({
   }
 
   const [selectedTab, setSelectedTab] = useState("outward");
-  console.log("AlternativeFares:", AlternativeFares);
-  console.log("structuredFeatures:", structuredFeatures);
+  // console.log("AlternativeFares:", AlternativeFares);
+  // console.log("structuredFeatures:", structuredFeatures);
 
-  console.log("lu" + luggage);
-  console.log("se" + seat);
-  console.log("ti" + tickets);
+  // console.log("lu" + luggage);
+  // console.log("se" + seat);
+  // console.log("ti" + tickets);
 
   const [feature, setFeature] = useState([]);
 
@@ -716,7 +716,6 @@ const FeaturesPlanPopup = ({
     if (feature && feature.length > 0) {
       const plans = parseFeaturesToPlans(feature);
       console.log("plans:", plans);
-      setListedplans(plans);
       // You can also set this to state if you want to use it in the UI
       // setPlans(plans);
     }
